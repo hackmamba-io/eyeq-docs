@@ -10,7 +10,10 @@
 /coverage
 /.next/
 /out/
+/dist/
 /build
+/static-html/
+/static-pure/
 *.tsbuildinfo
 
 # misc
