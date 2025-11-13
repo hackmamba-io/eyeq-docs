@@ -34,12 +34,12 @@
     ]
   },
   "include": [
-    ".next/types/**/*.ts/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/types/**/*.tsx",
     "app/**/*.tsx",
     "content/**/*.mdx",
     "lib/**/*.ts",
-    "tools/**/*.ts",
-    ".next/types/**/*.ts"
+    "tools/**/*.ts"
   ],
   "exclude": [
     "node_modules"

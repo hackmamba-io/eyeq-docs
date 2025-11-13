@@ -170,8 +170,6 @@ type StableIds = {
   [key: string]: string /* stable anchor id */;
 };
 
-type Redirect = { from: string; to: string };
-
 // ============================================================================
 // Utilities
 // ============================================================================
@@ -428,7 +426,7 @@ function parseDocblock(raw: string): Doc {
 // ============================================================================
 // Regexes (paired & global) — hardened
 // ============================================================================
-// Capture only the doc text; we’ll locate a following declaration ourselves.
+// Capture only the doc text; I've located the following declaration here.
 const BLOCK = /\/\*\*([\s\S]*?)\*\/\s*(?:\/\*[\s\S]*?\*\/\s*)*/g;
 
 // Qualifiers and types before symbol name
@@ -1376,22 +1374,17 @@ function main(): void {
   ensureDir(assetsAbs);
   outRoots.forEach(ensureDir);
 
-  const idsPerOut: StableIds[] = outRoots.map((o) => {
-    const f = path.join(o, "ids.json");
-    if (fs.existsSync(f)) {
-      try {
-        return JSON.parse(read(f)) as StableIds;
-      } catch {
-        return {};
-      }
-    }
-    return {};
-  });
-  const redirectsPerOut: Redirect[][] = outRoots.map(() => []);
+  const idsPerOut: StableIds[] = outRoots.map(() => ({}));
 
   const allGenerated: GeneratedPage[] = [];
   const allEntriesForIndex: AnyEntry[] = [];
   const allWarnings: string[] = [];
+  const allEntries: AnyEntry[] = [];
+  const deferredWrites: (
+    | { kind: "header"; headerRel: string; headerSymbols: AnyEntry[]; outRoot: string; absHeader: string }
+    | { kind: "group"; group: GroupEntry; outRoot: string }
+    | { kind: "page"; page: PageEntry; outRoot: string }
+  )[] = [];
 
   for (let i = 0; i < inputRootsAbs.length; i++) {
     const inRoot = inputRootsAbs[i];
@@ -1422,8 +1415,7 @@ Browse API references generated from header files in \`${path.basename(inRoot)}\
 
       const extras = emitGroupsAndPagesFromDocs(entries, headerRel, ids);
       const all = [...entries, ...extras];
-
-      for (const e of all) for (const w of e.warnings) allWarnings.push(`${headerRel}: ${w}`);
+      allEntries.push(...all);
 
       const headerSymbols = all.filter((e) =>
         ["function", "macro-const", "macro-fn", "typedef", "callback-typedef", "enum", "struct", "union"].includes(
@@ -1432,28 +1424,42 @@ Browse API references generated from header files in \`${path.basename(inRoot)}\
       );
 
       if (headerSymbols.length) {
-        const mdx = renderHeaderPage(headerRel, headerSymbols);
-        const outFile = path.join(outRoot, headerRel.replace(/\.h$/i, ".mdx"));
-        write(outFile, mdx);
-        allGenerated.push({ fileRel: headerRel, mdx, entries: headerSymbols });
+        deferredWrites.push({ kind: "header", headerRel, headerSymbols, outRoot, absHeader });
         allEntriesForIndex.push(...headerSymbols);
-        console.log(`${absHeader} → ${outFile}  (${headerSymbols.length} symbol(s))`);
       }
 
       for (const ex of extras) {
-        if (ex.category === "group") renderGroupPage(ex.name, ex as GroupEntry, allGenerated, outRoot);
-        else if (ex.category === "page") renderStandalonePage(ex as PageEntry, allGenerated, outRoot);
+        if (ex.category === "group") {
+          deferredWrites.push({ kind: "group", group: ex as GroupEntry, outRoot });
+        } else if (ex.category === "page") {
+          deferredWrites.push({ kind: "page", page: ex as PageEntry, outRoot });
+        }
       }
     }
 
-    write(path.join(outRoot, "ids.json"), JSON.stringify(ids, null, 2));
-    if (redirectsPerOut[i].length) {
-      write(path.join(outRoot, "redirects.json"), JSON.stringify(redirectsPerOut[i], null, 2));
-    }
+    // no persistent id map or redirects to write
   }
 
   const index = buildSymbolIndex(allEntriesForIndex);
   resolveCopydocAndRefs(allEntriesForIndex, index);
+
+  for (const e of allEntries) {
+    for (const w of e.warnings) allWarnings.push(`${e.fileRel}: ${w}`);
+  }
+
+  for (const op of deferredWrites) {
+    if (op.kind === "header") {
+      const mdx = renderHeaderPage(op.headerRel, op.headerSymbols);
+      const outFile = path.join(op.outRoot, op.headerRel.replace(/\.h$/i, ".mdx"));
+      write(outFile, mdx);
+      allGenerated.push({ fileRel: op.headerRel, mdx, entries: op.headerSymbols });
+      console.log(`${op.absHeader} → ${outFile}  (${op.headerSymbols.length} symbol(s))`);
+    } else if (op.kind === "group") {
+      renderGroupPage(op.group.name, op.group, allGenerated, op.outRoot);
+    } else {
+      renderStandalonePage(op.page, allGenerated, op.outRoot);
+    }
+  }
 
   const problems = checkLinks(allGenerated);
   if (problems.length) {

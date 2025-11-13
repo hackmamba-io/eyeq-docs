@@ -191,7 +191,7 @@ ApiHandle create_handle ( const char* name , int flags );
 
 <a id="function-compute-wrapper-162d7d2c"></a>
 ### `compute_wrapper`
-Wrapper calling \ref compute_thing then \ref api_version.
+Wrapper calling [`compute_thing`](api-torture.mdx#function-compute-thing-ad20ae98) then `api_version`.
 
 
 **Signature**
@@ -200,7 +200,7 @@ int compute_wrapper(int x);
 ```
 
 **Returns**
-Whatever \ref compute_thing returns.
+Whatever [`compute_thing`](api-torture.mdx#function-compute-thing-ad20ae98) returns.
 
 <a id="function-resource-open-ff34ac17"></a>
 ### `resource_open`
@@ -230,6 +230,15 @@ Alias using @copydoc to inherit docs.
 ```c
 int open_resource(const char* uri, ApiHandle* outH);
 ```
+
+**Parameters**
+| Name | Description |
+|------|-------------|
+| `uri` | Resource identifier. |
+| `outH` | Receives handle on success. |
+
+**Returns**
+0 on success; negative error code otherwise.
 
 <a id="function-param-styles-e3ad2275"></a>
 ### `param_styles`
