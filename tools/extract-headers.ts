@@ -38,7 +38,6 @@ import crypto from "node:crypto";
 // ============================================================================
 const INPUT_ROOTS: string[] = [
   "headers",
-  "torture",
 ];
 
 const OUTPUT_ROOTS: string[] = [
