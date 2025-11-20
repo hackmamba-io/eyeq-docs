@@ -1,0 +1,59 @@
+---
+title: errors
+---
+
+> Auto-generated from `errors.h`. Edit doc comments in the header and rebuild.
+
+## API
+
+### Functions
+- [`api_last_error_code`](#function-api-last-error-code-bd3ac560)
+- [`api_clear_error`](#function-api-clear-error-18df335f)
+- [`api_error_from_http`](#function-api-error-from-http-fb374537)
+
+<a id="function-api-last-error-code-bd3ac560"></a>
+### `api_last_error_code`
+Error handling helpers and codes.
+
+
+**Signature**
+```c
+int api_last_error_code(void);
+```
+
+<a id="function-api-clear-error-18df335f"></a>
+### `api_clear_error`
+Returns a human-readable message for an error code.
+
+
+**Signature**
+```c
+int api_clear_error(void);
+```
+
+**Parameters**
+| Name | Description |
+|------|-------------|
+| `code` | Error code (negative). |
+
+**Returns**
+Constant string describing the error.
+
+<a id="function-api-error-from-http-fb374537"></a>
+### `api_error_from_http`
+Converts HTTP status to canonical API error code.
+
+
+**Signature**
+```c
+int api_error_from_http(int http_status);
+```
+
+**Parameters**
+| Name | Description |
+|------|-------------|
+| `http_status` | HTTP status (e.g., 404). |
+
+**Returns**
+Negative API error code or 0 if none.
+

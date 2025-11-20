@@ -3,8 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "next build",
-    "dev": "next dev --turbo",
+    "gen:headers": "ts-node tools/extract-headers.ts",
+    "build": "npm run gen:headers && next build",
+    "dev": "npm run gen:headers && next dev",
     "start": "next start",
     "postinstall": "fumadocs-mdx",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
@@ -28,14 +29,15 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.13",
     "@types/mdx": "^2.0.13",
-    "@types/node": "24.5.2",
+    "@types/node": "^24.10.0",
     "@types/react": "^19.1.14",
     "@types/react-dom": "^19.1.9",
     "archiver": "^7.0.1",
     "postcss": "^8.5.6",
     "puppeteer": "^24.27.0",
     "tailwindcss": "^4.1.13",
-    "typescript": "^5.9.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
     "wrangler": "^4.42.0"
   }
 }

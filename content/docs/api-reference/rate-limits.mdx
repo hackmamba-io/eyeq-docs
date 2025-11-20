@@ -1,171 +1,49 @@
 ---
-title: Rate Limits
-description: Understanding API rate limits and best practices
+title: rate-limits
 ---
 
-# Rate Limits
+> Auto-generated from `rate-limits.h`. Edit doc comments in the header and rebuild.
 
-Learn about API rate limits and how to work within them effectively.
+## API
 
-## Overview
+### Functions
+- [`get_rate_limit`](#function-get-rate-limit-ac3bce77)
+- [`get_remaining_requests`](#function-get-remaining-requests-109d20dc)
+- [`get_rate_limit_reset_time`](#function-get-rate-limit-reset-time-c4a80440)
 
-Rate limiting helps ensure fair usage and system stability. All API endpoints are subject to rate limits based on your plan.
+<a id="function-get-rate-limit-ac3bce77"></a>
+### `get_rate_limit`
+Provides rate limiting and quota management utilities.
 
-## Rate Limit Tiers
 
-### Free Tier
-
-- **Requests per hour**: 100
-- **Burst limit**: 10 requests per minute
-- **Concurrent requests**: 5
-
-### Pro Tier
-
-- **Requests per hour**: 1,000
-- **Burst limit**: 50 requests per minute
-- **Concurrent requests**: 20
-
-### Enterprise Tier
-
-- **Requests per hour**: Custom (contact sales)
-- **Burst limit**: Custom
-- **Concurrent requests**: Custom
-
-## Rate Limit Headers
-
-Every API response includes rate limit information:
-
-```http
-X-RateLimit-Limit: 1000
-X-RateLimit-Remaining: 999
-X-RateLimit-Reset: 1640995200
-X-RateLimit-Retry-After: 3600
+**Signature**
+```c
+int get_rate_limit(char* tier, int tier_size);
 ```
 
-### Header Descriptions
+<a id="function-get-remaining-requests-109d20dc"></a>
+### `get_remaining_requests`
+Returns the number of remaining API calls before reset.
 
-- `X-RateLimit-Limit`: Maximum requests allowed per hour
-- `X-RateLimit-Remaining`: Requests remaining in current window
-- `X-RateLimit-Reset`: Unix timestamp when the limit resets
-- `X-RateLimit-Retry-After`: Seconds to wait before retrying (only on 429)
 
-## Rate Limit Responses
-
-### 429 Too Many Requests
-
-When you exceed the rate limit, you'll receive a 429 status code:
-
-```json
-{
-  "error": {
-    "type": "rate_limit_error",
-    "code": "rate_limit_exceeded",
-    "message": "Rate limit exceeded. Try again in 3600 seconds.",
-    "retry_after": 3600
-  }
-}
+**Signature**
+```c
+int get_remaining_requests(void);
 ```
 
-## Best Practices
+**Returns**
+Number of remaining calls.
 
-### Implement Exponential Backoff
+<a id="function-get-rate-limit-reset-time-c4a80440"></a>
+### `get_rate_limit_reset_time`
+Calculates the time (in seconds) until the next rate limit reset.
 
-```javascript
-async function makeRequestWithRetry(url, options, maxRetries = 3) {
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      const response = await fetch(url, options);
 
-      if (response.status === 429) {
-        const retryAfter = response.headers.get("X-RateLimit-Retry-After");
-        const delay = Math.pow(2, i) * 1000; // Exponential backoff
-
-        await new Promise((resolve) => setTimeout(resolve, delay));
-        continue;
-      }
-
-      return response;
-    } catch (error) {
-      if (i === maxRetries - 1) throw error;
-    }
-  }
-}
+**Signature**
+```c
+int get_rate_limit_reset_time(void);
 ```
 
-### Monitor Rate Limit Usage
+**Returns**
+Seconds until reset.
 
-```javascript
-function checkRateLimit(response) {
-  const limit = response.headers.get("X-RateLimit-Limit");
-  const remaining = response.headers.get("X-RateLimit-Remaining");
-  const reset = response.headers.get("X-RateLimit-Reset");
-
-  console.log(`Rate limit: ${remaining}/${limit} remaining`);
-  console.log(`Resets at: ${new Date(reset * 1000)}`);
-
-  // Alert when approaching limit
-  if (remaining < limit * 0.1) {
-    console.warn("Rate limit nearly exceeded!");
-  }
-}
-```
-
-### Batch Requests When Possible
-
-Instead of making multiple individual requests:
-
-```javascript
-// ❌ Multiple requests
-const user1 = await api.getUser(1);
-const user2 = await api.getUser(2);
-const user3 = await api.getUser(3);
-
-// ✅ Single batch request
-const users = await api.getUsers([1, 2, 3]);
-```
-
-## Rate Limit by Endpoint
-
-Different endpoints may have different rate limits:
-
-| Endpoint    | Free Tier | Pro Tier   | Enterprise |
-| ----------- | --------- | ---------- | ---------- |
-| `/users`    | 100/hour  | 1,000/hour | Custom     |
-| `/projects` | 50/hour   | 500/hour   | Custom     |
-| `/webhooks` | 20/hour   | 200/hour   | Custom     |
-
-## Handling Rate Limits in SDKs
-
-Our official SDKs handle rate limiting automatically:
-
-```javascript
-// SDK automatically handles rate limiting
-const users = await sdk.users.list();
-```
-
-## Upgrading Your Plan
-
-If you consistently hit rate limits, consider upgrading:
-
-1. **Analyze your usage** patterns
-2. **Identify bottlenecks** in your application
-3. **Optimize requests** where possible
-4. **Contact support** for custom limits
-
-<Cards>
-  <Card
-    title="API Reference"
-    href="/docs/api-reference"
-    description="Complete API documentation"
-  />
-  <Card
-    title="Authentication"
-    href="/docs/authentication"
-    description="API authentication guide"
-  />
-  <Card
-    title="SDKs"
-    href="/docs/sdks"
-    description="Official SDKs with rate limit handling"
-  />
-</Cards>

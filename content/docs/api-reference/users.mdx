@@ -1,0 +1,42 @@
+---
+title: users
+---
+
+> Auto-generated from `users.h`. Edit doc comments in the header and rebuild.
+
+## API
+
+### Functions
+- [`get_user_profile`](#function-get-user-profile-70eb2d07)
+- [`update_user_profile`](#function-update-user-profile-647c3a71)
+
+<a id="function-get-user-profile-70eb2d07"></a>
+### `get_user_profile`
+Defines user account operations.
+
+
+**Signature**
+```c
+int get_user_profile(const char* user_id, char* buffer, int buffer_size);
+```
+
+<a id="function-update-user-profile-647c3a71"></a>
+### `update_user_profile`
+Updates a user's name or email.
+
+
+**Signature**
+```c
+int update_user_profile(const char* user_id, const char* name, const char* email);
+```
+
+**Parameters**
+| Name | Description |
+|------|-------------|
+| `user_id` | The user's unique ID. |
+| `name` | New name (nullable). |
+| `email` | New email (nullable). |
+
+**Returns**
+0 on success, -1 on invalid input.
+

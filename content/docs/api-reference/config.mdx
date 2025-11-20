@@ -1,0 +1,95 @@
+---
+title: config
+---
+
+> Auto-generated from `config.h`. Edit doc comments in the header and rebuild.
+
+## API
+
+### Functions
+- [`cfg_set_base_url`](#function-cfg-set-base-url-6b0ac84e)
+- [`cfg_get_base_url`](#function-cfg-get-base-url-32f67069)
+- [`cfg_set_int`](#function-cfg-set-int-fc15b8bd)
+- [`cfg_get_int`](#function-cfg-get-int-4ca158ab)
+- [`cfg_reset_defaults`](#function-cfg-reset-defaults-1500d7b4)
+
+<a id="function-cfg-set-base-url-6b0ac84e"></a>
+### `cfg_set_base_url`
+Runtime configuration management.
+
+
+**Signature**
+```c
+int cfg_set_base_url(const char* url);
+```
+
+<a id="function-cfg-get-base-url-32f67069"></a>
+### `cfg_get_base_url`
+Gets the current API base URL.
+
+
+**Signature**
+```c
+int cfg_get_base_url(char* out, int out_size);
+```
+
+**Parameters**
+| Name | Description |
+|------|-------------|
+| `out` | Buffer for URL string. |
+| `out_size` | Size of buffer. |
+
+**Returns**
+0 on success; -1 buffer too small.
+
+<a id="function-cfg-set-int-fc15b8bd"></a>
+### `cfg_set_int`
+Sets a numeric config option by key.
+
+
+**Signature**
+```c
+int cfg_set_int(const char* key, int value);
+```
+
+**Parameters**
+| Name | Description |
+|------|-------------|
+| `key` | Option name (e.g., "timeout_ms"). |
+| `value` | Integer value. |
+
+**Returns**
+0 on success; -1 unknown key.
+
+<a id="function-cfg-get-int-4ca158ab"></a>
+### `cfg_get_int`
+Gets a numeric config option by key.
+
+
+**Signature**
+```c
+int cfg_get_int(const char* key, int* out_value);
+```
+
+**Parameters**
+| Name | Description |
+|------|-------------|
+| `key` | Option name. |
+| `out_value` | Pointer to receive value. |
+
+**Returns**
+0 on success; -1 unknown key.
+
+<a id="function-cfg-reset-defaults-1500d7b4"></a>
+### `cfg_reset_defaults`
+Resets all runtime config to defaults.
+
+
+**Signature**
+```c
+int cfg_reset_defaults(void);
+```
+
+**Returns**
+0 on success.
+
