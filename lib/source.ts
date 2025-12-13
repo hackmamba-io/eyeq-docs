@@ -1,25 +1,51 @@
-import { docs } from '@/.source';
-import { type InferPageType, loader } from 'fumadocs-core/source';
+import { pfcSdk, videoSdk, videoCli, webApi, browserSdk } from '@/.source';
+import { loader } from 'fumadocs-core/source';
+import { products } from './products';
 
-// See https://fumadocs.vercel.app/docs/headless/source-api for more info
-export const source = loader({
-  baseUrl: '/docs',
-  source: docs.toFumadocsSource(),
+// Create loaders for each product
+export const pfcSdkSource = loader({
+  baseUrl: '/docs/pfc-sdk',
+  source: pfcSdk.toFumadocsSource(),
 });
 
-export function getPageImage(page: InferPageType<typeof source>) {
-  const segments = [...page.slugs, 'image.png'];
+export const videoSdkSource = loader({
+  baseUrl: '/docs/video-sdk',
+  source: videoSdk.toFumadocsSource(),
+});
 
-  return {
-    segments,
-    url: `/og/docs/${segments.join('/')}`,
-  };
+export const videoCliSource = loader({
+  baseUrl: '/docs/video-cli',
+  source: videoCli.toFumadocsSource(),
+});
+
+export const webApiSource = loader({
+  baseUrl: '/docs/web-api',
+  source: webApi.toFumadocsSource(),
+});
+
+export const browserSdkSource = loader({
+  baseUrl: '/docs/browser-sdk',
+  source: browserSdk.toFumadocsSource(),
+});
+
+// Map of product slugs to their sources
+const sourceMap: Record<string, ReturnType<typeof loader>> = {
+  'pfc-sdk': pfcSdkSource,
+  'video-sdk': videoSdkSource,
+  'video-cli': videoCliSource,
+  'web-api': webApiSource,
+  'browser-sdk': browserSdkSource,
+};
+
+// Helper to get source by product slug
+export function getSourceByProduct(product: string) {
+  return sourceMap[product];
 }
 
-export async function getLLMText(page: InferPageType<typeof source>) {
-  const processed = await page.data.getText('processed');
-
-  return `# ${page.data.title} (${page.url})
-
-${processed}`;
+// Get all valid product slugs
+export function getProductSlugs(): string[] {
+  return Object.keys(sourceMap);
 }
+
+// Re-export products for convenience
+export { products };

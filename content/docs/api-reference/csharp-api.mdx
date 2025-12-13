@@ -1,0 +1,32 @@
+---
+title: C# API
+description: .NET API reference
+---
+
+# C# API Reference
+
+{/* TODO: Generate from PerfectlyClearAdapter.cs */}
+
+## PerfectlyClear Class
+
+```csharp
+public class PerfectlyClear : IDisposable
+{
+    public PerfectlyClear(string protectionPath);
+    public int ReadPresets(ref PFCPARAM param, string presetPath);
+    public PFCAPPLYSTATUS AutoCorrect(IntPtr pImage, PFCPARAM param);
+    // ...
+}
+```
+
+## PFCImageFile Class
+
+```csharp
+public class PFCImageFile : IDisposable
+{
+    public bool LoadImage(string path);
+    public bool SaveImage(string path, int quality);
+    public IntPtr PFCImageGet();
+    // ...
+}
+```

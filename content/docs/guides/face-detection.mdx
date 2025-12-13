@@ -1,0 +1,29 @@
+---
+title: Face Detection
+description: Using face detection features in the SDK
+---
+
+# Face Detection
+
+The SDK provides robust face detection with detailed face information.
+
+## Available Data
+
+- Blink and smile detection
+- Face rotation and yaw angles
+- Face and eye position/size
+- Confidence values
+
+## PFCFaceRect Structure
+
+```c
+typedef struct _PFCFaceRect {
+    int left, top, right, bottom;  // Face bounds
+    int leftEyeX, leftEyeY;        // Left eye position
+    int rightEyeX, rightEyeY;      // Right eye position
+    float confidence;               // Detection confidence
+    bool blinkDetected;            // Blink status
+    bool smileDetected;            // Smile status
+    float yaw, pitch, roll;        // Face rotation
+} PFCFaceRect;
+```

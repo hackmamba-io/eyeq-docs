@@ -1,0 +1,228 @@
+---
+title: Basic Enhancement
+description: Simple auto-enhance toggle example
+---
+
+# Basic Enhancement Example
+
+This example shows how to create a simple auto-enhance feature that toggles corrections on/off.
+
+## Overview
+
+- Upload an image
+- Click to toggle corrections
+- Hold space/click to see original
+
+## HTML Structure
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Basic Enhancement</title>
+  <style>
+    .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+    .canvas-wrapper { position: relative; }
+    canvas { max-width: 100%; display: block; }
+    .hidden { display: none; }
+    .loader { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    .toolbar { margin-top: 20px; text-align: center; }
+    button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <input type="file" id="file-input" accept="image/*" />
+    
+    <div class="canvas-wrapper">
+      <canvas id="main-canvas"></canvas>
+      <canvas id="original-canvas" class="hidden"></canvas>
+    </div>
+    
+    <div class="toolbar hidden" id="toolbar">
+      <button id="toggle-btn">Toggle Enhancement</button>
+      <p>Hold SPACE or click to see original</p>
+    </div>
+    
+    <div class="loader hidden" id="loader">Processing...</div>
+  </div>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
+```
+
+## JavaScript Implementation
+
+```javascript
+import { Pfc, PFCFEATURE, InferenceOption, PFCPRESETID } from './dist/pfc.mjs';
+
+const CANVAS_ID = 'main-canvas';
+const ORIGINAL_CANVAS_ID = 'original-canvas';
+const API_KEY = 'YOUR_API_KEY';
+
+// State
+let pfc;
+let pfcImage;
+let param;
+let isEnhanced = false;
+
+// DOM elements
+const fileInput = document.getElementById('file-input');
+const mainCanvas = document.getElementById(CANVAS_ID);
+const originalCanvas = document.getElementById(ORIGINAL_CANVAS_ID);
+const toolbar = document.getElementById('toolbar');
+const toggleBtn = document.getElementById('toggle-btn');
+const loader = document.getElementById('loader');
+
+// Initialize SDK
+async function initSDK() {
+  const cachedCert = localStorage.getItem('pfc_wasm_certificate');
+  
+  pfc = new Pfc();
+  const cert = await pfc.init({
+    distDir: './dist',
+    modelsDir: './dist/models',
+    clientAPIKey: API_KEY,
+    urlGetCertificate: 'https://cert.perfectlyclear.photos/wasm_certificate/',
+    pfcWasmCertificate: cachedCert,
+    inference: InferenceOption.local,
+  });
+  
+  if (cert) {
+    localStorage.setItem('pfc_wasm_certificate', cert);
+  }
+  
+  // Load scene presets
+  const preset = await fetch('./presets/sd.preset').then(r => r.text());
+  pfc.loadScenePresets(preset);
+}
+
+// Load image to canvas
+async function loadImage(file) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      // Set canvas size
+      mainCanvas.width = img.width;
+      mainCanvas.height = img.height;
+      originalCanvas.width = img.width;
+      originalCanvas.height = img.height;
+      
+      // Draw to both canvases
+      mainCanvas.getContext('2d').drawImage(img, 0, 0);
+      originalCanvas.getContext('2d').drawImage(img, 0, 0);
+      
+      resolve();
+    };
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+// Process image
+async function processImage() {
+  // Create PFC image
+  pfcImage = pfc.createImage(mainCanvas);
+  
+  // Create parameters
+  param = pfc.createParam();
+  pfc.setParam(param, PFCPRESETID.PRESET_NONE);
+  
+  // Calculate AI features
+  const features = PFCFEATURE.CALC_ALL | PFCFEATURE.CALC_NOTINTCALC;
+  const aiFeatures = PFCFEATURE.CALC_SCENE_DETECTION | 
+                     PFCFEATURE.CALC_SKINTONE | 
+                     PFCFEATURE.CALC_AICOLOR;
+  
+  await pfc.createProfile(pfcImage, features, aiFeatures);
+  
+  // Apply scene preset
+  pfc.readScenePreset(param, pfcImage.sceneId);
+  
+  // Apply corrections
+  await pfc.apply(pfcImage, param);
+  pfcImage.drawToCanvas(mainCanvas);
+  
+  isEnhanced = true;
+}
+
+// Toggle enhancement
+function toggleEnhancement() {
+  if (isEnhanced) {
+    // Show original
+    mainCanvas.classList.add('hidden');
+    originalCanvas.classList.remove('hidden');
+  } else {
+    // Show enhanced
+    mainCanvas.classList.remove('hidden');
+    originalCanvas.classList.add('hidden');
+  }
+  isEnhanced = !isEnhanced;
+}
+
+// Show original temporarily
+function showOriginal(show) {
+  if (show) {
+    mainCanvas.style.display = 'none';
+    originalCanvas.style.display = 'block';
+  } else {
+    mainCanvas.style.display = 'block';
+    originalCanvas.style.display = 'none';
+  }
+}
+
+// Event handlers
+fileInput.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  loader.classList.remove('hidden');
+  
+  await loadImage(file);
+  await processImage();
+  
+  loader.classList.add('hidden');
+  toolbar.classList.remove('hidden');
+});
+
+toggleBtn.addEventListener('click', toggleEnhancement);
+
+// Hold space to see original
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' && isEnhanced) {
+    showOriginal(true);
+    e.preventDefault();
+  }
+});
+
+document.addEventListener('keyup', (e) => {
+  if (e.code === 'Space') {
+    showOriginal(false);
+  }
+});
+
+// Hold mouse to see original
+mainCanvas.addEventListener('mousedown', () => showOriginal(true));
+mainCanvas.addEventListener('mouseup', () => showOriginal(false));
+mainCanvas.addEventListener('mouseleave', () => showOriginal(false));
+
+// Initialize on load
+initSDK().then(() => {
+  console.log('SDK ready');
+});
+```
+
+## Key Concepts
+
+1. **SDK Initialization**: Load once, reuse for all images
+2. **Certificate Caching**: Store certificate in localStorage
+3. **Scene Detection**: Automatically detect and apply optimal preset
+4. **Original Preservation**: Keep original for comparison
+
+## Try It
+
+1. Copy the code to your project
+2. Replace `YOUR_API_KEY` with your actual key
+3. Ensure SDK files are in `./dist/`
+4. Ensure presets are in `./presets/`
+5. Run with a local web server

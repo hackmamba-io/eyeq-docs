@@ -1,0 +1,227 @@
+---
+title: PerfectlyClearPro.h
+description: Main header file for the Perfectly Clear C SDK
+---
+
+# PerfectlyClearPro.h
+
+The main public header for the Perfectly Clear SDK containing all functions, structures, and enumerations for image correction.
+
+## Overview
+
+This header provides:
+
+- Image correction functions (`PFC_AutoCorrect`, `PFC_Calc`, `PFC_Apply`)
+- Parameter structures (`PFCPARAM`, `PFCCOREPARAM`, etc.)
+- AI engine management
+- Scene detection functions
+- Preset loading functions
+
+## Include
+
+```c
+#include "PerfectlyClearPro.h"
+```
+
+## Main Functions
+
+### License Setup
+
+```c
+int PFC_SetProtectionPath(const char* path);
+```
+
+Sets the path to license files. Must be called before using the SDK.
+
+### Correction Functions
+
+```c
+// All-in-one correction
+PFCAPPLYSTATUS PFC_AutoCorrect(
+    PFCIMAGE* pImage,
+    PFCIMAGE* pReducedImage,
+    PFCPARAM* pParam,
+    PFCENGINE* pEngine,
+    PFCIMAGEPROFILE* pProfile,
+    int iRejectOption,
+    int iFAEOption
+);
+
+// Separate calculation phase
+int PFC_Calc(
+    PFCIMAGE* pImage,
+    PFCIMAGE* pReducedImage,
+    PFCFEATURE features,
+    PFCENGINE* pEngine,
+    PFCIMAGEPROFILE* pProfile
+);
+
+// Apply corrections using calculated profile
+PFCAPPLYSTATUS PFC_Apply(
+    PFCIMAGE* pImage,
+    PFCPARAM* pParam,
+    PFCENGINE* pEngine,
+    PFCIMAGEPROFILE* pProfile
+);
+```
+
+### AI Engine Functions
+
+```c
+// Load AI engine with specified features
+int PFC_LoadAIEngine(
+    PFCENGINE* pEngine,
+    const char* modelPath,
+    int aiFeatures
+);
+
+// Release AI engine resources
+void PFC_ReleaseEngine(PFCENGINE* pEngine);
+
+// Load scene detection presets
+int PFC_LoadScenePresets(PFCENGINE* pEngine, const char* presetPath);
+
+// Get detected scene information
+const char* PFC_GetSceneLabel(PFCENGINE* pEngine);
+int PFC_GetSceneId(PFCENGINE* pEngine);
+```
+
+### Preset Functions
+
+```c
+// Load parameters from preset file
+int PFC_ReadPresets(PFCPARAM& param, const char* presetPath);
+
+// Load scene-specific preset
+int PFC_ReadScenePreset(PFCPARAM& param, const char* presetPath, const char* sceneName);
+
+// Set built-in preset
+void PFC_SetParam(PFCPARAM* pParam, PFCPRESETID presetId);
+```
+
+### Profile Functions
+
+```c
+// Release profile resources
+void PFC_ReleaseProfile(PFCIMAGEPROFILE* pProfile);
+
+// Get face detection results
+int PFC_GetFaceCount(PFCIMAGEPROFILE* pProfile);
+PFCFACERECT* PFC_GetFaceRect(PFCIMAGEPROFILE* pProfile, int index);
+```
+
+## Structures
+
+### Core Structures
+
+| Structure | Description |
+|-----------|-------------|
+| [PFCIMAGE](/docs/api-reference/data-structures/pfcimage) | Image data container |
+| [PFCPARAM](/docs/api-reference/data-structures/pfcparam) | All correction parameters |
+| [PFCENGINE](/docs/api-reference/data-structures/pfcengine) | AI engine instance |
+| [PFCIMAGEPROFILE](/docs/api-reference/data-structures/pfcimageprofile) | Image analysis data |
+
+### Parameter Structures
+
+| Structure | Description |
+|-----------|-------------|
+| [PFCCOREPARAM](/docs/api-reference/data-structures/pfccoreparam) | Core corrections |
+| [PFCNRPARAM](/docs/api-reference/data-structures/pfcnrparam) | Noise reduction |
+| [PFCFBPARAM](/docs/api-reference/data-structures/pfcfbparam) | Face beautification |
+| [PFCV3PARAM](/docs/api-reference/data-structures/pfcv3param) | V3 LOOKs |
+| [PFCREPARAM](/docs/api-reference/data-structures/pfcreparam) | Red-eye removal |
+
+### Other Structures
+
+| Structure | Description |
+|-----------|-------------|
+| [PFCFaceRect](/docs/api-reference/data-structures/pfcfacerect) | Face detection data |
+| PFCPOINT | Point (x, y) |
+| PFCRECT | Rectangle |
+| SELECTIVECOLOR | Selective color params |
+
+## Enumerations
+
+### PFCPIXELFORMAT
+
+Image pixel formats.
+
+| Value | Description |
+|-------|-------------|
+| `PFC_PixelFormat24bppRGB` | 24-bit BGR |
+| `PFC_PixelFormat24bppBGR` | 24-bit RGB |
+| `PFC_PixelFormat32bppABGR` | 32-bit RGBA |
+| `PFC_PixelFormat32bppARGB` | 32-bit BGRA |
+| `PFC_PixelFormat48bppRGB` | 48-bit BGR (16-bit) |
+| `PFC_PixelFormat48bppBGR` | 48-bit RGB (16-bit) |
+| `PFC_PixelFormat64bppARGB` | 64-bit BGRA (16-bit) |
+| `PFC_PixelFormat64bppABGR` | 64-bit RGBA (16-bit) |
+
+### PFCFEATURE
+
+Calculation feature flags.
+
+| Value | Description |
+|-------|-------------|
+| `CALC_CORE` | Core corrections |
+| `CALC_NR` | Noise removal |
+| `CALC_FB` | Face beautification |
+| `CALC_RE` | Red-eye removal |
+| `CALC_ALL` | All classic features |
+| `CALC_SCENE_DETECTION` | Scene detection |
+| `CALC_SKINTONE` | Skin tone detection |
+| `CALC_AICOLOR` | AI white balance |
+
+### PFCPRESETID
+
+Built-in preset identifiers.
+
+| Value | Description |
+|-------|-------------|
+| `PRESET_IAUTO_PEOPLE` | Default 2023 preset |
+| `PRESET_IAUTO_21` | iAuto 2021 |
+| `PRESET_IAUTO_21_ASIA` | Asian skin tones |
+| `PRESET_VIVID` | Landscape/general |
+| `PRESET_BEAUTIFY` | Portrait focused |
+| `PRESET_BEAUTIFYPLUS` | Strong beautification |
+
+### PFCAPPLYSTATUS
+
+Return codes from Apply functions.
+
+| Value | Code | Description |
+|-------|------|-------------|
+| `APPLY_SUCCESS` | 0 | Success |
+| `APPLY_ERROR_PROFILE_MISSING` | -1 | No profile |
+| `APPLY_ERROR_ENGINE_MISSING` | -2 | No engine |
+| `APPLY_CANCELLED` | -3 | Cancelled |
+| `APPLY_NOSOURCE` | -4 | No image |
+| `APPLY_BADFORMAT` | -5 | Bad format |
+| `APPLY_INVALIDLICENSE` | -6 | License error |
+| `APPLY_LOOKS_MISSING` | -12 | No LOOKs file |
+
+### PFCREJECTOPTION
+
+Image rejection options.
+
+| Value | Description |
+|-------|-------------|
+| `PFC_REJECT_NONE` | No rejection |
+| `PFC_REJECT_MONOLITH` | Reject solid colors |
+| `PFC_REJECT_CLIPART` | Reject clipart (default) |
+
+## Macros
+
+```c
+// Decode status from master return code
+#define NRRETCODE(x)   (x & 0x000000FF)
+#define CORERETCODE(x) ((x >> 8) & 0x000000FF)
+#define FBRETCODE(x)   ((x >> 16) & 0x000000FF)
+#define RERETCODE(x)   ((x >> 24) & 0x000000FF)
+```
+
+## See Also
+
+- [Data Structures](/docs/api-reference/data-structures)
+- [C API Examples](/docs/examples/linux-osx)
+- [Quick Start Guide](/docs/getting-started/quickstart)

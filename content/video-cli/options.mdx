@@ -1,0 +1,169 @@
+---
+title: Command Options
+description: Complete reference of all Video CLI options
+---
+
+# Command Options
+
+## All Options
+
+| Option | Short | Type | Default | Description |
+|--------|-------|------|---------|-------------|
+| `--input` | `-i` | string | required | Input video file path |
+| `--output` | `-o` | string | required | Output video file path |
+| `--strength` | `-s` | 0-100 | 100 | Overall correction strength |
+| `--wb` | `-w` | 0-100 | 100 | White balance / color correction strength |
+| `--divider` | `-d` | 0-100 | 0 | Split view position (0=off) |
+| `--skip` | `-k` | 0-100 | 4 | Frames to skip between AI detections |
+
+## Detailed Option Reference
+
+### `-i, --input <file>`
+
+**Required.** Specifies the input video file.
+
+```bash
+-i video.mp4
+-i /path/to/video.mov
+-i "C:\Videos\My Video.mp4"
+```
+
+Supports any format that ffmpeg can decode.
+
+### `-o, --output <file>`
+
+**Required.** Specifies the output video file path.
+
+```bash
+-o output.mp4
+-o /path/to/corrected.mp4
+-o "C:\Output\corrected.mp4"
+```
+
+The output format is determined by the file extension.
+
+### `-s, --strength <0-100>`
+
+Controls the overall correction strength.
+
+| Value | Effect |
+|-------|--------|
+| 0 | No correction (passthrough) |
+| 25 | Subtle enhancement |
+| 50 | Moderate correction |
+| 75 | Strong correction |
+| 100 | Full correction (default) |
+
+```bash
+# Subtle correction
+./PfCVideo.sh -i input.mp4 -o output.mp4 -s 30
+
+# Strong correction
+./PfCVideo.sh -i input.mp4 -o output.mp4 -s 90
+```
+
+### `-w, --wb <0-100>`
+
+Controls white balance / color correction strength independently from overall strength.
+
+| Value | Effect |
+|-------|--------|
+| 0 | No color correction |
+| 50 | Moderate color adjustment |
+| 100 | Full color correction (default) |
+
+```bash
+# Disable color correction, keep exposure
+./PfCVideo.sh -i input.mp4 -o output.mp4 -s 100 -w 0
+
+# Strong color, moderate exposure
+./PfCVideo.sh -i input.mp4 -o output.mp4 -s 50 -w 100
+```
+
+### `-d, --divider <0-100>`
+
+Creates a split-screen comparison view. Useful for quality checks.
+
+| Value | Effect |
+|-------|--------|
+| 0 | Disabled (default) |
+| 50 | Left half original, right half corrected |
+| 25 | Left 25% original, right 75% corrected |
+| 75 | Left 75% original, right 25% corrected |
+
+```bash
+# 50/50 split for comparison
+./PfCVideo.sh -i input.mp4 -o comparison.mp4 -d 50
+```
+
+<Callout type="info">
+The divider option is useful for creating before/after comparison videos for review.
+</Callout>
+
+### `-k, --skip <0-100>`
+
+Sets how many frames to skip between AI scene detections. Higher values improve speed and reduce flicker.
+
+| Value | Effect |
+|-------|--------|
+| 0 | Analyze every frame (slowest, may flicker) |
+| 4 | Analyze every 5th frame (default, balanced) |
+| 10 | Analyze every 11th frame (faster, smooth) |
+| 30 | Analyze every 31st frame (fastest) |
+
+```bash
+# Faster processing with more frame skipping
+./PfCVideo.sh -i input.mp4 -o output.mp4 -k 10
+
+# Maximum quality (analyze more frames)
+./PfCVideo.sh -i input.mp4 -o output.mp4 -k 1
+```
+
+<Callout type="warn">
+Lower skip values may cause visible flicker due to frame-to-frame lighting differences in the AI analysis.
+</Callout>
+
+## Platform-Specific Options
+
+### Linux Only
+
+The Linux script (`PfCVideo.sh`) can be edited to customize ffmpeg options:
+
+```bash
+# Edit the script to modify:
+# - Encoding codec
+# - Bitrate
+# - Audio handling
+# - Custom filters
+```
+
+### Windows / macOS
+
+Additional options may be available in the Desktop Video application's preferences, which affect CLI behavior.
+
+## Combining Options
+
+Options can be combined freely:
+
+```bash
+# Production settings
+./PfCVideo.sh -i raw.mp4 -o final.mp4 -s 80 -w 70 -k 8
+
+# Quick preview with comparison
+./PfCVideo.sh -i raw.mp4 -o preview.mp4 -s 100 -d 50 -k 20
+
+# Minimal processing
+./PfCVideo.sh -i raw.mp4 -o subtle.mp4 -s 25 -w 50 -k 4
+```
+
+## Environment Variables (Linux)
+
+| Variable | Description |
+|----------|-------------|
+| `PFC_LICENSE_KEY` | License key for activation |
+| `CUDA_VISIBLE_DEVICES` | GPU selection for CUDA |
+
+```bash
+# Use specific GPU
+CUDA_VISIBLE_DEVICES=1 ./PfCVideo.sh -i input.mp4 -o output.mp4
+```

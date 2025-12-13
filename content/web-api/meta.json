@@ -1,0 +1,15 @@
+{
+  "title": "Web API",
+  "root": true,
+  "pages": [
+    "---Getting Started---",
+    "getting-started",
+    "---Endpoints---",
+    "endpoints",
+    "---Examples---",
+    "examples",
+    "---Reference---",
+    "sdks",
+    "changelog"
+  ]
+}

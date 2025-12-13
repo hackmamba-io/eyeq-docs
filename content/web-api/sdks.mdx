@@ -1,0 +1,119 @@
+---
+title: Client SDKs
+description: Official client libraries for the Web API
+---
+
+# Client SDKs
+
+Official client libraries for the Perfectly Clear Web API.
+
+## Python SDK
+
+### Installation
+
+```bash
+pip install perfectlyclear
+```
+
+### Usage
+
+```python
+from perfectlyclear import PerfectlyClear
+
+# Initialize client
+pfc = PerfectlyClear(api_key="YOUR_API_KEY")
+
+# Correct a single image
+result = pfc.correct("photo.jpg", preset="auto", strength=80)
+result.save("corrected.jpg")
+
+# Batch processing
+results = pfc.batch([
+    "photo1.jpg",
+    "photo2.jpg",
+    "photo3.jpg"
+])
+
+for result in results:
+    result.save(f"corrected_{result.filename}")
+```
+
+## Node.js SDK
+
+### Installation
+
+```bash
+npm install @perfectlyclear/api
+```
+
+### Usage
+
+```javascript
+const { PerfectlyClear } = require('@perfectlyclear/api');
+
+const pfc = new PerfectlyClear({ apiKey: 'YOUR_API_KEY' });
+
+// Correct a single image
+const result = await pfc.correct('photo.jpg', {
+  preset: 'auto',
+  strength: 80
+});
+await result.save('corrected.jpg');
+
+// From URL
+const result = await pfc.correctUrl('https://example.com/photo.jpg');
+```
+
+## PHP SDK
+
+### Installation
+
+```bash
+composer require perfectlyclear/api
+```
+
+### Usage
+
+```php
+<?php
+use PerfectlyClear\Client;
+
+$pfc = new Client('YOUR_API_KEY');
+
+// Correct image
+$result = $pfc->correct('photo.jpg', [
+    'preset' => 'auto',
+    'strength' => 80
+]);
+
+$result->save('corrected.jpg');
+```
+
+## Community SDKs
+
+These SDKs are maintained by the community:
+
+| Language | Package | Maintainer |
+|----------|---------|------------|
+| Ruby | `perfectlyclear-ruby` | Community |
+| Go | `go-perfectlyclear` | Community |
+| Java | `perfectlyclear-java` | Community |
+
+## REST API
+
+For languages without an SDK, use the REST API directly:
+
+```
+Base URL: https://api.perfectlyclear.io/v1
+```
+
+See [API Endpoints](/docs/web-api/endpoints) for complete documentation.
+
+## Contributing
+
+Want to create an SDK for your language? 
+
+1. Follow our API specification
+2. Include error handling
+3. Add comprehensive tests
+4. Contact us for listing

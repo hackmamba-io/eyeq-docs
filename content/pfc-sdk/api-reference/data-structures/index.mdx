@@ -1,0 +1,143 @@
+---
+title: Data Structures
+description: Complete reference of all data structures in the Perfectly Clear SDK
+---
+
+# Data Structures
+
+This section documents all the structures, classes, and types used in the Perfectly Clear SDK.
+
+## Class Hierarchy
+
+```
+Classes
+├── PFCImageFile          (Image file I/O)
+├── PFCPDFImage           (PDF embedded image)
+└── PFCPDFImageIterator   (PDF image iterator)
+```
+
+## Structure List
+
+### Core Structures
+
+| Structure | Description |
+|-----------|-------------|
+| [PFCIMAGE](/docs/pfc-sdk/api-reference/data-structures/pfcimage) | Image data container for SDK operations |
+| [PFCENGINE](/docs/pfc-sdk/api-reference/data-structures/pfcengine) | AI engine instance |
+| [PFCIMAGEPROFILE](/docs/pfc-sdk/api-reference/data-structures/pfcimageprofile) | Image analysis data from Calc phase |
+
+### Parameter Structures
+
+| Structure | Description |
+|-----------|-------------|
+| [PFCPARAM](/docs/pfc-sdk/api-reference/data-structures/pfcparam) | Master container for all correction parameters |
+| [PFCCOREPARAM](/docs/pfc-sdk/api-reference/data-structures/pfccoreparam) | Core corrections (exposure, contrast, color) |
+| [PFCNRPARAM](/docs/pfc-sdk/api-reference/data-structures/pfcnrparam) | Noise reduction parameters |
+| [PFCFBPARAM](/docs/pfc-sdk/api-reference/data-structures/pfcfbparam) | Face beautification parameters |
+| [PFCV3PARAM](/docs/pfc-sdk/api-reference/data-structures/pfcv3param) | V3 LOOKs and finishing tools |
+| [PFCREPARAM](/docs/pfc-sdk/api-reference/data-structures/pfcreparam) | Red-eye removal parameters |
+
+### Face Detection Structures
+
+| Structure | Description |
+|-----------|-------------|
+| [PFCFaceRect](/docs/pfc-sdk/api-reference/data-structures/pfcfacerect) | Detailed face detection attributes |
+| PFCFBFACEINFO | Legacy face area information |
+
+### Geometry Structures
+
+| Structure | Description |
+|-----------|-------------|
+| PFCPOINT | Point with x, y coordinates |
+| PFCRECT | Rectangle with left, top, width, height |
+| SELECTIVECOLOR | Selective color HSL correction range |
+
+### File Handling Classes
+
+| Class | Description |
+|-------|-------------|
+| [PFCImageFile](/docs/pfc-sdk/api-reference/data-structures/pfc-image-file) | Image file loading and saving |
+| [PFCPDFImage](/docs/pfc-sdk/api-reference/data-structures/pfc-pdf-image) | PDF embedded image access |
+| [PFCPDFImageIterator](/docs/pfc-sdk/api-reference/data-structures/pfc-pdf-image-iterator) | PDF image iteration |
+
+## Quick Reference
+
+### PFCIMAGE - Image Container
+
+```c
+typedef struct {
+    int width;              // Pixel width
+    int height;             // Pixel height
+    int stride;             // Byte width per scanline
+    PFCPIXELFORMAT format;  // Pixel format
+    unsigned char *data;    // Image data buffer
+} PFCIMAGE;
+```
+
+### PFCPARAM - All Parameters
+
+```c
+typedef struct {
+    PFCCOREPARAM core;  // Core corrections
+    PFCNRPARAM nr;      // Noise reduction
+    PFCREPARAM re;      // Red-eye removal
+    PFCFBPARAM fb;      // Face beautification
+    PFCV3PARAM v3;      // V3 LOOKs
+} PFCPARAM;
+```
+
+### PFCENGINE - AI Engine
+
+```c
+typedef struct {
+    PFCINTERNAL pEngine;    // Internal engine pointer
+    PFCENGINESTATUS status; // Engine status
+} PFCENGINE;
+```
+
+## Enumerations
+
+### Pixel Formats (PFCPIXELFORMAT)
+
+| Value | Description |
+|-------|-------------|
+| `PFC_PixelFormat24bppRGB` | 24-bit BGR (B, G, R order) |
+| `PFC_PixelFormat24bppBGR` | 24-bit RGB (R, G, B order) |
+| `PFC_PixelFormat32bppABGR` | 32-bit RGBA |
+| `PFC_PixelFormat32bppARGB` | 32-bit BGRA |
+| `PFC_PixelFormat48bppRGB` | 48-bit BGR (16-bit per channel) |
+| `PFC_PixelFormat48bppBGR` | 48-bit RGB (16-bit per channel) |
+| `PFC_PixelFormat64bppARGB` | 64-bit BGRA (16-bit per channel) |
+| `PFC_PixelFormat64bppABGR` | 64-bit RGBA (16-bit per channel) |
+
+### Calculation Features (PFCFEATURE)
+
+| Value | Description |
+|-------|-------------|
+| `CALC_CORE` | Core correction calculations |
+| `CALC_NR` | Noise removal calculations |
+| `CALC_FB` | Face beautification calculations |
+| `CALC_RE` | Red-eye removal calculations |
+| `CALC_ALL` | All classic features |
+| `CALC_SCENE_DETECTION` | Scene detection |
+| `CALC_SKINTONE` | Skin tone detection |
+| `CALC_AICOLOR` | AI white balance |
+
+### Apply Status (PFCAPPLYSTATUS)
+
+| Value | Code | Description |
+|-------|------|-------------|
+| `APPLY_SUCCESS` | 0 | Success |
+| `APPLY_ERROR_PROFILE_MISSING` | -1 | Profile pointer is NULL |
+| `APPLY_ERROR_ENGINE_MISSING` | -2 | Engine pointer is NULL |
+| `APPLY_CANCELLED` | -3 | Operation cancelled |
+| `APPLY_NOSOURCE` | -4 | Source image missing |
+| `APPLY_BADFORMAT` | -5 | Pixel format not supported |
+| `APPLY_INVALIDLICENSE` | -6 | Invalid license |
+| `APPLY_LOOKS_MISSING` | -12 | LOOKs file not found |
+
+## See Also
+
+- [C API Reference](/docs/pfc-sdk/api-reference/c-api)
+- [C# API Reference](/docs/pfc-sdk/api-reference/csharp-api)
+- [Correction Parameters Guide](/docs/pfc-sdk/guides/parameters)

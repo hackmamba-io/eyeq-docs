@@ -1,0 +1,79 @@
+---
+title: Sample Code Overview
+description: Overview of Perfectly Clear SDK sample projects
+---
+
+# Sample Code Overview
+
+We provide sample projects for all platforms the SDK supports. These examples show different usage models and provide a starting point for adapting into ready-for-production applications.
+
+## Available Samples
+
+| Platform | Description |
+|----------|-------------|
+| [Linux & macOS](/docs/pfc-sdk/examples/linux-osx) | Unix-based sample applications |
+| [Windows](/docs/pfc-sdk/examples/windows) | Windows desktop sample applications |
+| [C#](/docs/pfc-sdk/examples/csharp) | .NET/C# sample applications |
+| [iOS](/docs/pfc-sdk/examples/ios) | iOS mobile SDK samples |
+| [Android](/docs/pfc-sdk/examples/android) | Android mobile SDK samples |
+| [PDF](/docs/pfc-sdk/examples/pdf) | PDF image processing samples |
+
+## Sample Project Types
+
+### SimpleAiSample
+
+The simplest way to use Perfectly Clear AI. Demonstrates:
+
+- License setup
+- Loading images
+- Initializing AI engines
+- Running auto-correction
+- Saving corrected images
+
+### DetailedAiSample
+
+Extended AI sample with:
+
+- Loading custom AI presets
+- Detecting scene ID and label
+- Fine-grained control over scene detection
+
+### PresetSample
+
+Using presets without scene detection:
+
+- Loading correction parameters from `.preset` files
+- Applying AI image corrections
+
+### Standard-IO
+
+Reading and writing images via standard I/O:
+
+- Input buffer setup
+- Image decompression
+- Output encoding
+
+### ResizeSample
+
+Image resizing with correction:
+
+- Loading and correcting images
+- Resizing output images
+
+### PDFSample
+
+PDF image processing:
+
+- Loading PDF files
+- Iterating over embedded images
+- Correcting and replacing images
+- Saving corrected PDFs
+
+## Getting Started
+
+1. Navigate to the appropriate sample for your platform
+2. Review the source code and comments
+3. Build using the provided build scripts or project files
+4. Run with sample images
+
+Each sample includes detailed comments explaining the SDK usage patterns.

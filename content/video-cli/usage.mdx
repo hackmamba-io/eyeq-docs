@@ -1,0 +1,144 @@
+---
+title: Usage
+description: Basic usage of the Perfectly Clear Video CLI
+---
+
+# Basic Usage
+
+## Command Structure
+
+### Windows / macOS
+
+```bash
+"Perfectly Clear Video" -i <input> -o <output> [options]
+```
+
+### Linux
+
+```bash
+./PfCVideo.sh -i <input> -o <output> [options]
+```
+
+## Required Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `-i, --input <file>` | Input video file path |
+| `-o, --output <file>` | Output video file path |
+
+## Basic Examples
+
+### Simple Correction
+
+Apply default corrections to a video:
+
+```bash
+# Windows
+"Perfectly Clear Video.exe" -i input.mp4 -o output.mp4
+
+# macOS
+"./Perfectly Clear Video.app/Contents/MacOS/Perfectly Clear Video" -i input.mp4 -o output.mp4
+
+# Linux
+./PfCVideo.sh -i input.mp4 -o output.mp4
+```
+
+### Adjusting Strength
+
+Control overall correction intensity (0-100):
+
+```bash
+# Full strength (default)
+./PfCVideo.sh -i input.mp4 -o output.mp4 -s 100
+
+# Half strength
+./PfCVideo.sh -i input.mp4 -o output.mp4 -s 50
+
+# Subtle correction
+./PfCVideo.sh -i input.mp4 -o output.mp4 -s 25
+```
+
+### White Balance Control
+
+Adjust color correction strength (0-100):
+
+```bash
+# Strong color correction
+./PfCVideo.sh -i input.mp4 -o output.mp4 -w 100
+
+# Disable white balance
+./PfCVideo.sh -i input.mp4 -o output.mp4 -w 0
+
+# Combined with overall strength
+./PfCVideo.sh -i input.mp4 -o output.mp4 -s 80 -w 60
+```
+
+## Processing Flow
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Decode    │────▶│   Correct   │────▶│   Encode    │
+│   (Input)   │     │   (PfC AI)  │     │  (Output)   │
+└─────────────┘     └─────────────┘     └─────────────┘
+      │                   │                   │
+   FFmpeg            GPU/CUDA             FFmpeg
+```
+
+## Supported Formats
+
+### Input Formats
+
+The CLI supports any format that ffmpeg can decode:
+
+- MP4 (H.264, H.265)
+- MOV
+- AVI
+- MKV
+- WebM
+- And many more...
+
+### Output Formats
+
+Output format is determined by file extension:
+
+| Extension | Codec | Notes |
+|-----------|-------|-------|
+| `.mp4` | H.264 | Most compatible |
+| `.mov` | ProRes | macOS, high quality |
+| `.webm` | VP9 | Web optimized |
+
+## Progress and Logging
+
+The CLI outputs progress information:
+
+```
+Processing: input.mp4
+Frame: 1000/5000 (20%)
+Time: 00:00:40 / 00:03:20
+Speed: 25 fps
+```
+
+### Verbose Mode
+
+For detailed logging:
+
+```bash
+# Linux - edit script to enable debug output
+./PfCVideo.sh -i input.mp4 -o output.mp4 2>&1 | tee process.log
+```
+
+## Exit Codes
+
+| Code | Meaning |
+|------|---------|
+| 0 | Success |
+| 1 | General error |
+| 2 | Invalid arguments |
+| 3 | Input file not found |
+| 4 | Output write error |
+| 5 | License error |
+
+## Next Steps
+
+- [All Command Options](/docs/video-cli/options)
+- [Usage Examples](/docs/video-cli/examples)

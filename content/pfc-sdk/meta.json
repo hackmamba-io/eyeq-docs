@@ -1,0 +1,31 @@
+{
+  "title": "PFC SDK",
+  "root": true,
+  "pages": [
+    "---Legacy Documentation (Doxygen)---",
+    "index",
+    "general-usage",
+    "whats-new",
+    "requirements",
+    "scene-detection",
+    "parameters",
+    "looks",
+    "licensing",
+    "cli",
+    "docker",
+    "examples",
+    "namespaces",
+    "data-structures",
+    "files",
+    "---New Documentation (Coming Soon)---",
+    "overview",
+    "getting-started",
+    "tutorials",
+    "licensing-guide",
+    "using-the-sdk",
+    "api-reference",
+    "troubleshooting",
+    "faq",
+    "support"
+  ]
+}

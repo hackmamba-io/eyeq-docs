@@ -1,0 +1,171 @@
+---
+title: Licensing
+description: API key setup and certificate validation for the Browser SDK
+---
+
+# Licensing
+
+The Browser SDK requires a valid API key and certificate to function. This page explains how licensing works and how to set up your credentials.
+
+## How It Works
+
+1. **API Key**: You provide your `clientAPIKey` when initializing the SDK
+2. **Certificate**: The SDK fetches a certificate from EyeQ's servers
+3. **Domain Lock**: Your API key is locked to specific domains
+4. **Validation**: The certificate is validated on each SDK initialization
+
+## Getting Your API Key
+
+1. Sign up at [EyeQ Developer Portal](https://eyeq.com/developers)
+2. Create a new project
+3. Copy your API key from the dashboard
+4. Register your domains (production URLs)
+
+## Configuration
+
+```javascript
+const options = {
+  clientAPIKey: 'YOUR_API_KEY',
+  urlGetCertificate: 'https://cert.perfectlyclear.photos/wasm_certificate/',
+  pfcWasmCertificate: null, // Will be fetched automatically
+  // ... other options
+};
+
+const pfc = new Pfc();
+const certificate = await pfc.init(options);
+```
+
+## Domain Restrictions
+
+Your API key is locked to specific domains. By default, all keys work on:
+
+- `localhost` (for development)
+- `127.0.0.1` (for development)
+
+To use the SDK on production domains, contact EyeQ to add your domains to your API key.
+
+## Certificate Caching
+
+The certificate is fetched from EyeQ's servers on initialization. To improve startup time, cache the certificate:
+
+```javascript
+// Check for cached certificate
+const cachedCert = localStorage.getItem('pfc_wasm_certificate');
+
+const options = {
+  clientAPIKey: 'YOUR_API_KEY',
+  urlGetCertificate: 'https://cert.perfectlyclear.photos/wasm_certificate/',
+  pfcWasmCertificate: cachedCert, // Use cached certificate
+  // ...
+};
+
+const pfc = new Pfc();
+const certificate = await pfc.init(options);
+
+// Cache the new certificate
+if (certificate) {
+  localStorage.setItem('pfc_wasm_certificate', certificate);
+}
+```
+
+## Certificate Expiration
+
+Certificates have an expiration time. If your cached certificate expires:
+
+1. The SDK will automatically fetch a new one
+2. Store the new certificate for future use
+3. Users may see a brief delay on the next initialization
+
+## Error Handling
+
+Handle licensing errors gracefully:
+
+```javascript
+try {
+  const certificate = await pfc.init(options);
+  
+  if (!certificate) {
+    console.error('Failed to obtain certificate');
+    // Show user-friendly error
+  }
+} catch (error) {
+  if (error.message.includes('INVALID_DOMAIN')) {
+    console.error('Domain not authorized for this API key');
+  } else if (error.message.includes('INVALID_APIKEY')) {
+    console.error('Invalid API key');
+  } else if (error.message.includes('EXPIRED')) {
+    console.error('Certificate expired, will auto-refresh');
+  }
+}
+```
+
+## Apply Status Codes
+
+When applying corrections, check for licensing issues:
+
+```javascript
+import { PFCAPPLYSTATUS } from './dist/pfc.mjs';
+
+const status = await pfc.apply(pfcImage, param);
+
+switch (status) {
+  case PFCAPPLYSTATUS.APPLY_SUCCESS:
+    console.log('Correction applied successfully');
+    break;
+  case PFCAPPLYSTATUS.APPLY_INVALIDLICENSE:
+    console.error('Invalid license');
+    break;
+  case PFCAPPLYSTATUS.APPLY_WASM_INVALID_DOMAIN:
+    console.error('Domain not authorized');
+    break;
+  case PFCAPPLYSTATUS.APPLY_WASM_INVALID_APIKEY:
+    console.error('Invalid API key');
+    break;
+  case PFCAPPLYSTATUS.APPLY_WASM_INVALID_CERTIFICATE:
+    console.error('Invalid certificate');
+    break;
+  case PFCAPPLYSTATUS.APPLY_WASM_EXPIRED_CERTIFICATE:
+    console.error('Certificate expired');
+    break;
+}
+```
+
+## Development vs Production
+
+| Environment | Domain | Certificate |
+|-------------|--------|-------------|
+| Development | localhost | Works automatically |
+| Staging | staging.yoursite.com | Must register domain |
+| Production | yoursite.com | Must register domain |
+
+## Offline Usage
+
+The SDK requires an initial certificate fetch, but once cached:
+
+- Corrections work offline until certificate expires
+- AI inference works offline (with local mode)
+- Model files are cached in browser storage
+
+## Security Best Practices
+
+1. **Never commit API keys** - Use environment variables
+2. **Use HTTPS** - Required for production
+3. **Register only needed domains** - Minimize exposure
+4. **Monitor usage** - Check dashboard for anomalies
+
+```javascript
+// Load API key from environment (build-time injection)
+const options = {
+  clientAPIKey: process.env.EYEQ_API_KEY,
+  // ...
+};
+```
+
+## Support
+
+If you encounter licensing issues:
+
+1. Verify your API key is correct
+2. Check that your domain is registered
+3. Try clearing the cached certificate
+4. Contact [EyeQ Support](https://eyeq.com/support)

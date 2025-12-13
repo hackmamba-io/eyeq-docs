@@ -1,0 +1,206 @@
+---
+title: Correct Image
+description: POST /correct - Correct a single image
+---
+
+# Correct Image
+
+Correct a single image using AI-powered enhancement.
+
+## Endpoint
+
+```
+POST https://api.perfectlyclear.io/v1/correct
+```
+
+## Authentication
+
+Include your API key in the Authorization header:
+
+```
+Authorization: Bearer YOUR_API_KEY
+```
+
+## Request
+
+### Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `Authorization` | `Bearer YOUR_API_KEY` | Yes |
+| `Content-Type` | `multipart/form-data` | Yes |
+
+### Body (multipart/form-data)
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `image` | File | Yes | Image file (JPEG, PNG, WebP) |
+| `preset` | String | No | Preset name or ID |
+| `strength` | Integer | No | Correction strength (0-100) |
+| `output_format` | String | No | Output format: `jpeg`, `png`, `webp` |
+| `quality` | Integer | No | Output quality (1-100) |
+
+## Response
+
+### Success (200 OK)
+
+Returns the corrected image directly with appropriate Content-Type.
+
+### JSON Response (with `response_type=json`)
+
+```json
+{
+  "success": true,
+  "image_url": "https://api.perfectlyclear.io/v1/downloads/abc123",
+  "expires_at": "2025-12-06T00:00:00Z",
+  "metadata": {
+    "width": 1920,
+    "height": 1080,
+    "format": "jpeg",
+    "scene": "portrait",
+    "processing_time_ms": 234
+  }
+}
+```
+
+### Error Responses
+
+#### 400 Bad Request
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "INVALID_IMAGE",
+    "message": "The uploaded file is not a valid image"
+  }
+}
+```
+
+#### 401 Unauthorized
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "INVALID_API_KEY",
+    "message": "Invalid or missing API key"
+  }
+}
+```
+
+#### 413 Payload Too Large
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "FILE_TOO_LARGE",
+    "message": "Image exceeds maximum size of 50MB"
+  }
+}
+```
+
+#### 429 Too Many Requests
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "RATE_LIMITED",
+    "message": "Rate limit exceeded. Try again in 60 seconds"
+  }
+}
+```
+
+## Examples
+
+### cURL
+
+```bash
+curl -X POST https://api.perfectlyclear.io/v1/correct \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -F "image=@photo.jpg" \
+  -F "strength=80" \
+  -o corrected.jpg
+```
+
+### Python
+
+```python
+import requests
+
+url = "https://api.perfectlyclear.io/v1/correct"
+headers = {"Authorization": "Bearer YOUR_API_KEY"}
+
+with open("photo.jpg", "rb") as f:
+    files = {"image": f}
+    data = {"strength": 80}
+    response = requests.post(url, headers=headers, files=files, data=data)
+
+with open("corrected.jpg", "wb") as f:
+    f.write(response.content)
+```
+
+### Node.js
+
+```javascript
+const FormData = require('form-data');
+const fs = require('fs');
+const fetch = require('node-fetch');
+
+const form = new FormData();
+form.append('image', fs.createReadStream('photo.jpg'));
+form.append('strength', '80');
+
+const response = await fetch('https://api.perfectlyclear.io/v1/correct', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+  },
+  body: form,
+});
+
+const buffer = await response.buffer();
+fs.writeFileSync('corrected.jpg', buffer);
+```
+
+## Supported Formats
+
+### Input
+
+- JPEG (.jpg, .jpeg)
+- PNG (.png)
+- WebP (.webp)
+- HEIC (.heic) - Converted automatically
+
+### Output
+
+- JPEG (default)
+- PNG
+- WebP
+
+## Size Limits
+
+| Limit | Value |
+|-------|-------|
+| Max file size | 50 MB |
+| Max dimensions | 16384 x 16384 |
+| Min dimensions | 32 x 32 |
+
+## Presets
+
+Available presets:
+
+| Preset | Description |
+|--------|-------------|
+| `auto` | Automatic scene detection (default) |
+| `portrait` | Optimized for people |
+| `landscape` | Optimized for scenery |
+| `night` | Low-light optimization |
+| `food` | Food photography |
+
+## See Also
+
+- [Batch Processing](/docs/web-api/endpoints/batch)
+- [Presets](/docs/web-api/endpoints/presets)

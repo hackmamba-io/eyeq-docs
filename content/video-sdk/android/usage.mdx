@@ -1,0 +1,230 @@
+---
+title: Android Usage
+description: Using the Video SDK in Android applications
+---
+
+# Android Usage
+
+Learn how to use the Perfectly Clear Video SDK to process video frames in real-time on Android.
+
+## Basic Usage
+
+### Processing Camera Frames
+
+```kotlin
+import com.eyeq.perfectlyclear.dynamic.PerfectlyClearDynamic
+import com.eyeq.perfectlyclear.dynamic.DynamicProcessor
+
+class CameraProcessor {
+    private var processor: DynamicProcessor? = null
+    
+    fun initialize(context: Context) {
+        // Create processor instance
+        processor = DynamicProcessor(context)
+        
+        // Load AI models
+        processor?.loadModels("models/")
+        
+        // Configure processing
+        processor?.setStrength(80)
+        processor?.setWhiteBalance(50)
+    }
+    
+    fun processFrame(frame: ByteArray, width: Int, height: Int): ByteArray {
+        return processor?.process(frame, width, height) ?: frame
+    }
+    
+    fun release() {
+        processor?.release()
+        processor = null
+    }
+}
+```
+
+### Camera2 Integration
+
+```kotlin
+class Camera2Processor : CameraCaptureSession.CaptureCallback() {
+    private val processor = CameraProcessor()
+    
+    override fun onCaptureCompleted(
+        session: CameraCaptureSession,
+        request: CaptureRequest,
+        result: TotalCaptureResult
+    ) {
+        // Get the image from ImageReader
+        val image = imageReader.acquireLatestImage() ?: return
+        
+        try {
+            // Convert to byte array
+            val buffer = image.planes[0].buffer
+            val bytes = ByteArray(buffer.remaining())
+            buffer.get(bytes)
+            
+            // Process frame
+            val processed = processor.processFrame(
+                bytes, 
+                image.width, 
+                image.height
+            )
+            
+            // Display processed frame
+            displayFrame(processed)
+        } finally {
+            image.close()
+        }
+    }
+}
+```
+
+### CameraX Integration
+
+```kotlin
+class CameraXProcessor : ImageAnalysis.Analyzer {
+    private val processor = CameraProcessor()
+    
+    override fun analyze(imageProxy: ImageProxy) {
+        val buffer = imageProxy.planes[0].buffer
+        val bytes = ByteArray(buffer.remaining())
+        buffer.get(bytes)
+        
+        // Process frame
+        val processed = processor.processFrame(
+            bytes,
+            imageProxy.width,
+            imageProxy.height
+        )
+        
+        // Handle processed frame
+        onFrameProcessed(processed)
+        
+        imageProxy.close()
+    }
+}
+```
+
+## Configuration Options
+
+### Correction Strength
+
+```kotlin
+// Overall correction strength (0-100)
+processor.setStrength(80)
+
+// White balance correction strength (0-100)
+processor.setWhiteBalance(50)
+```
+
+### Frame Skipping
+
+For smoother video with less flicker:
+
+```kotlin
+// Skip frames between AI detections (0-100)
+// Higher values = smoother but less responsive
+processor.setFrameSkip(4)
+```
+
+### Quality vs Performance
+
+```kotlin
+// High quality mode (slower)
+processor.setQuality(DynamicProcessor.Quality.HIGH)
+
+// Balanced mode (default)
+processor.setQuality(DynamicProcessor.Quality.BALANCED)
+
+// Performance mode (faster)
+processor.setQuality(DynamicProcessor.Quality.PERFORMANCE)
+```
+
+## Processing Video Files
+
+```kotlin
+class VideoProcessor {
+    fun processVideo(inputPath: String, outputPath: String) {
+        val processor = DynamicProcessor(context)
+        processor.loadModels("models/")
+        
+        // Open video file
+        val extractor = MediaExtractor()
+        extractor.setDataSource(inputPath)
+        
+        // Find video track
+        val videoTrackIndex = findVideoTrack(extractor)
+        extractor.selectTrack(videoTrackIndex)
+        
+        // Setup encoder
+        val format = extractor.getTrackFormat(videoTrackIndex)
+        val encoder = createEncoder(format, outputPath)
+        
+        // Process frames
+        while (true) {
+            val frame = extractFrame(extractor) ?: break
+            val processed = processor.processFrame(frame.data, frame.width, frame.height)
+            encoder.encodeFrame(processed)
+        }
+        
+        // Cleanup
+        encoder.finish()
+        processor.release()
+    }
+}
+```
+
+## Performance Optimization
+
+### Threading
+
+```kotlin
+// Process on background thread
+private val processingScope = CoroutineScope(Dispatchers.Default)
+
+fun processFrameAsync(frame: ByteArray, callback: (ByteArray) -> Unit) {
+    processingScope.launch {
+        val processed = processor.processFrame(frame, width, height)
+        withContext(Dispatchers.Main) {
+            callback(processed)
+        }
+    }
+}
+```
+
+### Memory Management
+
+```kotlin
+// Pre-allocate buffers
+private val inputBuffer = ByteArray(MAX_FRAME_SIZE)
+private val outputBuffer = ByteArray(MAX_FRAME_SIZE)
+
+// Reuse buffers
+fun processFrame(frame: ByteArray): ByteArray {
+    System.arraycopy(frame, 0, inputBuffer, 0, frame.size)
+    processor.process(inputBuffer, outputBuffer, width, height)
+    return outputBuffer
+}
+```
+
+## Error Handling
+
+```kotlin
+try {
+    processor.loadModels("models/")
+} catch (e: ModelLoadException) {
+    Log.e("PFC", "Failed to load models: ${e.message}")
+    // Handle error - models might be missing
+}
+
+try {
+    val processed = processor.processFrame(frame, width, height)
+} catch (e: ProcessingException) {
+    Log.e("PFC", "Frame processing failed: ${e.message}")
+    // Return original frame as fallback
+    return frame
+}
+```
+
+## Next Steps
+
+- [API Reference](/docs/video-sdk/android/api-reference) - Complete API documentation
+- [iOS Setup](/docs/video-sdk/ios/setup) - iOS platform guide

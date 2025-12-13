@@ -1,0 +1,70 @@
+---
+title: Offline & Server Usage
+description: Deploying Perfectly Clear SDK in offline and server environments
+---
+
+# Offline & Server Usage
+
+<Callout type="info">
+**Coming Soon** - Detailed documentation for offline activation and server deployment is being prepared.
+</Callout>
+
+## Overview
+
+Enterprise licenses support offline activation for environments without internet access.
+
+## Offline Activation Process
+
+1. **Generate machine ID** on target machine
+2. **Submit to EyeQ** via web portal or email
+3. **Receive license file** tied to that machine
+4. **Install license file** on target machine
+
+### Generate Machine ID
+
+```cpp
+char machineId[256];
+PFC_GetMachineId(machineId, sizeof(machineId));
+printf("Machine ID: %s\n", machineId);
+```
+
+### Install License File
+
+```cpp
+int status = PFC_SetLicenseFile(engine, "/path/to/offline_license.lic");
+if (status == PFC_SUCCESS) {
+    printf("Offline license activated\n");
+}
+```
+
+## Server Deployment
+
+### Single Server
+
+- One license per server
+- License bound to hardware ID
+
+### Load-Balanced Cluster
+
+- Floating license pool
+- Contact sales for cluster licensing
+
+### Kubernetes / Docker Swarm
+
+- Container-aware licensing
+- Volume-based metering available
+
+## Air-Gapped Environments
+
+For completely isolated networks:
+
+1. Enterprise license required
+2. Manual activation via secure file transfer
+3. Annual renewal process
+
+## Contact
+
+For server and offline licensing, contact:
+
+- **Sales:** [sales@eyeq.com](mailto:sales@eyeq.com)
+- **Support:** [support@eyeq.com](mailto:support@eyeq.com)

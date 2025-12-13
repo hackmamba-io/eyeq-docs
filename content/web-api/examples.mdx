@@ -1,0 +1,311 @@
+---
+title: Examples
+description: Code examples for the Web API in various languages
+---
+
+# Examples
+
+Code examples showing how to use the Perfectly Clear Web API in various programming languages.
+
+## cURL
+
+### Basic Correction
+
+```bash
+curl -X POST https://api.perfectlyclear.io/v1/correct \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -F "image=@photo.jpg" \
+  -o corrected.jpg
+```
+
+### With Options
+
+```bash
+curl -X POST https://api.perfectlyclear.io/v1/correct \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -F "image=@photo.jpg" \
+  -F "preset=portrait" \
+  -F "strength=80" \
+  -F "output_format=jpeg" \
+  -F "quality=92" \
+  -o corrected.jpg
+```
+
+## Python
+
+### Using requests
+
+```python
+import requests
+
+def correct_image(input_path, output_path, api_key):
+    url = "https://api.perfectlyclear.io/v1/correct"
+    headers = {"Authorization": f"Bearer {api_key}"}
+    
+    with open(input_path, "rb") as f:
+        files = {"image": f}
+        data = {
+            "preset": "auto",
+            "strength": 80
+        }
+        response = requests.post(url, headers=headers, files=files, data=data)
+    
+    if response.status_code == 200:
+        with open(output_path, "wb") as f:
+            f.write(response.content)
+        print(f"Saved corrected image to {output_path}")
+    else:
+        print(f"Error: {response.status_code}")
+        print(response.json())
+
+# Usage
+correct_image("photo.jpg", "corrected.jpg", "YOUR_API_KEY")
+```
+
+### Batch Processing
+
+```python
+import requests
+import time
+
+def batch_process(image_urls, api_key):
+    base_url = "https://api.perfectlyclear.io/v1"
+    headers = {"Authorization": f"Bearer {api_key}"}
+    
+    # Submit batch
+    response = requests.post(
+        f"{base_url}/correct/batch",
+        headers=headers,
+        json={
+            "images": [{"url": url} for url in image_urls],
+            "settings": {"preset": "auto", "strength": 80}
+        }
+    )
+    
+    job_id = response.json()["job_id"]
+    
+    # Poll for results
+    while True:
+        status = requests.get(
+            f"{base_url}/jobs/{job_id}",
+            headers=headers
+        ).json()
+        
+        if status["status"] == "completed":
+            return status["results"]
+        
+        time.sleep(2)
+
+# Usage
+results = batch_process([
+    "https://example.com/photo1.jpg",
+    "https://example.com/photo2.jpg"
+], "YOUR_API_KEY")
+```
+
+## Node.js
+
+### Using fetch
+
+```javascript
+const fs = require('fs');
+const FormData = require('form-data');
+const fetch = require('node-fetch');
+
+async function correctImage(inputPath, outputPath, apiKey) {
+  const form = new FormData();
+  form.append('image', fs.createReadStream(inputPath));
+  form.append('preset', 'auto');
+  form.append('strength', '80');
+
+  const response = await fetch('https://api.perfectlyclear.io/v1/correct', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: form,
+  });
+
+  if (response.ok) {
+    const buffer = await response.buffer();
+    fs.writeFileSync(outputPath, buffer);
+    console.log(`Saved to ${outputPath}`);
+  } else {
+    console.error('Error:', await response.json());
+  }
+}
+
+// Usage
+correctImage('photo.jpg', 'corrected.jpg', 'YOUR_API_KEY');
+```
+
+### Using axios
+
+```javascript
+const axios = require('axios');
+const FormData = require('form-data');
+const fs = require('fs');
+
+async function correctImage(inputPath, outputPath, apiKey) {
+  const form = new FormData();
+  form.append('image', fs.createReadStream(inputPath));
+  form.append('strength', '80');
+
+  const response = await axios.post(
+    'https://api.perfectlyclear.io/v1/correct',
+    form,
+    {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        ...form.getHeaders(),
+      },
+      responseType: 'arraybuffer',
+    }
+  );
+
+  fs.writeFileSync(outputPath, response.data);
+}
+```
+
+## PHP
+
+```php
+<?php
+function correctImage($inputPath, $outputPath, $apiKey) {
+    $curl = curl_init();
+    
+    $postFields = [
+        'image' => new CURLFile($inputPath),
+        'preset' => 'auto',
+        'strength' => '80'
+    ];
+    
+    curl_setopt_array($curl, [
+        CURLOPT_URL => 'https://api.perfectlyclear.io/v1/correct',
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $postFields,
+        CURLOPT_HTTPHEADER => [
+            'Authorization: Bearer ' . $apiKey
+        ]
+    ]);
+    
+    $response = curl_exec($curl);
+    $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    curl_close($curl);
+    
+    if ($httpCode === 200) {
+        file_put_contents($outputPath, $response);
+        echo "Saved to {$outputPath}\n";
+    } else {
+        echo "Error: " . $response . "\n";
+    }
+}
+
+// Usage
+correctImage('photo.jpg', 'corrected.jpg', 'YOUR_API_KEY');
+?>
+```
+
+## Ruby
+
+```ruby
+require 'net/http'
+require 'uri'
+
+def correct_image(input_path, output_path, api_key)
+  uri = URI('https://api.perfectlyclear.io/v1/correct')
+  
+  request = Net::HTTP::Post.new(uri)
+  request['Authorization'] = "Bearer #{api_key}"
+  
+  form_data = [
+    ['image', File.open(input_path)],
+    ['preset', 'auto'],
+    ['strength', '80']
+  ]
+  request.set_form(form_data, 'multipart/form-data')
+  
+  response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+    http.request(request)
+  end
+  
+  if response.code == '200'
+    File.write(output_path, response.body)
+    puts "Saved to #{output_path}"
+  else
+    puts "Error: #{response.body}"
+  end
+end
+
+# Usage
+correct_image('photo.jpg', 'corrected.jpg', 'YOUR_API_KEY')
+```
+
+## Go
+
+```go
+package main
+
+import (
+    "bytes"
+    "fmt"
+    "io"
+    "mime/multipart"
+    "net/http"
+    "os"
+)
+
+func correctImage(inputPath, outputPath, apiKey string) error {
+    file, err := os.Open(inputPath)
+    if err != nil {
+        return err
+    }
+    defer file.Close()
+
+    body := &bytes.Buffer{}
+    writer := multipart.NewWriter(body)
+    
+    part, err := writer.CreateFormFile("image", inputPath)
+    if err != nil {
+        return err
+    }
+    io.Copy(part, file)
+    
+    writer.WriteField("preset", "auto")
+    writer.WriteField("strength", "80")
+    writer.Close()
+
+    req, err := http.NewRequest("POST", "https://api.perfectlyclear.io/v1/correct", body)
+    if err != nil {
+        return err
+    }
+    
+    req.Header.Set("Authorization", "Bearer "+apiKey)
+    req.Header.Set("Content-Type", writer.FormDataContentType())
+
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        return err
+    }
+    defer resp.Body.Close()
+
+    if resp.StatusCode == 200 {
+        out, err := os.Create(outputPath)
+        if err != nil {
+            return err
+        }
+        defer out.Close()
+        io.Copy(out, resp.Body)
+        fmt.Printf("Saved to %s\n", outputPath)
+    }
+    
+    return nil
+}
+```
+
+## See Also
+
+- [API Endpoints](/docs/web-api/endpoints)
+- [Client SDKs](/docs/web-api/sdks)

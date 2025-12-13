@@ -1,0 +1,192 @@
+---
+title: PerfectlyClearAdapter Namespace
+description: Main namespace for the Perfectly Clear .NET SDK
+---
+
+# PerfectlyClearAdapter Namespace
+
+The `PerfectlyClearAdapter` namespace contains all the classes, structures, and enumerations needed to use the Perfectly Clear SDK in .NET applications.
+
+## Classes
+
+| Class | Description |
+|-------|-------------|
+| `PerfectlyClear` | Main SDK class for image correction operations |
+| `PFCImageFile` | Handles loading and saving image files (JPEG, PNG, WebP) |
+| `PFCFBFACEINFO` | Contains face detection information from the SFB library |
+| `PFCFACERECT` | Contains detailed face attributes from Face Detection |
+
+## Structures
+
+### Parameter Structures
+
+| Structure | Description |
+|-----------|-------------|
+| `PFCPARAM` | Master structure containing all correction parameters |
+| `PFCCOREPARAM` | Core correction parameters (exposure, contrast, color) |
+| `PFCNRPARAM` | Noise reduction parameters |
+| `PFCFBPARAM` | Face beautification parameters |
+| `PFCV3PARAM` | V3 LOOKs and finishing parameters |
+| `PFCREPARAM` | Red-eye removal parameters |
+
+### Geometry Structures
+
+| Structure | Description |
+|-----------|-------------|
+| `PFCPOINT` | Defines a point with x, y coordinates |
+| `PFCRECT` | Defines a rectangle with left, top, width, height |
+| `SELECTIVECOLOR` | Selective color correction parameters |
+
+## Enumerations
+
+### Feature Control
+
+| Enum | Description |
+|------|-------------|
+| `PFCFEATURE` | Controls calculation types (Core, NR, FB, RE, Scene Detection) |
+| `PFCAIFEATURE` | AI model loading flags |
+| `PFCPRESETID` | Built-in preset identifiers |
+
+### Pixel Formats
+
+| Enum | Description |
+|------|-------------|
+| `PFCPIXELFORMAT` | Supported pixel formats (24bpp, 32bpp, 48bpp, 64bpp) |
+
+### Status Codes
+
+| Enum | Description |
+|------|-------------|
+| `PFCAPPLYSTATUS` | Return codes from Apply() function |
+| `PFCCORE_STATUS` | Core pre-calculation status |
+| `PFCNR_STATUS` | Noise removal pre-calculation status |
+| `PFCFB_STATUS` | Face beautification pre-calculation status |
+| `PFCREJECTOPTION` | Image rejection options |
+
+## PerfectlyClear Class
+
+The main class for performing image corrections.
+
+### Constructor
+
+```csharp
+public PerfectlyClear(string protectionPath)
+```
+
+Creates a new instance with license validation.
+
+**Parameters:**
+- `protectionPath` - Path to folder containing license files
+
+### Key Methods
+
+```csharp
+// Load correction parameters from preset file
+public int ReadPresets(ref PFCPARAM param, string presetPath)
+
+// Apply corrections using AutoCorrect
+public PFCAPPLYSTATUS AutoCorrect(
+    IntPtr pImage, 
+    PFCPARAM param,
+    PFCREJECTOPTION rejectOption = PFCREJECTOPTION.PFC_REJECT_CLIPART
+)
+
+// Separate Calc and Apply for interactive use
+public int Calc(IntPtr pImage, IntPtr pReducedImage, PFCFEATURE features)
+public PFCAPPLYSTATUS Apply(IntPtr pImage, PFCPARAM param)
+
+// AI Engine management
+public int LoadAIEngine(string modelPath, PFCAIFEATURE features)
+public void ReleaseAIEngine()
+
+// Scene Detection
+public int LoadScenePresets(string presetPath)
+public string GetSceneLabel()
+public int GetSceneId()
+```
+
+## PFCImageFile Class
+
+Handles image file I/O with color management support.
+
+### Key Methods
+
+```csharp
+// Load image from file
+public PFC_FILE_LOAD_STATUS LoadImage(string filename, bool convertToSRGB = true)
+
+// Save image to file
+public bool SaveImage(string filename, int quality, 
+    bool convertToOriginalColorSpace = true, 
+    bool embedOriginalMetadata = true)
+
+// Get pointer to image data for SDK operations
+public IntPtr PFCImageGet()
+
+// Properties
+public int Width { get; }
+public int Height { get; }
+public int Stride { get; }
+public PFC_FLASH_STATUS FlashStatus { get; }
+```
+
+## Complete Example
+
+```csharp
+using System;
+using PerfectlyClearAdapter;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        // Initialize SDK with license
+        using (var pfc = new PerfectlyClear(@"C:\SDK\license"))
+        {
+            // Load AI engine for scene detection
+            pfc.LoadAIEngine(@"C:\SDK\models", 
+                PFCAIFEATURE.AI_SCENE_DETECTION | 
+                PFCAIFEATURE.AI_CORRECTIONS);
+            
+            // Load custom presets
+            pfc.LoadScenePresets(@"C:\SDK\presets\universal.preset");
+            
+            // Load image
+            var imageFile = new PFCImageFile();
+            var loadStatus = imageFile.LoadImage(@"C:\photos\input.jpg");
+            
+            if (loadStatus == PFC_FILE_LOAD_STATUS.LOAD_OK)
+            {
+                // Setup parameters
+                var param = new PFCPARAM();
+                pfc.ReadPresets(ref param, @"C:\SDK\presets\iauto.preset");
+                
+                // Apply corrections with AI scene detection
+                var result = pfc.AutoCorrect(
+                    imageFile.PFCImageGet(), 
+                    param,
+                    PFCREJECTOPTION.PFC_REJECT_CLIPART
+                );
+                
+                if (result == PFCAPPLYSTATUS.APPLY_SUCCESS)
+                {
+                    // Get detected scene
+                    Console.WriteLine($"Scene: {pfc.GetSceneLabel()}");
+                    
+                    // Save corrected image
+                    imageFile.SaveImage(@"C:\photos\output.jpg", 92, true, true);
+                }
+            }
+            
+            // Cleanup
+            pfc.ReleaseAIEngine();
+        }
+    }
+}
+```
+
+## See Also
+
+- [C# Examples](/docs/examples/csharp)
+- [Data Structures](/docs/api-reference/data-structures)
+- [PFCPARAM Structure](/docs/api-reference/data-structures/pfcparam)

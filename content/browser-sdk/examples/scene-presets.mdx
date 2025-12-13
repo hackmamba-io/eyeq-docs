@@ -1,0 +1,234 @@
+---
+title: Scene Presets
+description: Using AI scene detection to apply optimal presets
+---
+
+# Scene Presets Example
+
+This example demonstrates using AI scene detection to automatically select and apply the best correction preset for each image.
+
+## Overview
+
+- Detect scene type automatically
+- Apply scene-specific corrections
+- Display detected scene name
+- Allow preset customization
+
+## Implementation
+
+```javascript
+import { 
+  Pfc, 
+  PFCFEATURE, 
+  PFCPRESETID, 
+  InferenceOption 
+} from './dist/pfc.mjs';
+
+// Scene labels (map scene ID to name)
+const sceneLabels = {
+  0: 'Unknown',
+  1: 'Portrait',
+  2: 'Landscape',
+  3: 'Indoor',
+  4: 'Night',
+  5: 'Sunset',
+  6: 'Food',
+  7: 'Document',
+  8: 'Snow',
+  9: 'Beach',
+  10: 'Macro'
+};
+
+class SceneDetectionApp {
+  constructor() {
+    this.pfc = null;
+    this.pfcImage = null;
+    this.param = null;
+    this.canvas = document.getElementById('canvas');
+  }
+
+  async init() {
+    this.pfc = new Pfc();
+    
+    await this.pfc.init({
+      distDir: './dist',
+      clientAPIKey: 'YOUR_API_KEY',
+      urlGetCertificate: 'https://cert.perfectlyclear.photos/wasm_certificate/',
+      pfcWasmCertificate: localStorage.getItem('pfc_wasm_certificate'),
+      inference: InferenceOption.local,
+    });
+
+    // Load scene detection presets
+    const sdPreset = await fetch('./presets/sd.preset').then(r => r.text());
+    await this.pfc.loadScenePresets(sdPreset);
+
+    // Optionally load additional presets
+    const universalPreset = await fetch('./presets/universal.preset').then(r => r.text());
+    await this.pfc.loadScenePresets(universalPreset);
+  }
+
+  async processImage(imageUrl) {
+    // Load image to canvas
+    await this.loadImageToCanvas(imageUrl);
+
+    // Create PFC image
+    this.pfcImage = this.pfc.createImage(this.canvas);
+
+    // Create parameter object
+    this.param = this.pfc.createParam();
+    this.pfc.setParam(this.param, PFCPRESETID.PRESET_NONE);
+
+    // Calculate features including scene detection
+    const features = PFCFEATURE.CALC_ALL | 
+                     PFCFEATURE.CALC_NOTINTCALC | 
+                     PFCFEATURE.CALC_FAEHISPEED;
+    
+    const aiFeatures = PFCFEATURE.CALC_SCENE_DETECTION |
+                       PFCFEATURE.CALC_SKINTONE |
+                       PFCFEATURE.CALC_AICOLOR |
+                       PFCFEATURE.CALC_DYNAMIC;
+
+    await this.pfc.createProfile(this.pfcImage, features, aiFeatures);
+
+    // Get detected scene
+    const sceneId = this.pfcImage.sceneId;
+    const sceneName = sceneLabels[sceneId] || 'Unknown';
+
+    console.log(`Detected scene: ${sceneName} (ID: ${sceneId})`);
+    this.updateUI(sceneName, sceneId);
+
+    // Apply scene-specific preset
+    this.pfc.readScenePreset(this.param, sceneId);
+
+    // Apply corrections
+    await this.pfc.apply(this.pfcImage, this.param);
+    this.pfcImage.drawToCanvas(this.canvas);
+
+    return { sceneId, sceneName };
+  }
+
+  async loadImageToCanvas(imageUrl) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        this.canvas.width = img.width;
+        this.canvas.height = img.height;
+        this.canvas.getContext('2d').drawImage(img, 0, 0);
+        resolve();
+      };
+      img.src = imageUrl;
+    });
+  }
+
+  updateUI(sceneName, sceneId) {
+    document.getElementById('scene-name').textContent = sceneName;
+    document.getElementById('scene-id').textContent = sceneId;
+  }
+
+  // Manually override scene preset
+  async applyScenePreset(sceneId) {
+    this.pfc.readScenePreset(this.param, sceneId);
+    await this.pfc.apply(this.pfcImage, this.param);
+    this.pfcImage.drawToCanvas(this.canvas);
+  }
+
+  // Customize after scene detection
+  async customizeCorrections(adjustments) {
+    // Apply base scene preset
+    this.pfc.readScenePreset(this.param, this.pfcImage.sceneId);
+
+    // Apply customizations
+    if (adjustments.exposure !== undefined) {
+      this.param.core.iStrength = adjustments.exposure;
+    }
+    if (adjustments.vibrancy !== undefined) {
+      this.param.core.iVibrancy = adjustments.vibrancy;
+      this.param.core.bVibrancy = adjustments.vibrancy > 0 ? 1 : 0;
+    }
+    if (adjustments.smoothing !== undefined) {
+      this.param.fb.iSmoothLevel = adjustments.smoothing;
+    }
+
+    // Re-apply with customizations
+    await this.pfc.apply(this.pfcImage, this.param);
+    this.pfcImage.drawToCanvas(this.canvas);
+  }
+}
+
+// Usage
+const app = new SceneDetectionApp();
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await app.init();
+
+  // Handle file upload
+  document.getElementById('file-input').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      await app.processImage(url);
+    }
+  });
+
+  // Scene override buttons
+  document.querySelectorAll('.scene-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const sceneId = parseInt(btn.dataset.sceneId);
+      await app.applyScenePreset(sceneId);
+    });
+  });
+
+  // Customization sliders
+  document.getElementById('exposure-slider').addEventListener('input', async (e) => {
+    await app.customizeCorrections({ exposure: e.target.value });
+  });
+});
+```
+
+## HTML Interface
+
+```html
+<div class="app">
+  <input type="file" id="file-input" accept="image/*" />
+  
+  <canvas id="canvas"></canvas>
+  
+  <div class="scene-info">
+    <p>Detected Scene: <span id="scene-name">-</span></p>
+    <p>Scene ID: <span id="scene-id">-</span></p>
+  </div>
+  
+  <div class="scene-override">
+    <p>Override Scene:</p>
+    <button class="scene-btn" data-scene-id="1">Portrait</button>
+    <button class="scene-btn" data-scene-id="2">Landscape</button>
+    <button class="scene-btn" data-scene-id="4">Night</button>
+    <button class="scene-btn" data-scene-id="6">Food</button>
+  </div>
+  
+  <div class="customization">
+    <label>
+      Exposure:
+      <input type="range" id="exposure-slider" min="0" max="100" value="50" />
+    </label>
+  </div>
+</div>
+```
+
+## Scene Detection Features
+
+The AI analyzes images for:
+
+- **Faces**: Portrait vs non-portrait
+- **Colors**: Dominant color palette
+- **Composition**: Subject placement
+- **Lighting**: Indoor, outdoor, night
+- **Content**: Food, documents, nature
+
+## Best Practices
+
+1. **Load presets once** - Presets are cached after loading
+2. **Show scene info** - Let users see what was detected
+3. **Allow overrides** - Sometimes AI gets it wrong
+4. **Combine with customization** - Scene preset is a starting point

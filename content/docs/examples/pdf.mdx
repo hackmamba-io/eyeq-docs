@@ -1,0 +1,173 @@
+---
+title: PDF Usage Example
+description: Learn how to extract, correct, and replace images in PDF documents
+---
+
+# PDF Usage Example
+
+PDF support in this SDK allows you to quickly extract embedded images from a PDF file, correct them with Perfectly Clear, then replace the original images with the corrected version. The result will be a PDF file in the exact same structure as the original - but all the photos will be Perfectly Clear!
+
+## Overview
+
+Access image files embedded in PDF files easily with the `PFCPDFImageIterator`, then use `PFCPDFImage` and `PFCImageFile` to access the image itself. The results will automatically be embedded back in the PDF file.
+
+## Basic Workflow
+
+### 1. Create Iterator and Load PDF
+
+```cpp
+#include "PFCPDFImageIterator.h"
+#include "PFCPDFImage.h"
+#include "PFCImageFile.h"
+#include "PerfectlyClearPro.h"
+
+// Create iterator and load PDF
+PFCPDFImageIterator pdfIterator;
+PFCPDFImageIterator::LoadStatus loadStatus = pdfIterator.load("/path/to/document.pdf");
+
+if (loadStatus != PFCPDFImageIterator::LoadStatus::Ok) {
+    printf("Failed to load PDF file\n");
+    return -1;
+}
+
+// Setup correction engine
+PFCENGINE engine;
+PFC_CreateEngine(&engine, modelPath, PFCFEATURE_ALL);
+
+PFCPARAM param;
+PFC_ReadPresets(param, "/path/to/preset.preset");
+```
+
+### 2. Iterate Over Images
+
+```cpp
+PFCPDFImage* pdfImage;
+while ((pdfImage = pdfIterator.nextImage()) != nullptr) {
+    // Access the image through PFCImageFile
+    PFCImageFile* imageFile = pdfImage->imageFile;
+    
+    // Create PFCIMAGE for correction
+    PFCIMAGE im;
+    im.width = imageFile->width;
+    im.height = imageFile->height;
+    im.stride = imageFile->stride;
+    im.format = PFC_PixelFormat24bppBGR;
+    im.data = imageFile->raw_image;
+    
+    // Apply Perfectly Clear corrections
+    PFCIMAGEPROFILE profile;
+    PFC_AutoCorrect(&im, NULL, &param, &engine, &profile, 
+                    PFC_REJECT_CLIPART, 0);
+    
+    printf("Corrected image %u\n", pdfImage->pdfObjectNumber);
+}
+```
+
+### 3. Save the Corrected PDF
+
+```cpp
+PFCPDFImageIterator::SaveStatus saveStatus = pdfIterator.save("/path/to/output.pdf");
+
+if (saveStatus == PFCPDFImageIterator::SaveStatus::Ok) {
+    printf("PDF saved successfully\n");
+} else {
+    printf("Failed to save PDF\n");
+}
+
+// Cleanup
+PFC_ReleaseEngine(&engine);
+```
+
+## Complete Example
+
+```cpp
+#include "PFCPDFImageIterator.h"
+#include "PFCPDFImage.h"
+#include "PFCImageFile.h"
+#include "PerfectlyClearPro.h"
+
+int correctPDF(const char* inputPath, const char* outputPath, 
+               const char* modelPath, const char* presetPath) {
+    
+    // Setup license
+    PFC_SetProtectionPath("/path/to/license");
+    
+    // Load PDF
+    PFCPDFImageIterator pdfIterator;
+    if (pdfIterator.load(inputPath) != PFCPDFImageIterator::LoadStatus::Ok) {
+        return -1;
+    }
+    
+    // Setup engine
+    PFCENGINE engine;
+    PFC_CreateEngine(&engine, modelPath, PFCFEATURE_ALL);
+    
+    PFCPARAM param;
+    PFC_ReadPresets(param, presetPath);
+    
+    // Process all images
+    int imageCount = 0;
+    PFCPDFImage* pdfImage;
+    
+    while ((pdfImage = pdfIterator.nextImage()) != nullptr) {
+        PFCImageFile* imageFile = pdfImage->imageFile;
+        
+        PFCIMAGE im;
+        im.width = imageFile->width;
+        im.height = imageFile->height;
+        im.stride = imageFile->stride;
+        im.format = PFC_PixelFormat24bppBGR;
+        im.data = imageFile->raw_image;
+        
+        PFCIMAGEPROFILE profile;
+        PFC_AutoCorrect(&im, NULL, &param, &engine, &profile, 
+                        PFC_REJECT_CLIPART, 0);
+        
+        imageCount++;
+    }
+    
+    // Save result
+    if (pdfIterator.save(outputPath) != PFCPDFImageIterator::SaveStatus::Ok) {
+        PFC_ReleaseEngine(&engine);
+        return -1;
+    }
+    
+    printf("Corrected %d images in PDF\n", imageCount);
+    
+    PFC_ReleaseEngine(&engine);
+    return 0;
+}
+```
+
+## Important Notes
+
+<Callout type="warn">
+Images must be **embedded** in the PDF file to be accessible to the SDK. "Flattened" PDFs are not supported.
+</Callout>
+
+<Callout type="info">
+Each image is evaluated by AI-based Clipart Detection. This allows images for headings, borders, and other clipart to skip processing - ensuring these elements look exactly as intended. Control this using the `PFCREJECTOPTION` flag.
+</Callout>
+
+## Load Status Codes
+
+| Status | Description |
+|--------|-------------|
+| `Ok` | File opened successfully |
+| `FileNotFound` | Could not find or open the file |
+| `InvalidPassword` | PDF is password protected |
+| `DocumentError` | Other error preventing file access |
+
+## Save Status Codes
+
+| Status | Description |
+|--------|-------------|
+| `Ok` | File saved successfully |
+| `InvalidPath` | Could not create the output path |
+| `DocumentError` | Error preventing file writing |
+
+## See Also
+
+- [PFCPDFImageIterator Class](/docs/api-reference/data-structures/pfc-pdf-image-iterator)
+- [PFCPDFImage Class](/docs/api-reference/data-structures/pfc-pdf-image)
+- [PFCImageFile Class](/docs/api-reference/data-structures/pfc-image-file)

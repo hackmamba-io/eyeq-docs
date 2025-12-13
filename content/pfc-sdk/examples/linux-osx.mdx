@@ -1,0 +1,157 @@
+---
+title: Linux & macOS Examples
+description: Sample code for Linux and macOS platforms
+---
+
+# Linux & macOS Examples
+
+Sample source code for applications ready to build on Linux and macOS systems. These examples show different usage models and provide a starting point for production applications.
+
+## Simple AI Sample - Using Scene Detection
+
+The simplest way to use Perfectly Clear AI.
+
+### 1. Setup License Protection
+
+```cpp
+// Set the path to the license files
+PFC_SetProtectionPath("/path/to/sdk_license");
+```
+
+### 2. Load Image to Correct
+
+```cpp
+PFCImageFile imageFile;
+imageFile.LoadImage("/path/to/input.jpg");
+PFCIMAGE image = imageFile.GetPFCImage();
+```
+
+### 3. Initialize the AI Engines
+
+```cpp
+PFCENGINE engine;
+PFC_CreateEngine(&engine, PFCENGINE_AI);
+PFC_LoadAIModels(engine, "/path/to/models/");
+```
+
+### 4. Perform Full Correction
+
+```cpp
+PFCPARAM param;
+PFC_ReadPresets(param, "/path/to/preset.preset");
+PFC_AutoCorrect(engine, &image, NULL, &param, CALC_ALL, false, NULL);
+```
+
+### 5. Save the Corrected Image
+
+```cpp
+imageFile.SaveImage("/path/to/output.jpg", 92);
+```
+
+## Detailed AI Sample - Custom Presets
+
+To extend the simple example, you can load custom AI Presets:
+
+```cpp
+// Load custom Scene Detection presets
+PFC_LoadScenePresets(engine, "/path/to/custom_scenes.preset");
+```
+
+Determine the detected scene ID and label:
+
+```cpp
+// After running PFC_Calc or PFC_AutoCorrect
+int sceneId = profile.nSceneId;
+const char* sceneLabel = PFC_GetSceneLabel(&profile);
+printf("Detected scene: %s (ID: %d)\n", sceneLabel, sceneId);
+```
+
+## AI Image Correction Without Scene Detection
+
+Correct photos using AI image corrections without scene detection:
+
+### Load Correction Parameters
+
+```cpp
+PFCPARAM param;
+PFC_ReadPresets(param, "/path/to/preset.preset");
+```
+
+### Apply Corrections
+
+```cpp
+PFC_AutoCorrect(engine, &image, NULL, &param, CALC_ALL, false, NULL);
+```
+
+## Standard I/O for Reading and Writing Images
+
+Read and write image content from standard I/O:
+
+### Setup Input Buffer
+
+```cpp
+std::vector<unsigned char> inputBuffer;
+// Read from stdin
+char c;
+while (std::cin.get(c)) {
+    inputBuffer.push_back(c);
+}
+```
+
+### Uncompress the Image Data
+
+```cpp
+PFCImageFile imageFile;
+imageFile.LoadFromMemory(inputBuffer.data(), inputBuffer.size());
+PFCIMAGE image = imageFile.GetPFCImage();
+```
+
+### Output Compressed Data
+
+```cpp
+// After correction
+std::vector<unsigned char> outputBuffer;
+imageFile.SaveToMemory(outputBuffer, PFC_FORMAT_JPEG, 92);
+
+// Write to stdout
+std::cout.write(reinterpret_cast<char*>(outputBuffer.data()), 
+                outputBuffer.size());
+```
+
+## Image Resizing
+
+Load, correct, and resize images:
+
+```cpp
+// After loading and correcting the image
+int newWidth = 1920;
+int newHeight = 1080;
+
+PFCImageFile resizedFile;
+resizedFile.CreateResized(imageFile, newWidth, newHeight);
+resizedFile.SaveImage("/path/to/resized_output.jpg", 92);
+```
+
+## Building the Samples
+
+### Prerequisites
+
+```bash
+# Ubuntu/Debian
+sudo apt-get install build-essential libcurl4
+
+# Red Hat/CentOS
+sudo yum install gcc gcc-c++ make libcurl
+```
+
+### Build Commands
+
+```bash
+cd samples/Linux/SimpleAiSample
+make
+./SimpleAiSample input.jpg output.jpg
+```
+
+---
+
+*Copyright © 2025 EyeQ Imaging Inc*

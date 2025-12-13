@@ -1,0 +1,208 @@
+---
+title: C# Examples
+description: Sample code for .NET/C# development
+---
+
+# C# Examples
+
+Sample source code for .NET applications using the Perfectly Clear SDK.
+
+## Prerequisites
+
+- .NET 6.0 or later (or .NET Framework 4.7.2+)
+- PerfectlyClearAdapter.cs reference
+- Native DLLs in the output directory
+
+## Basic Usage
+
+### 1. Setup License and Create Instance
+
+```csharp
+using PerfectlyClearAdapter;
+
+// Create instance with license path
+var pfc = new PerfectlyClear("C:\\path\\to\\sdk_license");
+```
+
+### 2. Load and Correct Image
+
+```csharp
+// Load image
+pfc.LoadImage("C:\\path\\to\\input.jpg");
+
+// Set parameters from preset
+pfc.ReadPresets("C:\\path\\to\\preset.preset");
+
+// Apply corrections
+pfc.AutoCorrect();
+
+// Save result
+pfc.SaveImage("C:\\path\\to\\output.jpg", 92);
+```
+
+## Using AI Scene Detection
+
+```csharp
+// Create instance with AI support
+var pfc = new PerfectlyClear("C:\\path\\to\\sdk_license");
+
+// Load AI models
+pfc.LoadAIModels("C:\\path\\to\\models\\");
+
+// Load and correct with AI preset selection
+pfc.LoadImage("C:\\path\\to\\input.jpg");
+pfc.AutoCorrectWithAI();
+
+// Get detected scene
+string sceneName = pfc.GetSceneLabel();
+Console.WriteLine($"Detected scene: {sceneName}");
+
+pfc.SaveImage("C:\\path\\to\\output.jpg", 92);
+```
+
+## Loading Custom Scene Presets
+
+```csharp
+// Load custom presets for scene detection
+pfc.LoadScenePresets("C:\\path\\to\\custom_scenes.preset");
+
+// Now AutoCorrectWithAI will use your custom presets
+pfc.AutoCorrectWithAI();
+```
+
+## Working with Memory Streams
+
+```csharp
+// Load from byte array
+byte[] inputBytes = File.ReadAllBytes("input.jpg");
+pfc.LoadFromMemory(inputBytes);
+
+// Apply corrections
+pfc.AutoCorrect();
+
+// Save to byte array
+byte[] outputBytes = pfc.SaveToMemory(PFCImageFormat.JPEG, 92);
+File.WriteAllBytes("output.jpg", outputBytes);
+```
+
+## ASP.NET Integration
+
+```csharp
+[ApiController]
+[Route("api/[controller]")]
+public class ImageController : ControllerBase
+{
+    private readonly string _licensePath;
+    private readonly string _modelPath;
+
+    public ImageController(IConfiguration config)
+    {
+        _licensePath = config["PFC:LicensePath"];
+        _modelPath = config["PFC:ModelPath"];
+    }
+
+    [HttpPost("correct")]
+    public async Task<IActionResult> CorrectImage(IFormFile file)
+    {
+        using var pfc = new PerfectlyClear(_licensePath);
+        pfc.LoadAIModels(_modelPath);
+
+        using var stream = new MemoryStream();
+        await file.CopyToAsync(stream);
+        
+        pfc.LoadFromMemory(stream.ToArray());
+        pfc.AutoCorrectWithAI();
+        
+        byte[] result = pfc.SaveToMemory(PFCImageFormat.JPEG, 92);
+        return File(result, "image/jpeg", "corrected.jpg");
+    }
+}
+```
+
+## Setting Parameters Manually
+
+```csharp
+// Get current parameters
+var param = pfc.GetParameters();
+
+// Modify parameters
+param.core.bEnabled = true;
+param.core.bUseAutomaticStrengthSelection = true;
+param.core.eAggressiveness = AGGRESSIVENESS.CONSERVATIVE;
+param.core.bSharpen = true;
+param.core.fSharpenScale = 1.0f;
+
+// Disable noise reduction
+param.nr.bEnabled = false;
+
+// Apply modified parameters
+pfc.SetParameters(param);
+pfc.Apply();
+```
+
+## Error Handling
+
+```csharp
+try
+{
+    using var pfc = new PerfectlyClear(licensePath);
+    pfc.LoadImage(inputPath);
+    pfc.AutoCorrect();
+    pfc.SaveImage(outputPath, 92);
+}
+catch (PFCLicenseException ex)
+{
+    Console.WriteLine($"License error: {ex.Message}");
+}
+catch (PFCImageException ex)
+{
+    Console.WriteLine($"Image error: {ex.Message}");
+}
+catch (PFCException ex)
+{
+    Console.WriteLine($"SDK error: {ex.Message}");
+}
+```
+
+## Single-Threaded Mode
+
+For specific threading scenarios:
+
+```csharp
+pfc.SetSingleThreaded(true);
+```
+
+## Project Setup (.NET 6+)
+
+### Project File
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <Compile Include="PerfectlyClearAdapter.cs" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <!-- Copy native DLLs to output -->
+    <None Include="$(SDK_PATH)\bin\*.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>
+```
+
+## Building and Running
+
+```bash
+dotnet build
+dotnet run -- input.jpg output.jpg
+```
+
+---
+
+*Copyright © 2025 EyeQ Imaging Inc*

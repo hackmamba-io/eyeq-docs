@@ -1,0 +1,116 @@
+---
+title: Files
+description: Perfectly Clear SDK file reference
+---
+
+# Files
+
+Reference documentation for all SDK header and source files.
+
+## Header Files
+
+### PerfectlyClearPro.h
+
+Public header for Perfectly Clear SDK (C API).
+
+**Description:** Contains the main C API functions, structures, and enumerations for the Perfectly Clear SDK.
+
+**Key Contents:**
+- Core correction functions (`PFC_AutoCorrect`, `PFC_Calc`, `PFC_Apply`)
+- Engine management (`PFC_CreateEngine`, `PFC_ReleaseEngine`)
+- AI model loading (`PFC_LoadAIModels`, `PFC_LoadScenePresets`)
+- Preset handling (`PFC_ReadPresets`, `PFC_ReadScenePreset`)
+- Parameter structures (`PFCPARAM`, `PFCCOREPARAM`, etc.)
+- Enumerations for pixel formats, features, and status codes
+
+### PFCImageFile.h
+
+Public header for Perfectly Clear Image File Class.
+
+**Description:** Provides the `PFCImageFile` class for reading and writing image files.
+
+**Key Contents:**
+- Image loading from file and memory
+- Image saving to file and memory (JPEG, PNG, WebP)
+- Format conversion
+- EXIF/IPTC metadata handling
+- Color profile management
+
+### PFCPDFImage.h
+
+Header for PDF image handling.
+
+**Description:** Defines the `PFCPDFImage` class for working with images extracted from PDF files.
+
+**Key Contents:**
+- PDF image extraction
+- Image replacement in PDFs
+- Image data access
+
+### PFCPDFImageIterator.h
+
+Header for PDF image iteration.
+
+**Description:** Defines the `PFCPDFImageIterator` class for iterating over images in PDF documents.
+
+**Key Contents:**
+- PDF file opening
+- Image iteration
+- Modified PDF saving
+
+## Source Files
+
+### PerfectlyClearAdapter.cs
+
+.NET wrapper class for PerfectlyClearPro.dll.
+
+**Description:** Contains the .NET/C# wrapper providing managed access to the Perfectly Clear SDK.
+
+**Namespace:** `PerfectlyClearAdapter`
+
+**Key Contents:**
+- `PerfectlyClear` class - Main SDK interface
+- `PFCImageFile` class - Image file handling
+- Parameter structures mirroring the C API
+- Enumerations for all SDK options
+- P/Invoke declarations for native functions
+
+## Documentation Files
+
+### Container/Docs/README.html
+
+Documentation for the Docker container solution.
+
+### Internal/cmd/README.html
+
+Documentation for the command line application.
+
+---
+
+## File Dependencies
+
+```
+┌─────────────────────────┐
+│  PerfectlyClearPro.h    │ ← Main C API
+└───────────┬─────────────┘
+            │
+    ┌───────┴───────┐
+    │               │
+    ▼               ▼
+┌─────────────┐  ┌─────────────────────┐
+│PFCImageFile.h│  │PerfectlyClearAdapter.cs│
+└──────┬──────┘  └─────────────────────┘
+       │              (.NET wrapper)
+       │
+┌──────┴──────┐
+│             │
+▼             ▼
+┌───────────┐ ┌─────────────────────┐
+│PFCPDFImage.h│ │PFCPDFImageIterator.h│
+└───────────┘ └─────────────────────┘
+    (PDF image handling)
+```
+
+---
+
+*Copyright © 2025 EyeQ Imaging Inc*

@@ -1,0 +1,109 @@
+---
+title: Files
+description: Header and source file reference for the Perfectly Clear SDK
+---
+
+# Files
+
+This section documents the header files and source files that make up the Perfectly Clear SDK.
+
+## Header Files (C/C++)
+
+| File | Description |
+|------|-------------|
+| [PerfectlyClearPro.h](/docs/api-reference/files/perfectly-clear-pro-h) | Main SDK header with all functions, structs, and enums |
+| [PFCImageFile.h](/docs/api-reference/files/pfc-image-file-h) | Image file I/O class |
+| [PFCPDFImage.h](/docs/api-reference/files/pfc-pdf-image-h) | PDF embedded image class |
+| [PFCPDFImageIterator.h](/docs/api-reference/files/pfc-pdf-image-iterator-h) | PDF image iteration class |
+
+## Source Files (.NET)
+
+| File | Description |
+|------|-------------|
+| [PerfectlyClearAdapter.cs](/docs/api-reference/files/perfectly-clear-adapter-cs) | .NET wrapper for the C library |
+
+## File Hierarchy
+
+```
+SDK/
+├── Header/
+│   ├── PerfectlyClearPro.h     # Main C API
+│   └── PFCImageFile.h          # Image file handling
+├── pfcpdf/include/
+│   ├── PFCPDFImage.h           # PDF image class
+│   └── PFCPDFImageIterator.h   # PDF iterator class
+└── Build/Win/PerfectlyClearAdapter/
+    └── PerfectlyClearAdapter.cs # .NET wrapper
+```
+
+## Including Headers
+
+### C/C++ Projects
+
+```cpp
+// Core SDK functionality
+#include "PerfectlyClearPro.h"
+
+// Image file I/O (optional)
+#include "PFCImageFile.h"
+
+// PDF support (optional)
+#include "PFCPDFImage.h"
+#include "PFCPDFImageIterator.h"
+```
+
+### .NET Projects
+
+```csharp
+using PerfectlyClearAdapter;
+```
+
+## Library Files
+
+The SDK includes these library files for linking:
+
+### Windows
+
+| Library | Description |
+|---------|-------------|
+| `PerfectlyClearPro.dll` | Main SDK library |
+| `PFCImageFile.dll` | Image file handling |
+| `PFCPDF.dll` | PDF support |
+| `PFCAIEngine.dll` | AI models and corrections |
+| `PerfectlyClearAdapter.dll` | .NET wrapper |
+
+### Linux/macOS
+
+| Library | Description |
+|---------|-------------|
+| `libPerfectlyClearPro.so/.dylib` | Main SDK library |
+| `libPFCImageFile.so/.dylib` | Image file handling |
+| `libPFCPDF.so/.dylib` | PDF support |
+| `libPFCAIEngine.so/.dylib` | AI models |
+
+## Additional Files
+
+### Model Files (.pnn)
+
+AI features require these model files:
+
+| File | Feature |
+|------|---------|
+| `pro_and_universal_*.pnn` | Scene detection |
+| `skintone_*.pnn` | Skin tone detection |
+| `dynamic.pnn` | AI corrections |
+| `composite.pnn` | Composite detection |
+| `aicolor.pnn` | AI white balance |
+
+### Data Files
+
+| File | Description |
+|------|-------------|
+| `v3.looks` | Creative LOOKs data |
+| `license.key` | SDK license key |
+
+## See Also
+
+- [Installation Guide](/docs/getting-started/installation)
+- [C API Reference](/docs/api-reference/c-api)
+- [C# API Reference](/docs/api-reference/csharp-api)

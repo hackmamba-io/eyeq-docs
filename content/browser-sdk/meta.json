@@ -1,0 +1,16 @@
+{
+  "title": "Browser SDK",
+  "root": true,
+  "pages": [
+    "---Getting Started---",
+    "getting-started",
+    "---Guides---",
+    "guides",
+    "---API Reference---",
+    "api-reference",
+    "---Examples---",
+    "examples",
+    "---Other---",
+    "changelog"
+  ]
+}

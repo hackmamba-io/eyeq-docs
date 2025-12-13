@@ -1,0 +1,124 @@
+---
+title: Requirements & Limitations
+description: System requirements and limitations for Perfectly Clear SDK
+---
+
+# Requirements & Limitations
+
+## Color Management
+
+Our public WebAPI, command line application (CLI) and Docker solutions are fully color managed. These solutions will use the input profile as the output – if an image starts as ProPhotoRGB (or any other profile), then the output will be ProPhotoRGB also. You can optionally convert to any output profile, useful if you want to convert all images to sRGB or some other specific color profile.
+
+The Perfectly Clear SDK has two ways to process images:
+
+| Method | Description |
+|--------|-------------|
+| `PFCImageFile` class | Fully color managed, operates exactly like the CLI |
+| Direct `PFCIMAGE` loading | Requires RGB data to be in sRGB format. Can save processing time but failure to use sRGB can cause unwanted color shifting |
+
+If the color space is unassigned, we use the industry standard: sRGB.
+
+<Callout type="warning">
+Our correction tools only work with RGB or RGBA data – we do not support CMYK, single-channel black-and-white, or indexed color images at this time.
+</Callout>
+
+## Red Eye Correction
+
+Our red-eye correction technology leads the industry in speed and accuracy. It automatically detects eyes, determines if "red-eye" is present, and applies a natural image correction.
+
+As a fully-automatic correction, it can occasionally mis-identify red-eyes. One method to lower this frequency is to only enable Red-Eye corrections on images where a flash was used - as determined by the EXIF Flash tag, which is made easy with `PFC_FLASH_STATUS` detection.
+
+This is performed automatically in our Command Line Interface application - Red Eye correction will only be applied if EXIF data is present and shows that the flash was fired.
+
+## Image Size Limits
+
+- Images smaller than **32 pixels** on their smaller side will not be processed
+- Images with an aspect ratio larger than **21:1** will be processed with limited corrections (Face Aware Exposure, Retouching, and RedEye corrections will be disabled)
+
+## Image Content & Format
+
+- Images must be in RGB format to be processed
+- CMYK and single-channel, monochrome images are not supported
+- "Clipart" and other non-photographic images are skipped by default (can be overridden using `iRejectOption`)
+- The SDK supports 8 and 16 bits per channel color formats only
+- Indexed or 32-bit HDR image formats are not yet supported
+
+### Supported File Formats
+
+The SDK can process RGB raster data in any format, and includes support for:
+
+- Reading and writing: JPEG, PNG, WEBP
+- Extracting and processing: JPEG images embedded in PDF documents
+
+## System Requirements
+
+| Requirement | Details |
+|-------------|---------|
+| Operating System | 64-bit required on all non-mobile platforms |
+| macOS | Minimum version 10.6 (Snow Leopard) |
+| Windows | Minimum Windows 10 |
+| Memory | Recommended 1GB RAM per CPU core |
+
+## AVX Instruction Set Optimization
+
+This SDK has been optimized for the "AVX" instruction set, supported on most desktop computers made since about 2012.
+
+Our sample code defaults to using non-optimized DLLs to ensure broadest hardware support. If you're certain your usage will only be on newer computers with AVX support, you can use the libraries with "AVX" in their filename for up to **50% performance increase**.
+
+<Callout type="info">
+- AVX support is required to load and run AI Preset Detection and AI Correction models
+- AVX2 support is required for license key protected SDKs
+</Callout>
+
+## Prerequisites
+
+### Windows SDK
+
+- `vcruntime140.dll` must be present and in the library search path (required for license protected SDK)
+- ONNX runtime DLL must be in PATH (required for AI Preset Selection and AI Correction tools)
+
+### Linux SDK
+
+Required packages:
+
+- libcurl (v3 or v4)
+- Standard development tools (gcc, make)
+
+**Ubuntu/Debian 9 and older:**
+```bash
+sudo apt-get install --no-install-recommends libcurl3 build-essential
+```
+
+**Debian 10 and newer:**
+```bash
+sudo apt-get install --no-install-recommends libcurl4 build-essential
+```
+
+<Callout type="note">
+If your distro doesn't provide libcurl3, install libcurl4. Rename `libPFCAppTrack4.so` to `libPFCAppTrack.so` in both the 'bin' folder and sdk_license folder.
+</Callout>
+
+**Red Hat-based distros:**
+```bash
+sudo yum -y install gcc gcc-c++ make libcurl
+```
+
+## Reduced Resolution Images in Calc
+
+The `PFC_Calc` and `PFC_AutoCorrect` functions accept two images:
+
+| Image | Purpose |
+|-------|---------|
+| Full-sized image | Required for Noise Removal and Retouching. Omitting disables these corrections. |
+| Reduced resolution image | For Core and Red-eye corrections. Should be no smaller than 1024px on longer edge. |
+
+**Face Aware Exposure** also performs a Calc phase:
+
+- Larger image (default): Takes longer but more accurate auto-exposure corrections
+- Smaller image: Significantly faster but can miss faces in some images (estimated 1-2% difference)
+
+Control this with the `FastFAE` parameter for AutoCorrect or the `FEATURE` enum in `PFC_Calc`.
+
+---
+
+*Copyright © 2025 EyeQ Imaging Inc*

@@ -1,0 +1,58 @@
+---
+title: API Reference
+description: Video SDK API reference overview
+---
+
+# API Reference
+
+The Video SDK provides platform-specific APIs for iOS and Android. Choose your platform:
+
+<Cards>
+  <Card title="Android API" href="/docs/video-sdk/android/api-reference" />
+  <Card title="iOS API" href="/docs/video-sdk/ios/api-reference" />
+</Cards>
+
+## Common Concepts
+
+### DynamicProcessor
+
+The main class for video processing on both platforms. Key methods:
+
+| Method | Description |
+|--------|-------------|
+| `loadModels()` | Load AI models from path |
+| `process()` | Process a single frame |
+| `setStrength()` | Set correction strength |
+| `setWhiteBalance()` | Set white balance strength |
+| `setFrameSkip()` | Set frame skip for smoother video |
+| `release()` | Release resources |
+
+### Quality Modes
+
+| Mode | Description |
+|------|-------------|
+| High | Best quality, slower processing |
+| Balanced | Default, good balance |
+| Performance | Fastest, lower quality |
+
+### Parameters
+
+| Parameter | Range | Default | Description |
+|-----------|-------|---------|-------------|
+| Strength | 0-100 | 50 | Overall correction strength |
+| White Balance | 0-100 | 50 | Color correction strength |
+| Frame Skip | 0-100 | 4 | Frames between AI detections |
+
+## Platform-Specific Details
+
+### Android
+
+- Uses `ByteArray` for frame data
+- Integrates with Camera2 and CameraX
+- Processes RGBA pixel format
+
+### iOS
+
+- Uses `CVPixelBuffer` for frame data
+- Integrates with AVFoundation
+- Processes BGRA pixel format

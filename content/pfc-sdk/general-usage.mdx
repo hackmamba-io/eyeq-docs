@@ -1,0 +1,119 @@
+---
+title: Start Here
+description: Quick introduction to using the Perfectly Clear SDK
+---
+
+# Start Here
+
+## Quick Introduction
+
+Applying the Perfectly Clear corrections requires the following steps:
+
+1. Enable license setup with [PFC_SetProtectionPath](/docs/pfc-sdk/api-reference)
+2. Load the AI models that support AI Preset Selection, AI White Balance Correction and the AI Correction tools
+3. Load image data into a [PFCIMAGE](/docs/pfc-sdk/data-structures#pfcimage) (either directly from existing memory raster data, or using [PFCImageFile](/docs/pfc-sdk/files#pfcimagefileh))
+4. Set the corrections you want to apply in a [PFCPARAM](/docs/pfc-sdk/data-structures#pfcparam) (detailed in [Correction Parameters](/docs/pfc-sdk/parameters))
+5. Apply the corrections with [PFC_AutoCorrect()](/docs/pfc-sdk/api-reference), or separately call [PFC_Calc()](/docs/pfc-sdk/api-reference) and then [PFC_Apply()](/docs/pfc-sdk/api-reference) functions
+6. Read the corrected data out of the [PFCIMAGE](/docs/pfc-sdk/data-structures#pfcimage), or use [PFCImageFile](/docs/pfc-sdk/files#pfcimagefileh) to write the results to a JPEG or PNG file
+
+We have samples of all of these in the [Examples](/docs/pfc-sdk/examples) section.
+
+---
+
+## Loading AI Models
+
+<Callout type="info">
+**Note:** This version of the SDK requires using Presets from Workbench v4.6 or newer.
+</Callout>
+
+AI Preset Selection, AI White Balance correction, AI Skin Tone detection and Perfectly Clear AI corrections are all distributed in a proprietary AI model format as `.pnn` files (Perfectly Clear Neural Network). These models need to be loaded before use, but can then be quickly re-used on all images you are correcting.
+
+Version 10.5 of our SDK uses AI Preset Selection, AI White Balance, and AI Skin Tone Accuracy to form an unbeatable trio. These components work hand-in-hand, providing the most robust and accurate corrections tailored to your photo's needs — one cannot work properly without the other and all must be implemented.
+
+We are proud to unveil a groundbreaking update to our **AI Skin Tone Accuracy** in version 10.5 of our SDK. Unlike previous models that could only detect and correct light and dark skin tones, our new model can discern a full range of skin tones with much higher accuracy thanks to a **10-level system**. Our team of image quality experts is available to fine-tune the corresponding skin tone corrections for these 10 levels, ensuring you achieve the most natural, accurate results. Contact us to learn more!
+
+<Callout type="warning">
+If you are upgrading from previous versions of the SDK, you'll need to edit code to enable the new AI features when creating the [PFCENGINE](/docs/pfc-sdk/data-structures#pfcengine), and will need to deploy additional `.pnn` files to support these new capabilities.
+</Callout>
+
+---
+
+## Auto Crop Support
+
+This SDK supports [Auto Crop](https://eyeq.photos/auto-crop/) with a consistent set of images that are all in the same shoot. Auto Crop is created to automatically crop a job — for example, class pictures that were taken the same day in the same position.
+
+Use the 'info panel' in Perfectly Clear Workbench's new Auto Crop interface to copy the cropping parameters, then use these with our [command line](/docs/pfc-sdk/cli), [Docker solution](/docs/pfc-sdk/docker), or WebAPI to fully automate your school crop jobs.
+
+---
+
+## SDK Size and Deployment
+
+The table below summarizes the sizes of various components of the EyeQ SDK. Smaller SDK packages can be customized and created - please contact sales@eyeq.photos for details.
+
+| Approx Size | Purpose | Notes |
+|-------------|---------|-------|
+| 8 MB | Main PfC Library | Main Perfectly Clear libraries |
+| 50 KB | C# Adapter | Optional to add .NET Core support |
+| 10 MB | PfC Image File Library | Required only if using the [PFCImageFile](/docs/pfc-sdk/files#pfcimagefileh) class to read or write image files |
+| 53 MB | PfC AI Engine | Required for best image quality, including Face Detection AI models |
+| 65 MB | Scene Detection | Per 'scene detection group' - at least one group is highly recommended |
+| 5 MB | PfC PDF Support | Required unless a specific SDK is built without PDF support |
+| 6.6 MB | Looks | Includes all Creative Looks and various built-in Looks. Custom 'Looks' will add additional size |
+| 6 MB | License Protection | Required for most SDK deployments |
+
+---
+
+## AutoCorrect vs Calc and Apply
+
+There are two main ways the Perfectly Clear SDK is typically used:
+
+### Simple: AutoCorrect
+
+For processing images with an unchanging set of parameters, [PFC_AutoCorrect](/docs/pfc-sdk/api-reference) is perfect. All you need to do is setup the correction parameters, load the image data, then call `PFC_AutoCorrect()`.
+
+### Interactive: Calc + Apply
+
+For interactive applications where a user might be changing correction parameters, it's more efficient to use separate [PFC_Calc()](/docs/pfc-sdk/api-reference) and [PFC_Apply()](/docs/pfc-sdk/api-reference) functions.
+
+The Calc phase runs once per image and does not change based on image correction parameters, allowing you to speed up correction results for interactive applications where users can alter parameters and getting a preview image back quickly is the primary goal.
+
+This method requires creating a [PFCENGINE](/docs/pfc-sdk/data-structures#pfcengine) and [PFCIMAGEPROFILE](/docs/pfc-sdk/data-structures#pfcimageprofile), and requires releasing them once complete. There are more steps involved, but this method provides substantial performance benefits when repeated Apply calls are performed.
+
+---
+
+## Presets and Parameters
+
+All corrections in the SDK are controlled through individual parameters (see the [PFCPARAM](/docs/pfc-sdk/data-structures#pfcparam) and following sections). Presets are collections of these individual parameters.
+
+The easiest way to create presets is using our Perfectly Clear Workbench application and its "Export to API" or "Export Preset" capabilities. Details are in the [Correction Parameters](/docs/pfc-sdk/parameters) section.
+
+In addition to setting all parameters by loading from a Preset, you can adjust individual parameters programmatically. The sample applications and [Correction Parameters](/docs/pfc-sdk/parameters) section will show this in action.
+
+---
+
+## V3 Corrections Support
+
+We introduced many new image correction and adjustment tools in 'Version 3' of our Perfectly Clear Workbench. These tools are available through the [PFCV3PARAM](/docs/pfc-sdk/data-structures#pfcv3param) structure. Many of these tools use "LOOKs" that are loaded via an external, runtime processed file called `v3.looks`. This file must be packaged and deployed along with the application you build with this SDK.
+
+---
+
+## Retouching Support
+
+The image corrections controlled by the [PFCFBPARAM](/docs/pfc-sdk/data-structures#pfcfbparam) parameters are referred to as the "retouching" corrections. These correspond to the corrections provided in the Eyes, Face, Skin, and Makeup panels in Perfectly Clear Workbench.
+
+---
+
+## Face Detection Support
+
+This SDK provides robust face detection processing and provides details about the faces it finds, including:
+
+- Blink and smile detection
+- Face rotation and yaw angles
+- Face and eye position and size
+- Confidence values about detection parameters
+
+You can find the data provided in the [PFCFaceRect](/docs/pfc-sdk/data-structures#pfcfacerect) structure.
+
+---
+
+*Copyright © 2025 EyeQ Imaging Inc*

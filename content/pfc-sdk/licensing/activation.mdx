@@ -1,0 +1,114 @@
+---
+title: Activating a License
+description: How to activate your Perfectly Clear SDK license
+---
+
+# Activating a License
+
+This guide covers how to activate your SDK license on different platforms.
+
+## Online Activation
+
+Most licenses activate automatically when you set the license key:
+
+### C/C++
+
+```cpp
+PFCENGINE engine = PFC_CreateEngine();
+
+int status = PFC_SetLicense(engine, "YOUR-LICENSE-KEY");
+
+switch (status) {
+    case PFC_SUCCESS:
+        printf("License activated successfully\n");
+        break;
+    case PFC_LICENSE_INVALID:
+        printf("Invalid license key\n");
+        break;
+    case PFC_LICENSE_EXPIRED:
+        printf("License has expired\n");
+        break;
+    case PFC_LICENSE_NETWORK_ERROR:
+        printf("Could not reach license server\n");
+        break;
+}
+```
+
+### C#
+
+```csharp
+try
+{
+    var engine = new PfcEngine("YOUR-LICENSE-KEY");
+    Console.WriteLine("License activated successfully");
+}
+catch (PfcLicenseException ex)
+{
+    Console.WriteLine($"License error: {ex.Message}");
+}
+```
+
+### CLI
+
+```bash
+# Set via environment variable
+export PFC_LICENSE_KEY="YOUR-LICENSE-KEY"
+pfccli -i input.jpg -o output.jpg
+
+# Or pass directly
+pfccli -k "YOUR-LICENSE-KEY" -i input.jpg -o output.jpg
+```
+
+### Docker
+
+```bash
+docker run -e PFC_LICENSE_KEY="YOUR-LICENSE-KEY" eyeq/perfectlyclear ...
+```
+
+## Environment Variables
+
+You can set your license key as an environment variable:
+
+| Platform | Method |
+|----------|--------|
+| Windows | `setx PFC_LICENSE_KEY "YOUR-KEY"` |
+| macOS/Linux | Add to `~/.bashrc` or `~/.zshrc` |
+| Docker | `-e PFC_LICENSE_KEY="YOUR-KEY"` |
+
+The SDK checks for `PFC_LICENSE_KEY` automatically if no key is passed programmatically.
+
+## License File Activation
+
+For enterprise licenses, you may receive a license file:
+
+```cpp
+// Activate from file
+int status = PFC_SetLicenseFile(engine, "/path/to/license.lic");
+```
+
+## Checking License Status
+
+```cpp
+PFCLICENSEINFO info;
+PFC_GetLicenseInfo(engine, &info);
+
+printf("License type: %s\n", info.type);
+printf("Expires: %s\n", info.expirationDate);
+printf("Images remaining: %d\n", info.imagesRemaining);
+printf("Features: %s\n", info.features);
+```
+
+## Machine Binding
+
+Production licenses may be bound to specific machines:
+
+1. **Hardware ID** - Based on CPU, MAC address, etc.
+2. **Cloud Instance** - AWS, Azure, GCP instance IDs
+3. **Container** - Docker container identification
+
+Contact support if you need to transfer a license.
+
+## Next Steps
+
+- [Offline/Server Usage](/docs/pfc-sdk/licensing/offline-server) - Deployment without internet
+- [Troubleshooting](/docs/pfc-sdk/licensing/troubleshooting) - Common license issues

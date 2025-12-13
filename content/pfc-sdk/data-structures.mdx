@@ -1,0 +1,211 @@
+---
+title: Data Structures
+description: Perfectly Clear SDK data structures reference
+---
+
+# Data Structures
+
+Complete reference of all data structures in the Perfectly Clear SDK.
+
+## Core Structures
+
+### PFCIMAGE
+
+Struct defining an image to be used in PFC library.
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `width` | int | Image width in pixels |
+| `height` | int | Image height in pixels |
+| `stride` | int | Bytes per row |
+| `data` | void* | Pointer to pixel data |
+| `format` | PFCPIXELFORMAT | Pixel format |
+
+### PFCENGINE
+
+Struct defining a PFC engine instance.
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `pEngine` | void* | Internal engine pointer |
+
+### PFCIMAGEPROFILE
+
+Struct defining an image profile as calculated from `PFC_Calc()` function.
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `nSceneId` | int | Detected scene ID |
+| `faceCount` | int | Number of detected faces |
+| `faces` | PFCFaceRect* | Array of detected faces |
+
+## Parameter Structures
+
+### PFCPARAM
+
+Master structure of all processing parameters.
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `core` | PFCCOREPARAM | Core correction parameters |
+| `nr` | PFCNRPARAM | Noise removal parameters |
+| `re` | PFCREPARAM | Red-eye removal parameters |
+| `fb` | PFCFBPARAM | Face beautification parameters |
+| `v3` | PFCV3PARAM | V3 LOOKs parameters |
+| `layer[3]` | DP2PARAM | Layer parameters for graduated filters |
+| `mask[3]` | PFCCOREMask | Mask parameters for graduated filters |
+
+### PFCCOREPARAM
+
+Structure encapsulating the CORE processing parameters.
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `bEnabled` | bool | Enable core corrections |
+| `bUseAutomaticStrengthSelection` | bool | Auto strength selection |
+| `eAggressiveness` | AGGRESSIVENESS | Correction aggressiveness |
+| `iStrength` | int | Correction strength (0-100) |
+| `iMaxStrength` | int | Maximum strength |
+| `iMinStrength` | int | Minimum strength |
+| `bUseFAE` | bool | Enable Face Aware Exposure |
+| `bSharpen` | bool | Enable sharpening |
+| `fSharpenScale` | float | Sharpen scale (0.0-2.0) |
+| `bContrast` | bool | Enable contrast |
+| `iContrast` | int | Contrast level |
+| `bVibrancy` | bool | Enable vibrancy |
+| `iVibrancy` | int | Vibrancy level |
+| `bDynamicRange` | bool | Enable dynamic range |
+| `bLocalContrast` | bool | Enable local contrast |
+| `iLocalContrast` | int | Local contrast level |
+
+### PFCNRPARAM
+
+Structure encapsulating Noise Removal parameters.
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `bEnabled` | bool | Enable noise removal |
+| `iPreset` | int | Noise removal preset |
+| `iStrengthOffset` | int | Strength offset |
+| `iDetailOffset` | int | Detail preservation offset |
+
+### PFCREPARAM
+
+Structure encapsulating Red Eye Correction parameters.
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `bEnabled` | bool | Enable red-eye correction |
+
+### PFCFBPARAM
+
+Structure encapsulating Face Beautification parameters.
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `bEnabled` | bool | Enable face beautification |
+| `bSmooth` | bool | Enable skin smoothing |
+| `iSmoothLevel` | int | Smooth level (0-100) |
+| `eSmoothMode` | SKINMODE | Smooth mode |
+| `eSmoothType` | SKINSMOOTHTYPE | Smooth type |
+| `bEnlarge` | bool | Enable eye enlargement |
+| `iEnlargeLevel` | int | Enlarge level |
+| `bTeeth` | bool | Enable teeth whitening |
+| `iTeethLevel` | int | Teeth whitening level |
+| `bBlemish` | bool | Enable blemish removal |
+| `iBlemish` | int | Blemish removal level |
+| `bSlim` | bool | Enable face slimming |
+| `iSlim` | int | Slim level |
+
+### PFCV3PARAM
+
+Struct describing V3 parameters (LOOKs and finishing tools).
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `bDynamic` | bool | Enable dynamic processing |
+| `iDynamic` | int | Dynamic level |
+| `iDynamicWB` | int | Dynamic white balance |
+| `iNeutralDensity` | int | Neutral density |
+| `iColorVibrancy` | int | Color vibrancy |
+| `lutInputCorrective` | PFC3DLutInfo | Input corrective LUT |
+| `lutInputSky` | PFC3DLutInfo | Sky enhancement LUT |
+| `lutInputFoliageGreen` | PFC3DLutInfo | Green foliage LUT |
+| `lutInputFoliageBrown` | PFC3DLutInfo | Brown foliage LUT |
+| `lutOutput` | PFC3DLutInfo | Output LUT |
+
+## Helper Structures
+
+### PFC3DLutInfo
+
+Struct describing 3D LUT information.
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `guid` | char[33] | GUID hash of the LOOK file |
+| `strength` | int | LUT strength (0-100) |
+
+### PFCCOREMask
+
+Struct describing mask for graduated filter.
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `type` | MASKTYPE | Mask type |
+| `centerX` | float | Center X (relative) |
+| `centerY` | float | Center Y (relative) |
+| `width` | float | Width (relative) |
+| `height` | float | Height (relative) |
+| `radius` | float | Radius |
+| `feather` | float | Feather amount |
+| `angle` | float | Rotation angle |
+| `transparency` | float | Transparency |
+| `invert` | bool | Invert mask |
+
+### PFCFaceRect
+
+Structure defining face attributes detected by the Face Detection library.
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `x` | int | Face rectangle X |
+| `y` | int | Face rectangle Y |
+| `width` | int | Face rectangle width |
+| `height` | int | Face rectangle height |
+| `confidence` | float | Detection confidence |
+| `leftEyeX` | int | Left eye X position |
+| `leftEyeY` | int | Left eye Y position |
+| `rightEyeX` | int | Right eye X position |
+| `rightEyeY` | int | Right eye Y position |
+| `smile` | float | Smile detection value |
+| `blink` | float | Blink detection value |
+| `yaw` | float | Face yaw angle |
+| `pitch` | float | Face pitch angle |
+| `roll` | float | Face roll angle |
+
+### PFCSCENEDESCRIPTION
+
+Scene description structure.
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `id` | int | Scene ID |
+| `label` | char* | Scene label string |
+
+### SELECTIVECOLOR
+
+Structure holding selective color correction params.
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `r` | int | Range start |
+| `a` | int | Range anchor |
+| `m` | int | Range middle |
+| `p` | int | Range end |
+| `H` | int | Hue adjustment |
+| `S` | int | Saturation adjustment |
+| `L` | int | Lightness adjustment |
+
+---
+
+*Copyright © 2025 EyeQ Imaging Inc*

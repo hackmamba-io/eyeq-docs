@@ -1,0 +1,86 @@
+---
+title: Video SDK
+description: Real-time video correction for mobile applications using AI-powered Dynamic engine
+---
+
+# Perfectly Clear Video SDK
+
+Welcome to the Perfectly Clear Video SDK documentation! This SDK provides support for video and real-time photo corrections using the Dynamic correction engine on mobile platforms.
+
+## Overview
+
+The Video SDK (also known as Dynamic SDK) brings AI-powered image correction to mobile applications with real-time performance. It's part of the "AI Correction" module within the larger Perfectly Clear ecosystem.
+
+## Key Features
+
+- **Real-time Processing**: Optimized for live video and camera feeds
+- **AI-Powered Corrections**: Uses the Dynamic correction engine for intelligent adjustments
+- **Mobile-First**: Native SDKs for iOS and Android
+- **Lightweight**: Minimal footprint for mobile deployment
+
+## Supported Platforms
+
+| Platform | Languages | Minimum Version |
+|----------|-----------|-----------------|
+| iOS | Swift, Objective-C | iOS 13.0+ |
+| Android | Kotlin, Java | Android 7.0+ (API 24) |
+
+## Quick Start
+
+<Cards>
+  <Card title="Android Setup" href="/docs/video-sdk/android" />
+  <Card title="iOS Setup" href="/docs/video-sdk/ios" />
+  <Card title="API Reference" href="/docs/video-sdk/api-reference" />
+</Cards>
+
+## Components
+
+The SDK includes:
+
+1. **Core Library** - The main correction engine
+2. **AI Models** - Pre-trained models for scene detection and corrections
+3. **Sample Projects** - Ready-to-run examples for each platform
+4. **Documentation** - Platform-specific guides and API reference
+
+## Architecture
+
+```
+┌─────────────────────────────────────────┐
+│           Your Mobile App               │
+├─────────────────────────────────────────┤
+│         Video SDK Interface             │
+├─────────────────────────────────────────┤
+│    ┌─────────────┐  ┌─────────────┐    │
+│    │   Dynamic   │  │     AI      │    │
+│    │   Engine    │  │   Models    │    │
+│    └─────────────┘  └─────────────┘    │
+├─────────────────────────────────────────┤
+│         Platform (iOS/Android)          │
+└─────────────────────────────────────────┘
+```
+
+## Requirements
+
+### iOS
+- Xcode 14.0+
+- iOS 13.0+ deployment target
+- Swift 5.0+ or Objective-C
+
+### Android
+- Android Studio Arctic Fox+
+- Android 7.0+ (API level 24)
+- Kotlin 1.6+ or Java 8+
+
+## Getting Help
+
+- [API Reference](/docs/video-sdk/api-reference)
+- [Changelog](/docs/video-sdk/changelog)
+- [Support](https://eyeq.com/support)
+
+## Version
+
+Current Version: **1.0.0.23**
+
+---
+
+*Copyright © 2025 EyeQ Imaging Inc. All rights reserved.*

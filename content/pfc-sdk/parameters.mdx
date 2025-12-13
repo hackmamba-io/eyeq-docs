@@ -1,0 +1,314 @@
+---
+title: Correction Parameters
+description: Understanding and configuring image correction parameters
+---
+
+# Correction Parameters
+
+## Corrections in this SDK
+
+The image corrections available include:
+
+1. **Perfectly Clear Core Corrections**
+2. **Noise Corrections**
+3. **Red-eye Removal**
+4. **Retouching Corrections** (licensed as an optional component)
+5. **V3 LOOKs Support** - Finishing and Graduated Filters, along with several other corrections added in the "V3" versions of our Desktop products:
+   - Color Vibrancy
+   - Neutral Density
+   - Foliage and Sky Enhancement
+   - Output LOOKs
+   - Finishing Tools
+   - Graduated Filters
+
+<Callout type="note">
+**Notes:**
+- V3 LOOKs support is provided via an optional `v3.looks` file that should be deployed along with the SDK library files. The supported LOOKs are listed [here](/docs/pfc-sdk/looks).
+- These various corrections are best previewed and evaluated in our desktop application Perfectly Clear Workbench. You can export these settings to be used in the SDK, as described below.
+</Callout>
+
+---
+
+## Auto Exposure Parameters
+
+There are several parameters which affect our automatic exposure correction:
+
+| Parameter | Description |
+|-----------|-------------|
+| [PFCCOREPARAM.bUseAutomaticStrengthSelection](/docs/pfc-sdk/data-structures#pfccoreparam) | Enable automatic strength selection (recommended default) |
+| [PFCCOREPARAM.bUseFAE](/docs/pfc-sdk/data-structures#pfccoreparam) | Face Aware Exposure - exposure calculated in favor of detected faces |
+| [PFCCOREPARAM.eAggressiveness](/docs/pfc-sdk/data-structures#pfccoreparam) | Aggressiveness level (low, med, high) |
+| [PFCCOREPARAM.iStrength](/docs/pfc-sdk/data-structures#pfccoreparam) | Actual exposure strength applied to image |
+| [PFCCOREPARAM.iMaxStrength](/docs/pfc-sdk/data-structures#pfccoreparam) | Maximum allowed exposure strength |
+| [PFCCOREPARAM.iMinStrength](/docs/pfc-sdk/data-structures#pfccoreparam) | Minimum allowed exposure strength |
+
+`PFCCOREPARAM.iStrength` is what will actually be applied to the image. When `PFCCOREPARAM.bUseAutomaticStrengthSelection` is `true` then iStrength will be set automatically, and is influenced by all the other parameters. The actual value of iStrength will also depend on image content. Attempting to set iStrength to a specific value while bUseAutomaticStrengthSelection is true has no effect.
+
+`iMaxStrength` and `iMinStrength` are not able to be directly set within our Perfectly Clear desktop applications. Instead, they are automatically set based on the value of `PFCCOREPARAM.eAggressiveness` (low, med, or high). However, manually setting `PFCCOREPARAM.iMaxStrength` can still have an effect on the exposure correction level. Specifically, the recommended exposure level will not exceed the iMaxStrength value you set when FAE is disabled, or when FAE is enabled but a face is not detected. In FAE exposure cases (enabled and faces are found), the maximum exposure will be (50, 100, 150) based on eAggressiveness.
+
+---
+
+## Face Aware Exposure
+
+There are two operating modes for Face Aware Exposure: **High Quality** and **High Speed**. This affects the performance of the face detection process, which is used by Face Aware Exposure to gain insight into the exposure values of the people in your photos.
+
+| Mode | Description |
+|------|-------------|
+| **High Quality** (default) | Takes slightly longer to process, but finds more faces - especially backlit, small faces |
+| **High Speed** | Quicker, but is not as good at finding smaller faces |
+
+The speed difference is between 10% and 20% of total processing time, and the detection rate is about 1% to 2% better on High Quality.
+
+To change to High Speed:
+1. Set the `CALC_FAEHISPEED` feature when calling `PFC_Calc`
+2. Set `bFastFAE` to `false` when calling `PFC_AutoCorrect`
+
+---
+
+## Setting Correction Parameters
+
+There are two main ways you can set the correction parameters to be applied in this SDK:
+
+1. Read a `.preset` file exported from any Perfectly Clear desktop application using [PFC_ReadPresets](/docs/pfc-sdk/api-reference) or [PFC_ReadScenePreset](/docs/pfc-sdk/api-reference)
+2. Manually define all the various parameters in the [PFCPARAM](/docs/pfc-sdk/data-structures#pfcparam) struct, which is usually done by copy/pasting code from the 'Export to API' function in our business-related desktop applications.
+
+### 1. Reading .preset Files
+
+All our desktop applications can export presets to XML files which will end in the `.preset` file extension. These files can then easily be read using [PFC_ReadPresets](/docs/pfc-sdk/api-reference) or [PFC_ReadScenePreset](/docs/pfc-sdk/api-reference) like this:
+
+```cpp
+PFCPARAM param;
+char* profilename = "/path/to/approved_parameters.preset";
+int ret = PFC_ReadPresets(param, profilename);
+```
+
+Now, the `param` struct is populated with all the various correction parameters defined with the settings you created in the file `/path/to/approved_parameters.preset`. Here's an [FAQ that explains how to export these .preset files](https://eyeq.photos/faq/create-export-sdk-custom-presets/).
+
+This is the quickest way for you to get your custom parameters in use with this SDK.
+
+### 2. Copy / Pasting Parameter Code
+
+You can export C or C# code from Perfectly Clear Workbench or QuickDesk. Notes on how to do that are here: https://eyeq.photos/faq/create-export-sdk-custom-presets
+
+Once you have this exported text file, open it up and you will see various sections for C or C# syntax. Within these major sections, you will find the various parameters for each of the [PFCPARAM](/docs/pfc-sdk/data-structures#pfcparam) groups: [PFCCOREPARAM](/docs/pfc-sdk/data-structures#pfccoreparam), [PFCNRPARAM](/docs/pfc-sdk/data-structures#pfcnrparam), [PFCREPARAM](/docs/pfc-sdk/data-structures#pfcreparam), [PFCFBPARAM](/docs/pfc-sdk/data-structures#pfcfbparam), and [PFCV3PARAM](/docs/pfc-sdk/data-structures#pfcv3param), including layers and masks.
+
+<Callout type="info">
+This method allows you to hard-code specific parameters into the applications you compile with this SDK. This can be useful to prevent accidental changes to the parameters, which would be possible if they were being read from an external `.presets` file.
+
+If your application allows the end-user to change parameters, then this method also allows you to change individual parameters programmatically.
+</Callout>
+
+#### Full Example - Intelligent Auto Preset
+
+Here is the full C code required to set all the parameters for our Intelligent Auto preset:
+
+```cpp
+// PFCCOREPARAM - Core Corrections
+param.core.bEnabled=true;
+param.core.bAbnormalTintRemoval=false;
+param.core.eTintMode=TINTCORRECT_AGGRESSIVE;
+param.core.fTintScale=0.49f;
+param.core.bVibrancy=false;
+param.core.iVibrancy=0;
+param.core.bUseAutomaticStrengthSelection=true;
+param.core.eAggressiveness=AGGRESSIVENESS_CONSERVATIVE;
+param.core.iMaxStrength=35;
+param.core.iMinStrength=0;
+param.core.iStrength=35;
+param.core.bContrast=false;
+param.core.iContrast=87;
+param.core.eContrastMode=HIGH_DEFINITION;
+param.core.iBlackEnhancement=12;
+param.core.bHighlightPreservation=false;
+param.core.iHighlightPreservation=50;
+param.core.bSharpen=true;
+param.core.fSharpenScale=1.00f;
+param.core.bDCF=false;
+param.core.eDCFMode=DCF_STANDARD;
+param.core.fDCF=0.50f;
+param.core.bLightDiffusion=false;
+param.core.fLightDiffusion=0.20f;
+param.core.bUseFAE=false;
+param.core.bDynamicRange=true;
+param.core.bLocalContrast=true;
+param.core.iLocalContrast=15;
+param.core.iSkintoneType=0;
+param.core.iSkintoneStrengthLut=0;
+param.core.iSkintoneStrengthExposure=0;
+param.core.bSkintoneAuto=false;
+param.core.iSkintoneAutoStrength=0;
+param.core.eBiasMode=BIAS_NONE;
+param.core.fBiasScale=0.0f;
+param.core.bInfrared=false;
+param.core.fInfrared=0.0f;
+param.core.iSplitColorWarm=0;
+param.core.iSplitColorCold=0;
+param.core.bSelectiveColor=false;
+
+// PFCNRPARAM - Noise Removal
+param.nr.bEnabled=false;
+param.nr.iPreset=0;
+param.nr.iStrengthOffset=0;
+param.nr.iDetailOffset=0;
+
+// PFCREPARAM - Red Eye Correction
+param.re.bEnabled=false;
+
+// PFCFBPARAM - Face Beautification
+param.fb.bEnabled=false;
+param.fb.bSmooth=false;
+param.fb.iSmoothLevel=0;
+param.fb.eSmoothMode=SKINMODE_FACE;
+param.fb.eSmoothType=SKINSMOOTHTYPE_SUBTLE;
+param.fb.bEnlarge=false;
+param.fb.iEnlargeLevel=0;
+param.fb.bEnhance=false;
+param.fb.iEnhanceLevel=0;
+param.fb.bEyeCirc=false;
+param.fb.iEyeCirc=0;
+param.fb.bTeeth=false;
+param.fb.iTeethLevel=0;
+param.fb.bBlemish=false;
+param.fb.iBlemish=0;
+param.fb.bSlim=false;
+param.fb.iSlim=0;
+param.fb.bDeFlash=false;
+param.fb.iDeFlash=0;
+param.fb.bCatchLight=false;
+param.fb.iCatchLight=0;
+param.fb.iCatchLightMode=1;
+param.fb.bSkinToning=false;
+param.fb.iSkinToning=0;
+param.fb.eSkinToningMode=SKINMODE_FACE;
+param.fb.eSkinToningType=SKINTONINGTYPE_PALE;
+param.fb.bLipSharpen=false;
+param.fb.iLipSharpen=0;
+param.fb.eLipSharpenType=LIPSHARPENTYPE_FINE;
+param.fb.bBlush=false;
+param.fb.iBlush=0;
+
+// PFCV3PARAM - V3 Additions
+param.v3.bDynamic=true;
+param.v3.iDynamic=100;
+param.v3.iDynamicWB=100;
+param.v3.bPreprocessEV=false;
+param.v3.iPreprocessEV=0;
+param.v3.iNeutralDensity=0;
+param.v3.iColorVibrancy=0;
+strcpy(param.v3.lutInputCorrective.guid,"00000000000000000000000000000000");
+param.v3.lutInputCorrective.strength=0;
+strcpy(param.v3.lutInputSky.guid,"00000000000000000000000000000000");
+param.v3.lutInputSky.strength=0;
+strcpy(param.v3.lutInputFoliageGreen.guid,"00000000000000000000000000000000");
+param.v3.lutInputFoliageGreen.strength=0;
+strcpy(param.v3.lutInputFoliageBrown.guid,"00000000000000000000000000000000");
+param.v3.lutInputFoliageBrown.strength=0;
+strcpy(param.v3.lutOutput.guid,"00000000000000000000000000000000");
+param.v3.lutOutput.strength=0;
+
+param.v3.iFinishPositiveContrast=0;
+param.v3.iDeltaR=0;
+param.v3.iDeltaG=0;
+param.v3.iDeltaB=0;
+param.v3.iOutLUTcontrast=0;
+param.v3.iOutLUTsaturation=0;
+
+// Layer 1 - Graduated Filter (DISABLED)
+param.layer[0].iFinishTemp=0;
+param.layer[0].iFinishTint=0;
+param.layer[0].iFinishExposure=0;
+param.layer[0].iFinishBlacks=0;
+param.layer[0].iFinishShadows=0;
+param.layer[0].iFinishHighlights=0;
+param.layer[0].iFinishWhites=0;
+param.layer[0].iFinishSaturation=0;
+param.layer[0].iFinishVibrancy=0;
+param.layer[0].iFinishContrast=0;
+param.mask[0].type=MASK_NONE;
+param.mask[0].centerX=0.50000000f;
+param.mask[0].centerY=0.50000000f;
+param.mask[0].width=1.17910004f;
+param.mask[0].height=1.17910004f;
+param.mask[0].radius=0.00000000f;
+param.mask[0].feather=0.80000001f;
+param.mask[0].angle=0.00000000f;
+param.mask[0].transparency=0.00000000f;
+param.mask[0].invert=false;
+
+// Layer 2 - Graduated Filter (DISABLED)
+param.layer[1].iFinishTemp=0;
+param.layer[1].iFinishTint=0;
+param.layer[1].iFinishExposure=-25;
+param.layer[1].iFinishBlacks=0;
+param.layer[1].iFinishShadows=0;
+param.layer[1].iFinishHighlights=15;
+param.layer[1].iFinishWhites=0;
+param.layer[1].iFinishSaturation=-20;
+param.layer[1].iFinishVibrancy=0;
+param.layer[1].iFinishContrast=-25;
+param.mask[1].type=MASK_NONE;
+param.mask[1].centerX=0.50000000f;
+param.mask[1].centerY=0.50000000f;
+param.mask[1].width=1.17910004f;
+param.mask[1].height=1.17910004f;
+param.mask[1].radius=0.00000000f;
+param.mask[1].feather=0.80000001f;
+param.mask[1].angle=0.00000000f;
+param.mask[1].transparency=0.00000000f;
+param.mask[1].invert=true;
+
+// Layer 3 - Finishing Tools (DISABLED)
+param.layer[2].iFinishTemp=0;
+param.layer[2].iFinishTint=0;
+param.layer[2].iFinishExposure=0;
+param.layer[2].iFinishBlacks=0;
+param.layer[2].iFinishShadows=0;
+param.layer[2].iFinishHighlights=0;
+param.layer[2].iFinishWhites=0;
+param.layer[2].iFinishSaturation=0;
+param.layer[2].iFinishVibrancy=0;
+param.layer[2].iFinishContrast=0;
+param.mask[2].type=MASK_NONE;
+param.mask[2].centerX=0.50000000f;
+param.mask[2].centerY=0.50000000f;
+param.mask[2].width=0.00000000f;
+param.mask[2].height=0.00000000f;
+param.mask[2].radius=0.00000000f;
+param.mask[2].feather=0.50000000f;
+param.mask[2].angle=0.00000000f;
+param.mask[2].transparency=0.00000000f;
+param.mask[2].invert=false;
+```
+
+---
+
+## About Specific Correction Parameter Code
+
+Most of the correction parameter code directly corresponds to controls in our EyeQ application user interface. For example, the code `param.core.fSharpenScale=1.00f;` corresponds to a Sharpness value of 100. The labels in the applications change over time for marketing and user experience reasons, however we do not change the parameter names - in order to preserve backwards compatibility. See the full [PFCPARAM](/docs/pfc-sdk/data-structures#pfcparam) struct for the full list of parameters and their meanings and what tool in Workbench they correspond to.
+
+### Layers & Masks
+
+There are three sets of parameters grouped into layers:
+
+- **Layer 1 and Layer 2** - Features applied in the "Graduated Filter" tool
+- **Layer 3** - Contains the "Finishing Tools"
+
+The `mask[]` parameters control how the gradients are applied, with `type=MASK_NONE` disabling this layer. These corrections are usually very specific to a particular image's content - like location of a face or horizon - and as such these are rarely included in presets that will be applied to a broad range of images.
+
+### Setting LOOKs with GUIDs
+
+Several parameters use "LOOKs" to apply corrections, and the code to specify which LOOK to apply uses a GUID string like:
+
+```cpp
+strcpy(param.v3.lutInputCorrective.guid,"123451234512345");
+```
+
+This is a hash of the full path and filename of the LOOK file, as packaged in the EyeQ applications and SDK. To determine the GUID string to include in your code, you should run Workbench, preview the LOOK you want to apply, then Export to API as shown above.
+
+<Callout type="warning">
+It is not practical to attempt to determine the GUID hash outside of the Workbench application.
+</Callout>
+
+---
+
+*Copyright © 2025 EyeQ Imaging Inc*

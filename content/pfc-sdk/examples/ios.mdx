@@ -1,0 +1,192 @@
+---
+title: iOS Examples
+description: Sample code for iOS development
+---
+
+# iOS Examples
+
+Sample source code for iOS applications using the Perfectly Clear SDK.
+
+## Prerequisites
+
+- Xcode 14 or later
+- iOS 13.0+ deployment target
+- Perfectly Clear iOS framework
+
+## Installation
+
+### CocoaPods
+
+```ruby
+pod 'PerfectlyClear', '~> 10.7'
+```
+
+### Manual Installation
+
+1. Add `PerfectlyClear.xcframework` to your project
+2. Add to "Frameworks, Libraries, and Embedded Content"
+3. Set "Embed" to "Embed & Sign"
+
+## Basic Usage (Swift)
+
+### Import the Framework
+
+```swift
+import PerfectlyClear
+```
+
+### Initialize the SDK
+
+```swift
+let pfc = PerfectlyClear()
+
+// Set license
+pfc.setLicenseKey("YOUR_LICENSE_KEY")
+
+// Load AI models
+pfc.loadAIModels(Bundle.main.bundlePath)
+```
+
+### Correct an Image
+
+```swift
+func correctImage(_ image: UIImage) -> UIImage? {
+    // Load image into SDK
+    guard pfc.loadImage(image) else {
+        return nil
+    }
+    
+    // Apply auto correction with AI
+    pfc.autoCorrectWithAI()
+    
+    // Get corrected image
+    return pfc.getCorrectedImage()
+}
+```
+
+## Using Scene Detection
+
+```swift
+// Enable scene detection
+pfc.enableSceneDetection(true)
+
+// Load and correct
+pfc.loadImage(inputImage)
+pfc.autoCorrectWithAI()
+
+// Get detected scene
+let sceneId = pfc.getSceneId()
+let sceneName = pfc.getSceneLabel()
+print("Detected: \(sceneName) (ID: \(sceneId))")
+```
+
+## Loading Custom Presets
+
+```swift
+// Load preset from bundle
+if let presetPath = Bundle.main.path(forResource: "custom", ofType: "preset") {
+    pfc.loadPreset(presetPath)
+}
+
+// Apply with preset
+pfc.apply()
+```
+
+## Real-time Camera Processing
+
+```swift
+class CameraProcessor: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
+    let pfc = PerfectlyClear()
+    
+    func captureOutput(_ output: AVCaptureOutput, 
+                       didOutput sampleBuffer: CMSampleBuffer, 
+                       from connection: AVCaptureConnection) {
+        guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+            return
+        }
+        
+        // Process frame
+        if let correctedBuffer = pfc.processPixelBuffer(pixelBuffer) {
+            // Display or use corrected frame
+            DispatchQueue.main.async {
+                self.displayBuffer(correctedBuffer)
+            }
+        }
+    }
+}
+```
+
+## SwiftUI Integration
+
+```swift
+struct CorrectedImageView: View {
+    @State private var correctedImage: UIImage?
+    let sourceImage: UIImage
+    let pfc = PerfectlyClear()
+    
+    var body: some View {
+        Group {
+            if let image = correctedImage {
+                Image(uiImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+            } else {
+                ProgressView()
+            }
+        }
+        .onAppear {
+            Task {
+                correctedImage = await correctImage()
+            }
+        }
+    }
+    
+    func correctImage() async -> UIImage? {
+        return await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                pfc.loadImage(sourceImage)
+                pfc.autoCorrectWithAI()
+                let result = pfc.getCorrectedImage()
+                continuation.resume(returning: result)
+            }
+        }
+    }
+}
+```
+
+## Model Files
+
+Ensure the AI model files are included in your app bundle:
+
+| File | Purpose |
+|------|---------|
+| `sd_*_coreml.pnn` | Scene Detection model |
+| `skintone_*_coreml.pnn` | Skin Tone model |
+
+## Memory Management
+
+```swift
+// Release resources when done
+pfc.releaseImage()
+pfc.releaseEngine()
+```
+
+## Error Handling
+
+```swift
+do {
+    try pfc.loadImageOrThrow(image)
+    try pfc.autoCorrectOrThrow()
+    let result = pfc.getCorrectedImage()
+} catch PFCError.licenseInvalid {
+    print("Invalid license")
+} catch PFCError.imageLoadFailed {
+    print("Failed to load image")
+} catch {
+    print("Error: \(error)")
+}
+```
+
+---
+
+*Copyright © 2025 EyeQ Imaging Inc*

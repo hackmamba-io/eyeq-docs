@@ -1,0 +1,95 @@
+---
+title: PFCImageFile.h
+description: Header file for image file I/O with color management
+---
+
+# PFCImageFile.h
+
+Header file for the `PFCImageFile` class which handles loading and saving image files with full color management support.
+
+## Include
+
+```cpp
+#include "PFCImageFile.h"
+```
+
+## Classes
+
+### PFCImageFile
+
+See [PFCImageFile Class](/docs/api-reference/data-structures/pfc-image-file) for complete documentation.
+
+## Enumerations
+
+### PFC_FILE_LOAD_STATUS
+
+| Value | Description |
+|-------|-------------|
+| `LOAD_OK` | Success |
+| `LOAD_ERROR` | General error |
+| `LOAD_ERROR_UNSUPPORTED` | Unsupported format |
+| `LOAD_FAILED_CONVERT_SRGB` | Color conversion failed |
+
+### PFC_FLASH_STATUS
+
+| Value | Code | Description |
+|-------|------|-------------|
+| `PFC_FLASH_UNKNOWN` | -1 | Cannot determine |
+| `PFC_FLASH_NOT_FIRED` | 0 | Flash not used |
+| `PFC_FLASH_FIRED` | 1 | Flash was used |
+
+### PFC_FILETYPE
+
+| Value | Description |
+|-------|-------------|
+| `PFC_JPEG` | JPEG format |
+| `PFC_PNG` | PNG format |
+| `PFC_WEBP` | WebP format |
+
+## Quick Reference
+
+```cpp
+class PFCImageFile {
+public:
+    // Constructors
+    PFCImageFile();
+    PFCImageFile(int width, int height, const PFCImageFile &model);
+    PFCImageFile(int width, int height, int bytes_per_pixel, int stride);
+    ~PFCImageFile();
+    
+    // Loading
+    PFC_FILE_LOAD_STATUS LoadImageFile(const char *filename, 
+        bool bConvertToSRGB, const char *iccFolderPath);
+    PFC_FILE_LOAD_STATUS ExpandImageBuffer(char *data, long size, 
+        PFC_FILETYPE type, bool bConvertToSRGB, const char *iccFolderPath);
+    
+    // Saving
+    bool SaveImageFile(const char *filename, int quality, 
+        bool bConvertToOriginalColorSpace, bool bEmbedOriginalMetadata);
+    int CompressImageBuffer(unsigned char** destination, PFC_FILETYPE type,
+        int quality, bool bConvertToOriginalColorSpace, bool bEmbedOriginalMetadata);
+    
+    // Color management
+    bool SetOutputIccProfile(const char* filename);
+    
+    // EXIF
+    int exifOrientation();
+    int iISO();
+    const char* cameraModel();
+    const char* exifSoftware();
+    
+    // Properties
+    unsigned char *raw_image;
+    int width;
+    int height;
+    int bytes_per_pixel;
+    int stride;
+    bool sourceSRGB;
+    PFC_FLASH_STATUS flashStatus;
+};
+```
+
+## See Also
+
+- [PFCImageFile Class](/docs/api-reference/data-structures/pfc-image-file)
+- [Color Management Guide](/docs/guides/color-management)

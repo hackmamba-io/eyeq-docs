@@ -1,0 +1,135 @@
+---
+title: Quick Start
+description: Get started with the Perfectly Clear Web API in minutes
+---
+
+# Quick Start
+
+Get your first image corrected in under 5 minutes.
+
+## Step 1: Get Your API Key
+
+1. Visit [perfectlyclear.io](https://perfectlyclear.io)
+2. Sign up for a free account
+3. Navigate to Dashboard → API Keys
+4. Click "Create New Key"
+5. Copy your API key
+
+<Callout type="warn">
+Keep your API key secret. Never expose it in client-side code.
+</Callout>
+
+## Step 2: Test the API
+
+### Using cURL
+
+```bash
+curl -X POST https://api.perfectlyclear.io/v1/correct \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -F "image=@photo.jpg" \
+  -o corrected.jpg
+```
+
+### Using Python
+
+```python
+import requests
+
+api_key = "YOUR_API_KEY"
+url = "https://api.perfectlyclear.io/v1/correct"
+
+with open("photo.jpg", "rb") as image_file:
+    response = requests.post(
+        url,
+        headers={"Authorization": f"Bearer {api_key}"},
+        files={"image": image_file}
+    )
+
+with open("corrected.jpg", "wb") as output:
+    output.write(response.content)
+```
+
+### Using JavaScript (Node.js)
+
+```javascript
+const fs = require('fs');
+const FormData = require('form-data');
+const axios = require('axios');
+
+const apiKey = 'YOUR_API_KEY';
+const form = new FormData();
+form.append('image', fs.createReadStream('photo.jpg'));
+
+axios.post('https://api.perfectlyclear.io/v1/correct', form, {
+  headers: {
+    'Authorization': `Bearer ${apiKey}`,
+    ...form.getHeaders()
+  },
+  responseType: 'arraybuffer'
+}).then(response => {
+  fs.writeFileSync('corrected.jpg', response.data);
+  console.log('Image corrected!');
+});
+```
+
+## Step 3: Verify Results
+
+Compare your original and corrected images to see the AI-powered enhancements.
+
+## Response Formats
+
+### Direct Image (Default)
+
+By default, the API returns the corrected image directly:
+
+```bash
+curl ... -o corrected.jpg
+# Response: Binary image data
+```
+
+### JSON Response
+
+Add `response_format=json` to get a JSON response with download URL:
+
+```bash
+curl -X POST https://api.perfectlyclear.io/v1/correct \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -F "image=@photo.jpg" \
+  -F "response_format=json"
+```
+
+```json
+{
+  "success": true,
+  "id": "img_abc123",
+  "download_url": "https://cdn.perfectlyclear.io/results/img_abc123.jpg",
+  "expires_at": "2025-12-06T12:00:00Z",
+  "processing_time_ms": 245
+}
+```
+
+## Common Options
+
+### Output Quality
+
+```bash
+-F "quality=95"  # JPEG quality (1-100, default: 92)
+```
+
+### Output Format
+
+```bash
+-F "format=png"  # Output format: jpg, png, webp
+```
+
+### Correction Strength
+
+```bash
+-F "strength=80"  # Overall strength (0-100, default: 100)
+```
+
+## What's Next?
+
+- [Authentication Details](/docs/web-api/getting-started/authentication)
+- [All API Endpoints](/docs/web-api/endpoints)
+- [Error Handling](/docs/web-api/guides/errors)

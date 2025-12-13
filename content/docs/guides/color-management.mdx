@@ -1,0 +1,24 @@
+---
+title: Color Management
+description: How the SDK handles color profiles and color spaces
+---
+
+# Color Management
+
+{/* TODO: Migrate from limitations section */}
+
+## Overview
+
+- CLI and Docker solutions are fully color managed
+- Input profile is preserved as output profile by default
+- Optional conversion to any output profile (e.g., sRGB)
+
+## Important Notes
+
+<Callout type="warn">
+When loading RGB data directly via `PFCIMAGE` structure, data must be in sRGB format.
+</Callout>
+
+- Only RGB and RGBA data supported
+- CMYK not supported
+- Unassigned color space defaults to sRGB

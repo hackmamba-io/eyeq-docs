@@ -1,0 +1,177 @@
+---
+title: PFCFBPARAM
+description: Structure encapsulating face beautification parameters
+---
+
+# PFCFBPARAM Structure
+
+The `PFCFBPARAM` structure contains all parameters for face beautification (retouching) corrections including skin smoothing, eye enhancement, teeth whitening, and more.
+
+## Definition
+
+```c
+typedef struct {
+    BOOL bEnabled;              // Enable face beautification
+    BOOL bSmooth;               // Perfectly Smooth enabled
+    int iSmoothLevel;           // Smooth strength (0-100)
+    SKINMODE eSmoothMode;       // Face only or body
+    SKINSMOOTHTYPE eSmoothType; // Subtle, Default, or SuperSmooth
+    BOOL bEnlarge;              // Eye Enlarge enabled
+    int iEnlargeLevel;          // Eye Enlarge strength (0-100)
+    BOOL bEnhance;              // Eye Enhance enabled
+    int iEnhanceLevel;          // Eye Enhance strength (0-100)
+    BOOL bEyeCirc;              // Dark Circle removal enabled
+    int iEyeCirc;               // Dark Circle strength (0-100)
+    BOOL bTeeth;                // Teeth Whitening enabled
+    int iTeethLevel;            // Teeth Whitening strength (0-100)
+    BOOL bBlemish;              // Blemish Removal enabled
+    int iBlemish;               // Blemish Removal strength (0-100)
+    BOOL bSlim;                 // Face Slimming enabled
+    int iSlim;                  // Face Slimming strength (0-100)
+    BOOL bDeFlash;              // DeFlash enabled
+    int iDeFlash;               // DeFlash strength (0-100)
+    BOOL bCatchLight;           // Catch Light enabled
+    int iCatchLight;            // Catch Light strength (0-100)
+    int iCatchLightMode;        // Catch Light mode
+    BOOL bSkinToning;           // Skin Toning enabled
+    int iSkinToning;            // Skin Toning strength (0-100)
+    SKINMODE eSkinToningMode;   // Face only or body
+    SKINTONINGTYPE eSkinToningType; // Toning type
+    BOOL bLipSharpen;           // Lip Sharpen enabled
+    int iLipSharpen;            // Lip Sharpen strength (0-100)
+    LIPSHARPENTYPE eLipSharpenType; // Lip sharpen mode
+    BOOL bBlush;                // Blush enabled
+    int iBlush;                 // Blush strength (0-100)
+} PFCFBPARAM;
+```
+
+## Key Parameters
+
+### Skin Corrections
+
+| Parameter | Type | Range | Description |
+|-----------|------|-------|-------------|
+| `bEnabled` | BOOL | - | Master enable for all FB corrections |
+| `bSmooth` | BOOL | - | Skin smoothing enable |
+| `iSmoothLevel` | int | 0-100 | Smoothing strength |
+| `eSmoothMode` | enum | - | SKINMODE_FACE or SKINMODE_BODY |
+| `eSmoothType` | enum | - | Smoothing type |
+| `bBlemish` | BOOL | - | Blemish removal enable |
+| `iBlemish` | int | 0-100 | Blemish removal strength |
+
+### Eye Corrections
+
+| Parameter | Type | Range | Description |
+|-----------|------|-------|-------------|
+| `bEnlarge` | BOOL | - | Eye enlargement enable |
+| `iEnlargeLevel` | int | 0-100 | Enlargement strength |
+| `bEnhance` | BOOL | - | Eye enhancement enable |
+| `iEnhanceLevel` | int | 0-100 | Enhancement strength |
+| `bEyeCirc` | BOOL | - | Dark circle removal enable |
+| `iEyeCirc` | int | 0-100 | Dark circle removal strength |
+| `bCatchLight` | BOOL | - | Catch light enable |
+| `iCatchLight` | int | 0-100 | Catch light strength |
+
+### Face Shape
+
+| Parameter | Type | Range | Description |
+|-----------|------|-------|-------------|
+| `bSlim` | BOOL | - | Face slimming enable |
+| `iSlim` | int | 0-100 | Face slimming strength |
+
+### Other
+
+| Parameter | Type | Range | Description |
+|-----------|------|-------|-------------|
+| `bTeeth` | BOOL | - | Teeth whitening enable |
+| `iTeethLevel` | int | 0-100 | Whitening strength |
+| `bDeFlash` | BOOL | - | Flash reflection removal |
+| `iDeFlash` | int | 0-100 | DeFlash strength |
+| `bSkinToning` | BOOL | - | Skin toning enable |
+| `iSkinToning` | int | 0-100 | Skin toning strength |
+| `bLipSharpen` | BOOL | - | Lip sharpening enable |
+| `bBlush` | BOOL | - | Blush effect enable |
+
+## Enumerations
+
+### SKINMODE
+
+| Value | Description |
+|-------|-------------|
+| `SKINMODE_FACE` | Apply only to skin regions in detected faces |
+| `SKINMODE_BODY` | Apply to all detected skin regions |
+
+### SKINSMOOTHTYPE
+
+| Value | Description |
+|-------|-------------|
+| `SKINSMOOTHTYPE_SUBTLE` | Removes wrinkles/spots, keeps texture |
+| `SKINSMOOTHTYPE_DEFAULT` | Balanced smoothing |
+| `SKINSMOOTHTYPE_SUPERSMOOTH` | Aggressive, uniform complexion |
+
+### SKINTONINGTYPE
+
+| Value | Description |
+|-------|-------------|
+| `SKINTONINGTYPE_WHITE` | Whitens/bleaches skin |
+| `SKINTONINGTYPE_PALE` | Lighter, more pale |
+| `SKINTONINGTYPE_WARM` | Warms skin tone |
+| `SKINTONINGTYPE_TAN` | Darkens, natural tan |
+| `SKINTONINGTYPE_FOUNDATION` | Custom foundation color |
+
+### LIPSHARPENTYPE
+
+| Value | Description |
+|-------|-------------|
+| `LIPSHARPENTYPE_FINE` | Fine touch |
+| `LIPSHARPENTYPE_MEDIUM` | Stronger, more detail |
+| `LIPSHARPENTYPE_COARSE` | Coarsely pronounced |
+
+## Usage Example
+
+```c
+PFCPARAM param;
+
+// Enable face beautification
+param.fb.bEnabled = true;
+
+// Subtle skin smoothing on face only
+param.fb.bSmooth = true;
+param.fb.iSmoothLevel = 50;
+param.fb.eSmoothMode = SKINMODE_FACE;
+param.fb.eSmoothType = SKINSMOOTHTYPE_SUBTLE;
+
+// Light eye enhancement
+param.fb.bEnhance = true;
+param.fb.iEnhanceLevel = 30;
+
+// Teeth whitening
+param.fb.bTeeth = true;
+param.fb.iTeethLevel = 40;
+
+// Disable other features
+param.fb.bEnlarge = false;
+param.fb.bBlemish = false;
+param.fb.bSlim = false;
+```
+
+## Status Codes (PFCFB_STATUS)
+
+| Status | Value | Description |
+|--------|-------|-------------|
+| `PFC_FB_SUCCESS` | 0 | Success |
+| `PFC_FB_NOTENABLED` | 1 | Feature not enabled |
+| `PFC_FB_WARNING` | 2 | Warning (e.g., no face detected) |
+| `PFC_FB_FULLRES_REQUIRED` | 3 | Full-res image required |
+| `PFC_FB_CANCELLED` | 4 | Process cancelled |
+| `PFC_FB_NOT_AVAILABLE` | 10 | Feature not available |
+
+<Callout type="info">
+Face beautification is an optional licensed component. Contact your SDK account executive for availability.
+</Callout>
+
+## See Also
+
+- [PFCPARAM](/docs/api-reference/data-structures/pfcparam)
+- [PFCFaceRect](/docs/api-reference/data-structures/pfcfacerect)
+- [Face Detection Guide](/docs/guides/face-detection)

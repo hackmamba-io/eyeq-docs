@@ -1,0 +1,9 @@
+{
+  "title": "Guides",
+  "pages": [
+    "ai-inference",
+    "parameters",
+    "scene-detection",
+    "creative-filters"
+  ]
+}

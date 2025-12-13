@@ -1,0 +1,157 @@
+---
+title: Installation
+description: Installing the Perfectly Clear Video CLI
+---
+
+# Installation
+
+## Windows
+
+The Video CLI is included with the Perfectly Clear Desktop Video application.
+
+### Step 1: Download Desktop Video
+
+Download from the [EyeQ Downloads](https://eyeq.com/downloads) page.
+
+### Step 2: Install and Activate
+
+1. Run the installer
+2. Follow the installation wizard
+3. Launch the application and enter your license key
+
+### Step 3: Locate CLI
+
+The CLI executable is located at:
+
+```
+C:\Program Files\Perfectly Clear Video\Perfectly Clear Video.exe
+```
+
+Add to your PATH for easier access:
+
+```powershell
+# Add to PATH (run as Administrator)
+$path = [Environment]::GetEnvironmentVariable("Path", "Machine")
+$newPath = "C:\Program Files\Perfectly Clear Video"
+[Environment]::SetEnvironmentVariable("Path", "$path;$newPath", "Machine")
+```
+
+## macOS
+
+### Step 1: Download Desktop Video
+
+Download the DMG from the [EyeQ Downloads](https://eyeq.com/downloads) page.
+
+### Step 2: Install
+
+1. Open the DMG file
+2. Drag "Perfectly Clear Video" to Applications
+3. Launch and enter your license key
+
+### Step 3: CLI Access
+
+Access the CLI through the app bundle:
+
+```bash
+# Full path to CLI
+"/Applications/Perfectly Clear Video.app/Contents/MacOS/Perfectly Clear Video"
+
+# Create an alias for easier access
+alias pfcvideo='"/Applications/Perfectly Clear Video.app/Contents/MacOS/Perfectly Clear Video"'
+```
+
+Add the alias to your shell profile (`~/.zshrc` or `~/.bashrc`).
+
+## Linux
+
+The Linux solution uses a custom ffmpeg build with the Perfectly Clear filter.
+
+### Prerequisites
+
+- NVIDIA GPU with CUDA support
+- CUDA Toolkit 11.0+
+- ffmpeg dependencies
+
+### Step 1: Install CUDA
+
+```bash
+# Ubuntu/Debian
+sudo apt update
+sudo apt install nvidia-cuda-toolkit
+
+# Verify installation
+nvcc --version
+```
+
+### Step 2: Download PfC Video Package
+
+Contact EyeQ for the Linux video processing package, which includes:
+
+- `PfCVideo.sh` - Main processing script
+- `ffmpeg` - Custom build with PfC filter
+- AI models and configuration files
+
+### Step 3: Extract and Configure
+
+```bash
+# Extract package
+tar -xzf pfcvideo-linux.tar.gz
+cd pfcvideo-linux
+
+# Make executable
+chmod +x PfCVideo.sh
+chmod +x ffmpeg
+
+# Verify setup
+./PfCVideo.sh --help
+```
+
+### Step 4: Set License
+
+```bash
+# Set license environment variable
+export PFC_LICENSE_KEY="your-license-key"
+
+# Or add to your shell profile
+echo 'export PFC_LICENSE_KEY="your-license-key"' >> ~/.bashrc
+```
+
+## Verification
+
+Test your installation:
+
+```bash
+# Windows
+"Perfectly Clear Video.exe" --version
+
+# macOS
+"/Applications/Perfectly Clear Video.app/Contents/MacOS/Perfectly Clear Video" --version
+
+# Linux
+./PfCVideo.sh --version
+```
+
+## Troubleshooting
+
+### Windows: "Application not found"
+
+Ensure the full path is quoted if it contains spaces:
+```powershell
+& "C:\Program Files\Perfectly Clear Video\Perfectly Clear Video.exe" -i input.mp4 -o output.mp4
+```
+
+### macOS: "Permission denied"
+
+```bash
+chmod +x "/Applications/Perfectly Clear Video.app/Contents/MacOS/Perfectly Clear Video"
+```
+
+### Linux: CUDA errors
+
+Verify CUDA installation:
+```bash
+nvidia-smi
+nvcc --version
+```
+
+Ensure the correct CUDA version is in your PATH.

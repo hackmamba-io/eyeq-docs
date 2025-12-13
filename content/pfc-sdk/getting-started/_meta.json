@@ -1,0 +1,10 @@
+{
+  "title": "Getting Started",
+  "pages": [
+    "c-cpp",
+    "dotnet",
+    "cli",
+    "docker",
+    "sample-projects"
+  ]
+}

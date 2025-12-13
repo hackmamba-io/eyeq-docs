@@ -1,0 +1,39 @@
+---
+title: Correction Parameters
+description: Understanding and configuring image correction parameters
+---
+
+# Correction Parameters
+
+## Available Corrections
+
+1. **Perfectly Clear Core** - Exposure, contrast, color
+2. **Noise Corrections** - Noise reduction
+3. **Red-eye Removal** - Automatic red-eye fix
+4. **Retouching** - Face beautification (optional)
+5. **V3 LOOKs** - Creative filters and finishes
+
+## Setting Parameters
+
+### Using Preset Files
+
+```cpp
+PFCPARAM param;
+PFC_ReadPresets(param, "/path/to/preset.preset");
+```
+
+### Manual Configuration
+
+```cpp
+param.core.bEnabled = true;
+param.core.bUseAutomaticStrengthSelection = true;
+param.core.eAggressiveness = AGGRESSIVENESS_CONSERVATIVE;
+param.core.bSharpen = true;
+param.core.fSharpenScale = 1.0f;
+// ... more parameters
+```
+
+## See Also
+
+- [PFCPARAM Structure](/docs/pfc-sdk/api-reference/data-structures/pfcparam)
+- [PFCCOREPARAM Structure](/docs/pfc-sdk/api-reference/data-structures/pfccoreparam)

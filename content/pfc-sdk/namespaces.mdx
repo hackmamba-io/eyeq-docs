@@ -1,0 +1,72 @@
+---
+title: Namespaces
+description: Perfectly Clear SDK namespace reference
+---
+
+# Namespaces
+
+## PerfectlyClearAdapter
+
+The `PerfectlyClearAdapter` namespace contains the .NET wrapper classes for the Perfectly Clear SDK.
+
+### Classes
+
+| Class | Description |
+|-------|-------------|
+| `PerfectlyClear` | Main SDK interface class |
+| `PFCImageFile` | Image file handling class |
+| `PFCFACERECT` | Face attributes from FAE |
+| `PFCFBFACEINFO` | Face area detected from SFB library |
+
+### Structures
+
+| Structure | Description |
+|-----------|-------------|
+| `DP2PARAM` | V3 parameters struct |
+| `PFC3DLutInfo` | 3D LUT information |
+| `PFCCOREMask` | Core mask struct |
+| `PFCCOREPARAM` | Core processing parameters |
+| `PFCFBPARAM` | Face Beautification parameters |
+| `PFCNRPARAM` | Noise Removal parameters |
+| `PFCPARAM` | Master structure of all processing parameters |
+| `PFCPOINT` | Point definition |
+| `PFCRECT` | Rectangle definition |
+| `PFCREPARAM` | Red Eye Correction parameters |
+| `PFCSCENEDESCRIPTION` | Scene information |
+| `PFCSTATUS` | Process status of all sub sectors |
+| `PFCV3PARAM` | V3 parameters |
+| `SELECTIVECOLOR` | Selective color correction |
+
+### Nested Structures (in PerfectlyClear class)
+
+| Structure | Description |
+|-----------|-------------|
+| `PerfectlyClearImageTransfer` | Image definition struct |
+| `PFCENGINE` | PFC engine instance |
+| `PFCIMAGE` | Image to be used in PFC library |
+| `PFCIMAGEPROFILE` | Image profile from `PFC_Calc()` function |
+
+### Enumerations
+
+The namespace includes various enumerations for:
+
+- Pixel formats (`PFCPIXELFORMAT`)
+- Calculation features (`CYCALCALIASES`)
+- Apply status codes (`CYCAPPLYSTATUS`)
+- Aggressiveness levels (`CYCAGGRESSIVENESS`)
+- Tint correction modes (`CYCTINTCORRECT`)
+- Contrast modes (`CYCCONTRASTMODE`)
+- DCF modes (`CYCDCFMODE`)
+- Bias modes (`CYCBIASMODE`)
+- Skin modes (`CYCSKINMODE`)
+- Skin smoothing types (`CYCSMOOTHTYPE`)
+- Skin toning types (`CYCSKINTONINGTYPE`)
+- Lip sharpen types (`CYCLIPSHARPENTYPE`)
+- Mask types (`CYCMASKTYPE`)
+- Flash status (`CYCFLASHSTATUS`)
+- Reject options (`CYCREJECTOPTION`)
+- Scene detection status (`CYCAIPRESETSTATUS`)
+
+---
+
+*Copyright © 2025 EyeQ Imaging Inc*

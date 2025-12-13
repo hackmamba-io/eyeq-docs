@@ -1,0 +1,37 @@
+---
+title: AI Preset Selection
+description: Automatic preset selection using AI scene detection
+---
+
+# AI Preset Selection
+
+{/* TODO: Migrate content from mainpage.md scene_detection section */}
+
+![Scene Detection](/images/scenes.png)
+
+AI Preset Selection applies different presets based on image content, lighting, and subject matter.
+
+## Available Preset Groups
+
+| Group | Server SDK | Mobile SDK |
+|-------|-----------|------------|
+| Universal | `pro_and_universal_*.pnn` | `sd_*_tflite.pnn` |
+| Pro | `pro_and_universal_*.pnn` | `sd_*_tflite.pnn` |
+| School/Sports | `school_and_sports_*.pnn` | `sd_*_tflite.pnn` |
+
+## Using AI Preset Selection
+
+```cpp
+// Create AI Engine
+PFCENGINE engine;
+PFC_CreateEngine(&engine, modelPath, PFCFEATURE_ALL);
+
+// Load custom presets (optional)
+PFC_LoadScenePresets(&engine, "/path/to/custom.preset");
+
+// Process with AI-selected preset
+PFC_AutoCorrect(pImage, NULL, &param, &engine, NULL, 0, 0);
+
+// Get detected scene
+const char* scene = PFC_GetSceneLabel(&engine);
+```

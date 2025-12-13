@@ -1,0 +1,82 @@
+---
+title: PFCNRPARAM
+description: Structure encapsulating noise reduction parameters
+---
+
+# PFCNRPARAM Structure
+
+The `PFCNRPARAM` structure contains parameters for Perfectly Clear's noise reduction corrections.
+
+## Definition
+
+```c
+typedef struct {
+    BOOL bEnabled;      // Enable noise reduction
+    int iPreset;        // Noise reduction preset (0-4)
+    int iStrengthOffset;// Strength adjustment (-100 to 100)
+    int iDetailOffset;  // Detail preservation adjustment (-100 to 100)
+} PFCNRPARAM;
+```
+
+## Members
+
+| Member | Type | Range | Description |
+|--------|------|-------|-------------|
+| `bEnabled` | BOOL | - | Enable/disable noise reduction |
+| `iPreset` | int | 0-4 | Base noise reduction preset level |
+| `iStrengthOffset` | int | -100 to 100 | Adjust strength from preset baseline |
+| `iDetailOffset` | int | -100 to 100 | Adjust detail preservation from preset baseline |
+
+## Preset Levels
+
+| Value | Level | Description |
+|-------|-------|-------------|
+| 0 | Auto | Automatically detect and apply appropriate NR |
+| 1 | Low | Light noise reduction |
+| 2 | Medium | Moderate noise reduction |
+| 3 | High | Strong noise reduction |
+| 4 | Maximum | Maximum noise reduction |
+
+## Usage Example
+
+```c
+PFCPARAM param;
+
+// Enable noise reduction with auto detection
+param.nr.bEnabled = true;
+param.nr.iPreset = 0;  // Auto
+param.nr.iStrengthOffset = 0;
+param.nr.iDetailOffset = 0;
+```
+
+```c
+// Manual noise reduction - medium strength
+param.nr.bEnabled = true;
+param.nr.iPreset = 2;  // Medium
+param.nr.iStrengthOffset = 10;   // Slightly stronger
+param.nr.iDetailOffset = -10;    // Preserve more detail
+```
+
+## Notes
+
+<Callout type="info">
+Noise reduction requires the full-resolution image to be passed to `PFC_Calc` or `PFC_AutoCorrect`. If only a reduced-resolution image is provided, noise reduction will be skipped.
+</Callout>
+
+## Status Codes (PFCNR_STATUS)
+
+| Status | Value | Description |
+|--------|-------|-------------|
+| `PFC_NR_SUCCESS` | 0 | Success |
+| `PFC_NR_NOTENABLED` | 1 | Feature not enabled |
+| `PFC_NR_FULLRES_REQUIRED` | 2 | Full-res image required |
+| `PFC_NR_CANCELLED` | 3 | Process cancelled |
+| `PFC_NR_ERRBITMAP` | 4 | Error reading image data |
+| `PFC_NR_ERRSETTINGS` | 5 | Invalid parameter |
+| `PFC_NR_MISC_ERROR` | 6 | General error |
+| `PFC_NR_NOTFOUND` | 7 | Noise not detected |
+
+## See Also
+
+- [PFCPARAM](/docs/api-reference/data-structures/pfcparam)
+- [Correction Parameters Guide](/docs/guides/parameters)

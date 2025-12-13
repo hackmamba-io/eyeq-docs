@@ -1,4 +1,10 @@
 {
   "title": "Getting Started",
-  "pages": ["installation", "configuration", "customization"]
+  "pages": [
+    "quickstart",
+    "requirements",
+    "installation",
+    "licensing",
+    "configuration"
+  ]
 }

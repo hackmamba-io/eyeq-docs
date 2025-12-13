@@ -1,0 +1,60 @@
+---
+title: PFCPDFImage.h
+description: Header file for PDF embedded image handling
+---
+
+# PFCPDFImage.h
+
+Header file for the `PFCPDFImage` class which represents an image extracted from a PDF document.
+
+## Include
+
+```cpp
+#include "PFCPDFImage.h"
+```
+
+## Classes
+
+### PFCPDFImage
+
+See [PFCPDFImage Class](/docs/api-reference/data-structures/pfc-pdf-image) for complete documentation.
+
+## Quick Reference
+
+```cpp
+class PFCPDFImage {
+public:
+    PFCPDFImage();
+    ~PFCPDFImage();
+    
+    // Image access
+    PFCImageFile* imageFile;
+    uint32_t pdfObjectNumber;
+    
+    // Output settings
+    int iQuality;
+    bool bConvertToOriginalColorSpace;
+    bool bEmbedOriginalMetadata;
+    
+    // Raw data
+    void* compressedBuffer();
+    int compressedBufferSize;
+    
+    // Advanced
+    PoDoFo::PdfObject* pdfObject();
+    void setCompressedBuffer(void* buffer, int size, int width, int height);
+    void setCompressedBufferPath(const char* path, int width, int height);
+};
+```
+
+## Dependencies
+
+This header requires:
+- `PFCImageFile.h` (unless `WITHOUT_PFCIMAGEFILE` is defined)
+- PoDoFo library for advanced PDF access
+
+## See Also
+
+- [PFCPDFImage Class](/docs/api-reference/data-structures/pfc-pdf-image)
+- [PFCPDFImageIterator.h](/docs/api-reference/files/pfc-pdf-image-iterator-h)
+- [PDF Usage Example](/docs/examples/pdf)

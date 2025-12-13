@@ -1,0 +1,14 @@
+{
+  "title": "Video SDK",
+  "root": true,
+  "pages": [
+    "---Getting Started---",
+    "getting-started",
+    "---Platforms---",
+    "android",
+    "ios",
+    "---Reference---",
+    "api-reference",
+    "changelog"
+  ]
+}

@@ -1,0 +1,82 @@
+---
+title: License Protection
+description: Setting up and managing SDK license protection
+---
+
+# License Protection
+
+<Callout type="note">
+If you have been provided with an SDK license key by EyeQ, follow the steps below to activate your license. If you have licensed an un-protected version of this SDK, you can skip these steps - though leaving them in will not cause any problems.
+</Callout>
+
+## License Files
+
+You will receive these files from EyeQ as part of the Perfectly Clear SDK:
+
+| Filename | Purpose |
+|----------|---------|
+| `license.key` | Contains valid license key |
+| `registration_email.txt` | Email address for registration |
+| `ShaferFilechck.dll`, `.so`, `.dylib` | License handling libraries |
+| `PFCAppTrack.dll`, `libPFCAppTrack.so`, `.dylib` | License handling libraries |
+
+## Setup Instructions
+
+1. Create a writable folder accessible to the Perfectly Clear library
+2. Copy the license files (from the `sdk_license` folder in your SDK package) into this folder
+3. Supply the path to this folder in your code:
+
+**For .NET:**
+```csharp
+PerfectlyClear("c:\\path\\of\\sdk_license");
+```
+
+**For C:**
+```cpp
+PFC_SetProtectionPath("/home/user/sdk_license");
+```
+
+## License Validation
+
+The SDK validates the license every 12 hours via a network connection to `my.nalpeiron.com` (IP: 184.106.60.185).
+
+<Callout type="warning">
+Please ensure the computer running the SDK has internet access to at least this IP address.
+</Callout>
+
+During validation, the SDK reports usage data to `appsmanager.athentech.com` (52.72.235.36 or 52.203.55.148).
+
+## Validation Failure
+
+If license validation fails, `PFC_Apply()` returns `PFCAPPLYSTATUS` of `APPLY_INVALIDLICENSE` and returns the input image as-is without Perfectly Clear corrections.
+
+Failure causes include:
+- Expired license
+- Failure to reach validation server
+- Invalid license key
+- Other license errors
+
+Each error returns a different return code from `PFC_SetProtectionPath()`.
+
+## Node Licensing
+
+Each license is enabled for a certain number of "nodes" – unique computers where the SDK will be used.
+
+<Callout type="info">
+If deploying on Virtual Machines or cloud compute instances, be aware of how cloning and deploying new instances affects your node count. Contact EyeQ at any time to reset all previous activations if you are nearing your node limit.
+</Callout>
+
+## Performance Considerations
+
+Setting up license protection requires approximately **100-150ms**. For performance-sensitive operations:
+
+- ✅ Construct and use one `PerfectlyClear` class, then run many images through it
+- ❌ Do not create one instance for each photo being processed
+
+**Threading:**
+- Do NOT call `PFC_SetProtectionPath()` from individual threads
+- Instead, call `PFC_SetProtectionPath()` once, then call `PFC_Apply()` or `PFC_AutoCorrect()` in individual threads to process several images concurrently
+
+---
+
+*Copyright © 2025 EyeQ Imaging Inc*

@@ -1,0 +1,248 @@
+---
+title: Parameters
+description: Manipulating image correction parameters in the Browser SDK
+---
+
+# Parameters
+
+The Browser SDK provides full control over all image correction parameters, matching the capabilities of the desktop Workbench application.
+
+## Parameter Structure
+
+Parameters are organized into categories:
+
+```javascript
+const param = pfc.createParam();
+
+// Core corrections
+param.core.iStrength = 80;
+param.core.bVibrancy = 1;
+
+// Face beautification
+param.fb.bEnabled = 1;
+param.fb.iSmoothLevel = 50;
+
+// Noise reduction
+param.nr.bEnabled = 1;
+param.nr.iPreset = 2;
+
+// V3 parameters (advanced)
+param.v3.iFinishExposure = 10;
+```
+
+## Core Parameters (param.core)
+
+Control basic image corrections:
+
+```javascript
+// Exposure correction
+param.core.bEnabled = 1;                        // Enable core corrections
+param.core.bUseAutomaticStrengthSelection = 0;  // Manual control
+param.core.iStrength = 80;                      // Exposure strength (0-100)
+
+// Contrast
+param.core.bContrast = 1;                       // Enable contrast
+param.core.iContrast = 50;                      // Contrast level (0-100)
+
+// Local Contrast (Super Contrast)
+param.core.bLocalContrast = 1;                  // Enable local contrast
+param.core.iLocalContrast = 50;                 // Local contrast level
+
+// Vibrancy
+param.core.bVibrancy = 1;                       // Enable vibrancy
+param.core.iVibrancy = 30;                      // Vibrancy level (0-100)
+
+// Sharpening
+param.core.bSharpen = 1;                        // Enable sharpening
+param.core.fSharpenScale = 0.5;                 // Sharpening scale (0-1)
+
+// Tint correction
+param.core.bAbnormalTintRemoval = 1;            // Enable tint correction
+param.core.eTintMode = TINTCORRECTION.TINTCORRECT_DEFAULT;
+```
+
+## Face Beautification (param.fb)
+
+Control portrait enhancements:
+
+```javascript
+param.fb.bEnabled = 1;              // Enable face beautification
+
+// Skin smoothing
+param.fb.bSmooth = 1;               // Enable smoothing
+param.fb.iSmoothLevel = 50;         // Smoothing level (0-100)
+param.fb.eSmoothMode = SKINMODE.SKINMODE_FACE;
+param.fb.eSmoothType = SKINSMOOTHTYPE.SKINSMOOTHTYPE_DEFAULT;
+
+// Eye enhancement
+param.fb.bEnhance = 1;              // Enable eye enhancement
+param.fb.iEnhanceLevel = 50;        // Enhancement level (0-100)
+
+// Eye enlargement
+param.fb.bEnlarge = 1;              // Enable eye enlargement
+param.fb.iEnlargeLevel = 30;        // Enlargement level (0-100)
+
+// Teeth whitening
+param.fb.bTeeth = 1;                // Enable teeth whitening
+param.fb.iTeethLevel = 50;          // Whitening level (0-100)
+
+// Blemish removal
+param.fb.bBlemish = 1;              // Enable blemish removal
+param.fb.iBlemish = 50;             // Removal level (0-100)
+
+// Face slimming
+param.fb.bSlim = 1;                 // Enable face slimming
+param.fb.iSlim = 30;                // Slimming level (0-100)
+
+// Skin toning
+param.fb.bSkinToning = 1;           // Enable skin toning
+param.fb.iSkinToning = 30;          // Toning level (0-100)
+param.fb.eSkinToningType = SKINTONINGTYPE.SKINTONINGTYPE_WARM;
+```
+
+## Noise Reduction (param.nr)
+
+```javascript
+param.nr.bEnabled = 1;              // Enable noise reduction
+param.nr.iPreset = 2;               // Preset level (0-4)
+param.nr.iStrengthOffset = 0;       // Strength offset (-50 to 50)
+param.nr.iDetailOffset = 0;         // Detail offset (-50 to 50)
+```
+
+## V3 Parameters (param.v3)
+
+Advanced finishing corrections:
+
+```javascript
+// Finishing adjustments
+param.v3.iFinishExposure = 0;       // Exposure adjust (-100 to 100)
+param.v3.iFinishContrast = 0;       // Contrast adjust (-100 to 100)
+param.v3.iFinishSaturation = 0;     // Saturation adjust (-100 to 100)
+param.v3.iFinishVibrancy = 0;       // Vibrancy adjust (-100 to 100)
+param.v3.iFinishTemp = 0;           // Temperature adjust (-100 to 100)
+param.v3.iFinishTint = 0;           // Tint adjust (-100 to 100)
+
+// Tone adjustments
+param.v3.iFinishBlacks = 0;         // Blacks (-100 to 100)
+param.v3.iFinishShadows = 0;        // Shadows (-100 to 100)
+param.v3.iFinishHighlights = 0;     // Highlights (-100 to 100)
+param.v3.iFinishWhites = 0;         // Whites (-100 to 100)
+
+// AI Dynamic correction
+param.v3.bDynamic = 1;              // Enable AI dynamic
+param.v3.iDynamic = 50;             // Dynamic strength (0-100)
+param.v3.iDynamicWB = 50;           // Dynamic white balance (0-100)
+```
+
+## Layer Properties
+
+For gradient filters and finishing tools, use layer helpers:
+
+```javascript
+// Set layer property
+param.setLayerProperty(layerIndex, 'propertyName', value);
+
+// Get layer property  
+const value = param.getLayerProperty(layerIndex, 'propertyName');
+
+// Example: Enable finishing vibrancy on layer 2
+param.setLayerProperty(2, 'iFinishVibrancy', 50);
+param.setMaskProperty(2, 'type', PFCCORE_MASK_TYPE.MASK_ALL);
+```
+
+## Selective Color
+
+Adjust specific color ranges:
+
+```javascript
+// Get selective color value
+const hue = param.getSelectiveColor(colorIndex, 'hue');
+
+// Set selective color value
+param.setSelectiveColor(colorIndex, 'hue', 10);
+param.setSelectiveColor(colorIndex, 'saturation', 20);
+param.setSelectiveColor(colorIndex, 'luminance', -10);
+```
+
+## Creative Filters (LOOKs)
+
+Apply output LUTs using GUIDs:
+
+```javascript
+// Apply a creative filter by GUID
+param.setOutputLUT('{GUID-OF-THE-LOOK}');
+
+// Example LOOKs (see LOOKs.md for full list)
+param.setOutputLUT('{some-look-guid}');
+```
+
+## Strength Control
+
+Apply overall strength to all parameters:
+
+```javascript
+// Get the base parameters
+const baseParam = pfc.createParam();
+pfc.readScenePreset(baseParam, sceneId);
+
+// Copy parameters (to preserve original)
+const adjustedParam = pfc.createParam();
+pfc.copyParam(adjustedParam, baseParam);
+
+// Apply strength scaling (0-100)
+pfc.applyStrengthToParam(adjustedParam, 75); // 75% strength
+
+// Apply to image
+await pfc.apply(pfcImage, adjustedParam);
+```
+
+## Copying Parameters
+
+```javascript
+// Copy all parameters from source to destination
+pfc.copyParam(destinationParam, sourceParam);
+
+// Useful for:
+// - Reverting to original settings
+// - Creating variations
+// - Before applying strength scaling
+```
+
+## Built-in Presets
+
+```javascript
+import { PFCPRESETID } from './dist/pfc.mjs';
+
+pfc.setParam(param, PFCPRESETID.PRESET_NONE);          // No preset
+pfc.setParam(param, PFCPRESETID.PRESET_BEAUTIFY);      // Portrait focused
+pfc.setParam(param, PFCPRESETID.PRESET_BEAUTIFYPLUS);  // Strong beautification
+pfc.setParam(param, PFCPRESETID.PRESET_VIVID);         // Landscape/general
+pfc.setParam(param, PFCPRESETID.PRESET_IAUTO_PEOPLE);  // Default 2023
+```
+
+## Example: Custom Parameter Setup
+
+```javascript
+// Start with no preset
+const param = pfc.createParam();
+pfc.setParam(param, PFCPRESETID.PRESET_NONE);
+
+// Enable and configure core corrections
+param.core.bEnabled = 1;
+param.core.iStrength = 70;
+param.core.bVibrancy = 1;
+param.core.iVibrancy = 25;
+param.core.bLocalContrast = 1;
+param.core.iLocalContrast = 40;
+
+// Enable face beautification for portraits
+param.fb.bEnabled = 1;
+param.fb.bSmooth = 1;
+param.fb.iSmoothLevel = 40;
+param.fb.bEnhance = 1;
+param.fb.iEnhanceLevel = 30;
+
+// Apply corrections
+await pfc.apply(pfcImage, param);
+pfcImage.drawToCanvas(canvas);
+```

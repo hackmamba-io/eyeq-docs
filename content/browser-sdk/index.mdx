@@ -1,0 +1,119 @@
+---
+title: Browser SDK
+description: Client-side image correction using WebAssembly
+---
+
+# EyeQ Browser SDK
+
+The Browser SDK brings Perfectly Clear's AI-powered image correction directly to the browser using WebAssembly. Process images client-side with no server required.
+
+## Version 2.0.3
+
+## Overview
+
+The Browser SDK enables real-time image correction in web applications:
+
+- **Client-Side Processing**: All corrections happen in the browser
+- **AI-Powered**: Full scene detection and AI corrections
+- **WebAssembly**: Near-native performance
+- **Privacy First**: Images never leave the user's device
+
+## Key Features
+
+- 🚀 **Real-time Preview**: See corrections as they're applied
+- 🤖 **AI Scene Detection**: Automatic scene-based corrections
+- 🎨 **Full Parameter Control**: Adjust any correction parameter
+- 📦 **Local AI Models**: No server calls for AI inference
+- 🔒 **Secure**: Process images without uploading
+
+## Quick Start
+
+```javascript
+import { Pfc, PFCFEATURE, InferenceOption } from './dist/pfc.mjs';
+
+// Initialize
+const pfc = new Pfc();
+await pfc.init({
+  distDir: './dist',
+  clientAPIKey: 'YOUR_API_KEY',
+  urlGetCertificate: 'https://cert.perfectlyclear.photos/wasm_certificate/',
+  inference: InferenceOption.local,
+});
+
+// Load scene presets
+const preset = await fetch('./presets/sd.preset').then(r => r.text());
+await pfc.loadScenePresets(preset);
+
+// Create image and parameters
+const canvas = document.getElementById('myCanvas');
+const pfcImage = pfc.createImage(canvas);
+const param = pfc.createParam();
+
+// Calculate AI features and apply corrections
+const aiFeatures = await pfc.calcAIFeatures(pfcImage, PFCFEATURE.CALC_ALL);
+pfc.readScenePreset(param, aiFeatures.sceneID);
+await pfc.apply(pfcImage, param);
+
+// Render result
+pfcImage.drawToCanvas(canvas);
+```
+
+## SDK Components
+
+| Component | Description |
+|-----------|-------------|
+| `pfc.mjs` | Main SDK module |
+| `pfc.wasm` | WebAssembly binary |
+| `pfc.d.mts` | TypeScript definitions |
+| `models/` | AI model files (`.pnn`) |
+| `presets/` | Scene detection presets |
+
+## AI Inference Options
+
+| Mode | Description | Use Case |
+|------|-------------|----------|
+| `local` | Process in browser | Fastest, requires model download |
+| `remote` | Use server | Smaller download, requires server |
+| `remoteSocket` | WebSocket server | Legacy support |
+
+## Browser Support
+
+| Browser | Version | Notes |
+|---------|---------|-------|
+| Chrome | 90+ | Full support |
+| Firefox | 89+ | Full support |
+| Safari | 15+ | Full support |
+| Edge | 90+ | Full support |
+
+## Requirements
+
+- **WebAssembly**: Must be supported
+- **ES Modules**: Required for SDK import
+- **Canvas API**: For image rendering
+- **~15MB Download**: SDK + models on first load
+
+## Examples
+
+The SDK includes 6 example implementations:
+
+| Example | Description |
+|---------|-------------|
+| Option A | Basic auto-enhance toggle |
+| Option B | Manual parameter controls |
+| Option C | Scene detection with presets |
+| Option D | Strength sliders |
+| Option E | Custom corrections |
+| Option F | Batch processing |
+
+## Next Steps
+
+<Cards>
+  <Card title="Installation" href="/docs/browser-sdk/getting-started/installation" />
+  <Card title="Quick Start" href="/docs/browser-sdk/getting-started/quickstart" />
+  <Card title="API Reference" href="/docs/browser-sdk/api-reference" />
+  <Card title="Examples" href="/docs/browser-sdk/examples" />
+</Cards>
+
+---
+
+*Copyright © 2025 EyeQ Imaging Inc. All rights reserved.*

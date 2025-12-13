@@ -1,0 +1,174 @@
+---
+title: Batch Processing
+description: Process multiple images asynchronously
+---
+
+# Batch Processing
+
+Process multiple images in a single request using asynchronous batch jobs.
+
+## Submit Batch Job
+
+### Endpoint
+
+```
+POST https://api.perfectlyclear.io/v1/correct/batch
+```
+
+### Request
+
+```json
+{
+  "images": [
+    {"url": "https://example.com/photo1.jpg"},
+    {"url": "https://example.com/photo2.jpg"},
+    {"url": "https://example.com/photo3.jpg"}
+  ],
+  "settings": {
+    "preset": "auto",
+    "strength": 80,
+    "output_format": "jpeg",
+    "quality": 92
+  },
+  "webhook_url": "https://your-site.com/webhook"
+}
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "job_id": "batch_abc123",
+  "status": "queued",
+  "image_count": 3,
+  "estimated_time_seconds": 15
+}
+```
+
+## Check Job Status
+
+### Endpoint
+
+```
+GET https://api.perfectlyclear.io/v1/jobs/{job_id}
+```
+
+### Response (Processing)
+
+```json
+{
+  "success": true,
+  "job_id": "batch_abc123",
+  "status": "processing",
+  "progress": {
+    "total": 3,
+    "completed": 1,
+    "failed": 0
+  }
+}
+```
+
+### Response (Complete)
+
+```json
+{
+  "success": true,
+  "job_id": "batch_abc123",
+  "status": "completed",
+  "results": [
+    {
+      "input_url": "https://example.com/photo1.jpg",
+      "output_url": "https://api.perfectlyclear.io/v1/downloads/xyz789",
+      "status": "success"
+    },
+    {
+      "input_url": "https://example.com/photo2.jpg",
+      "output_url": "https://api.perfectlyclear.io/v1/downloads/xyz790",
+      "status": "success"
+    },
+    {
+      "input_url": "https://example.com/photo3.jpg",
+      "status": "failed",
+      "error": "Failed to download image"
+    }
+  ],
+  "completed_at": "2025-12-05T15:30:00Z"
+}
+```
+
+## Webhook Notification
+
+When the job completes, a POST request is sent to your webhook URL:
+
+```json
+{
+  "event": "batch.completed",
+  "job_id": "batch_abc123",
+  "status": "completed",
+  "results": [...]
+}
+```
+
+## Example: Python
+
+```python
+import requests
+import time
+
+API_KEY = "YOUR_API_KEY"
+BASE_URL = "https://api.perfectlyclear.io/v1"
+
+def process_batch(image_urls):
+    # Submit batch job
+    response = requests.post(
+        f"{BASE_URL}/correct/batch",
+        headers={"Authorization": f"Bearer {API_KEY}"},
+        json={
+            "images": [{"url": url} for url in image_urls],
+            "settings": {"preset": "auto", "strength": 80}
+        }
+    )
+    
+    job_id = response.json()["job_id"]
+    print(f"Batch job started: {job_id}")
+    
+    # Poll for completion
+    while True:
+        status = requests.get(
+            f"{BASE_URL}/jobs/{job_id}",
+            headers={"Authorization": f"Bearer {API_KEY}"}
+        ).json()
+        
+        if status["status"] == "completed":
+            return status["results"]
+        elif status["status"] == "failed":
+            raise Exception("Batch job failed")
+        
+        print(f"Progress: {status['progress']['completed']}/{status['progress']['total']}")
+        time.sleep(2)
+
+# Usage
+results = process_batch([
+    "https://example.com/photo1.jpg",
+    "https://example.com/photo2.jpg",
+    "https://example.com/photo3.jpg"
+])
+
+for result in results:
+    print(f"{result['input_url']} -> {result.get('output_url', 'FAILED')}")
+```
+
+## Limits
+
+| Limit | Value |
+|-------|-------|
+| Max images per batch | 100 |
+| Max total size | 500 MB |
+| Job expiration | 24 hours |
+| Result download window | 7 days |
+
+## See Also
+
+- [Correct Image](/docs/web-api/endpoints/correct)
+- [Webhooks](/docs/web-api/getting-started/webhooks)

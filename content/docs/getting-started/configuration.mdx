@@ -1,92 +1,32 @@
 ---
 title: Configuration
-description: Learn how to configure your Hackmamba documentation project
+description: Configure the SDK for your use case
 ---
 
 # Configuration
 
-Configure your Hackmamba documentation template to match your project's needs.
+{/* TODO: Add configuration content */}
 
-## Basic Configuration
+## Loading AI Models
 
-### Site Information
+AI models are distributed as `.pnn` files and must be loaded before use:
 
-Update your site information in `lib/layout.shared.tsx`:
-
-```typescript
-export function baseOptions(): BaseLayoutProps {
-  return {
-    nav: {
-      title: "Your Project Name",
-      // ... other configuration
-    },
-  };
-}
+```cpp
+PFCENGINE engine;
+int ret = PFC_CreateEngine(&engine, 
+    pathToModels,
+    PFCFEATURE_ALL
+);
 ```
 
-### Navigation Structure
+## Setting Parameters
 
-Configure your navigation in `content/docs/meta.json`:
+Parameters can be set in two ways:
 
-```json
-{
-  "title": "Documentation",
-  "pages": [
-    "index",
-    {
-      "title": "Getting Started",
-      "pages": ["overview", "installation"]
-    }
-  ]
-}
+1. **Load from preset file**:
+```cpp
+PFCPARAM param;
+PFC_ReadPresets(param, "/path/to/preset.preset");
 ```
 
-## Advanced Configuration
-
-### Custom Styling
-
-Modify colors and styling in `app/global.css`:
-
-```css
-:root {
-  --primary-color: #your-color;
-  --secondary-color: #your-secondary-color;
-}
-```
-
-### Search Configuration
-
-Enable or disable search functionality:
-
-```typescript
-export function baseOptions(): BaseLayoutProps {
-  return {
-    search: true, // Enable search
-    // ... other options
-  };
-}
-```
-
-## Environment Variables
-
-Create a `.env.local` file for environment-specific settings:
-
-```bash
-NEXT_PUBLIC_SITE_URL=https://your-domain.com
-NEXT_PUBLIC_SITE_NAME=Your Site Name
-```
-
-## Next Steps
-
-<Cards>
-  <Card
-    title="Customization"
-    href="/docs/customization"
-    description="Customize the template to match your brand"
-  />
-  <Card
-    title="Content Creation"
-    href="/docs/overview"
-    description="Learn how to create great documentation content"
-  />
-</Cards>
+2. **Set programmatically** (see Parameters guide)

@@ -1,0 +1,11 @@
+{
+  "title": "Guides",
+  "pages": [
+    "ai-preset-selection",
+    "parameters",
+    "looks",
+    "pdf-processing",
+    "color-management",
+    "face-detection"
+  ]
+}

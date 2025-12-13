@@ -1,0 +1,208 @@
+---
+title: AI Inference
+description: Understanding local vs remote AI inference in the Browser SDK
+---
+
+# AI Inference
+
+The Browser SDK supports multiple AI inference modes, allowing you to choose between client-side processing and server-side processing.
+
+## Inference Options
+
+```typescript
+enum InferenceOption {
+  local,        // Process AI in browser (recommended)
+  remote,       // Process AI on server
+  remoteSocket  // Legacy WebSocket server
+}
+```
+
+## Local Inference (Recommended)
+
+Local inference processes AI features entirely in the browser using WebAssembly.
+
+```javascript
+import { Pfc, InferenceOption } from './dist/pfc.mjs';
+
+const options = {
+  distDir: './dist',
+  modelsDir: './dist/models',
+  inference: InferenceOption.local,
+  // ...
+};
+
+const pfc = new Pfc();
+await pfc.init(options);
+```
+
+### Advantages
+- **Fastest processing** - No network latency
+- **Privacy** - Images never leave the device
+- **Offline capable** - Works without internet (after initial setup)
+- **No server costs** - All processing is client-side
+
+### Considerations
+- **Initial download** - ~12MB of model files on first use
+- **Memory usage** - Models are loaded into browser memory
+- **Device dependent** - Performance varies by device
+
+### Model Loading
+
+On first use, the SDK downloads AI models to the browser cache:
+
+```javascript
+// Models are downloaded automatically
+await pfc.createProfile(pfcImage, features, aiFeatures);
+
+// Check console for timing and caching info
+// "Model loaded from cache" or "Model downloaded"
+```
+
+## Remote Inference
+
+Remote inference sends images to an external server for AI processing.
+
+```javascript
+const options = {
+  distDir: './dist',
+  inference: InferenceOption.remote,
+  pfcAiServerUrl: 'https://your-ai-server.com',
+  // ...
+};
+```
+
+### Advantages
+- **Smaller initial download** - No model files needed
+- **Consistent performance** - Server hardware is controlled
+- **Lower client memory** - Models stay on server
+
+### Considerations
+- **Network latency** - Each image requires a round trip
+- **Server costs** - You need to run the AI server
+- **No offline support** - Requires internet connection
+
+### Setting Up Remote Server
+
+The remote AI server is the same as used in previous SDK versions:
+
+```javascript
+const options = {
+  inference: InferenceOption.remote,
+  pfcAiServerUrl: 'https://ai.yourcompany.com',
+  // ...
+};
+```
+
+## Hybrid Approach
+
+You can switch inference modes dynamically based on conditions:
+
+```javascript
+// Check for good network and prefer remote
+async function chooseInferenceMode() {
+  const connection = navigator.connection;
+  
+  if (connection && connection.effectiveType === '4g') {
+    // Fast network - can use remote
+    return InferenceOption.remote;
+  }
+  
+  // Default to local for reliability
+  return InferenceOption.local;
+}
+
+const inference = await chooseInferenceMode();
+
+const options = {
+  inference,
+  pfcAiServerUrl: inference === InferenceOption.remote 
+    ? 'https://ai.yourcompany.com' 
+    : undefined,
+  // ...
+};
+```
+
+## AI Features
+
+The SDK calculates various AI features:
+
+```javascript
+import { PFCFEATURE } from './dist/pfc.mjs';
+
+const aiFeatures = 
+  PFCFEATURE.CALC_SCENE_DETECTION |  // Detect scene type
+  PFCFEATURE.CALC_SKINTONE |         // Detect skin tones
+  PFCFEATURE.CALC_AICOLOR |          // AI white balance
+  PFCFEATURE.CALC_DYNAMIC;           // Dynamic corrections
+
+await pfc.createProfile(pfcImage, features, aiFeatures);
+```
+
+### Feature Flags
+
+| Flag | Description | Use Case |
+|------|-------------|----------|
+| `CALC_SCENE_DETECTION` | Identify scene type (portrait, landscape, etc.) | Auto-preset selection |
+| `CALC_SKINTONE` | Detect skin tone range | Portrait optimization |
+| `CALC_AICOLOR` | AI-based white balance | Color correction |
+| `CALC_DYNAMIC` | Dynamic range analysis | Exposure optimization |
+
+## Performance Comparison
+
+| Mode | First Use | Subsequent | Network | Privacy |
+|------|-----------|------------|---------|---------|
+| Local | Slower (download) | Fast | None | ✅ High |
+| Remote | Fast | Medium | Each image | ⚠️ Medium |
+
+## Best Practices
+
+### 1. Preload Models
+
+For local inference, preload models early:
+
+```javascript
+// Preload in background after page load
+window.addEventListener('load', async () => {
+  const pfc = new Pfc();
+  await pfc.init(options);
+  await pfc._loadModels(); // Preload AI models
+});
+```
+
+### 2. Show Loading State
+
+AI inference can take a few seconds:
+
+```javascript
+showLoader('Analyzing image...');
+
+await pfc.createProfile(pfcImage, features, aiFeatures);
+
+hideLoader();
+```
+
+### 3. Handle Errors
+
+```javascript
+try {
+  await pfc.createProfile(pfcImage, features, aiFeatures);
+} catch (error) {
+  if (options.inference === InferenceOption.remote) {
+    console.warn('Remote AI failed, falling back to local');
+    // Reinitialize with local inference
+  }
+}
+```
+
+## Timing Information
+
+Monitor AI performance in development:
+
+```javascript
+const start = performance.now();
+
+await pfc.createProfile(pfcImage, features, aiFeatures);
+
+console.log(`AI inference took ${performance.now() - start}ms`);
+// Typical: 500-2000ms depending on device and image size
+```

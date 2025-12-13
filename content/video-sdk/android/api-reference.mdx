@@ -1,0 +1,193 @@
+---
+title: Android API Reference
+description: Complete API reference for the Video SDK on Android
+---
+
+# Android API Reference
+
+Complete API documentation for the Perfectly Clear Video SDK on Android.
+
+## DynamicProcessor
+
+Main class for video frame processing.
+
+### Constructor
+
+```kotlin
+DynamicProcessor(context: Context)
+```
+
+Creates a new processor instance.
+
+### Methods
+
+#### loadModels
+
+```kotlin
+fun loadModels(modelsPath: String): Boolean
+```
+
+Load AI models from the specified assets path.
+
+**Parameters:**
+- `modelsPath`: Path to models folder in assets
+
+**Returns:** `true` if successful
+
+---
+
+#### process
+
+```kotlin
+fun process(
+    input: ByteArray, 
+    width: Int, 
+    height: Int
+): ByteArray
+```
+
+Process a single frame.
+
+**Parameters:**
+- `input`: Input frame data (RGBA)
+- `width`: Frame width in pixels
+- `height`: Frame height in pixels
+
+**Returns:** Processed frame data
+
+---
+
+#### setStrength
+
+```kotlin
+fun setStrength(strength: Int)
+```
+
+Set overall correction strength.
+
+**Parameters:**
+- `strength`: Value from 0 to 100
+
+---
+
+#### setWhiteBalance
+
+```kotlin
+fun setWhiteBalance(strength: Int)
+```
+
+Set white balance correction strength.
+
+**Parameters:**
+- `strength`: Value from 0 to 100
+
+---
+
+#### setFrameSkip
+
+```kotlin
+fun setFrameSkip(skip: Int)
+```
+
+Set frames to skip between AI detections.
+
+**Parameters:**
+- `skip`: Value from 0 to 100 (default: 4)
+
+---
+
+#### setQuality
+
+```kotlin
+fun setQuality(quality: Quality)
+```
+
+Set processing quality mode.
+
+**Parameters:**
+- `quality`: `Quality.HIGH`, `Quality.BALANCED`, or `Quality.PERFORMANCE`
+
+---
+
+#### release
+
+```kotlin
+fun release()
+```
+
+Release resources. Call when done processing.
+
+---
+
+#### getVersion
+
+```kotlin
+companion object fun getVersion(): String
+```
+
+Get SDK version string.
+
+---
+
+## Quality Enum
+
+```kotlin
+enum class Quality {
+    HIGH,       // Best quality, slower
+    BALANCED,   // Default balance
+    PERFORMANCE // Fastest, lower quality
+}
+```
+
+## Exceptions
+
+### ModelLoadException
+
+```kotlin
+class ModelLoadException(message: String) : Exception
+```
+
+Thrown when model loading fails.
+
+### ProcessingException
+
+```kotlin
+class ProcessingException(message: String) : Exception
+```
+
+Thrown when frame processing fails.
+
+## Example
+
+```kotlin
+class VideoActivity : AppCompatActivity() {
+    private lateinit var processor: DynamicProcessor
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        
+        // Initialize
+        processor = DynamicProcessor(this)
+        processor.loadModels("models/")
+        processor.setStrength(80)
+        processor.setWhiteBalance(50)
+        processor.setQuality(Quality.BALANCED)
+    }
+    
+    fun onFrame(frame: ByteArray, width: Int, height: Int) {
+        val processed = processor.process(frame, width, height)
+        displayFrame(processed)
+    }
+    
+    override fun onDestroy() {
+        processor.release()
+        super.onDestroy()
+    }
+}
+```
+
+## See Also
+
+- [Android Setup](/docs/video-sdk/android/setup)
+- [Android Usage](/docs/video-sdk/android/usage)
+- [iOS Reference](/docs/video-sdk/ios/api-reference)

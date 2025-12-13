@@ -1,0 +1,126 @@
+---
+title: Windows Examples
+description: Sample code for Windows platforms
+---
+
+# Windows Examples
+
+Sample source code for Windows desktop applications using the Perfectly Clear SDK.
+
+## Prerequisites
+
+- Visual Studio 2019 or later
+- `vcruntime140.dll` in system PATH
+- ONNX runtime DLL in PATH (for AI features)
+
+## Simple AI Sample
+
+The simplest way to use Perfectly Clear AI on Windows.
+
+### 1. Setup License Protection
+
+```cpp
+// Set the path to the license files
+PFC_SetProtectionPath("C:\\path\\to\\sdk_license");
+```
+
+### 2. Load Image to Correct
+
+```cpp
+PFCImageFile imageFile;
+imageFile.LoadImage(L"C:\\path\\to\\input.jpg");
+PFCIMAGE image = imageFile.GetPFCImage();
+```
+
+### 3. Initialize the AI Engines
+
+```cpp
+PFCENGINE engine;
+PFC_CreateEngine(&engine, PFCENGINE_AI);
+PFC_LoadAIModels(engine, "C:\\path\\to\\models\\");
+```
+
+### 4. Perform Full Correction
+
+```cpp
+PFCPARAM param;
+PFC_ReadPresets(param, "C:\\path\\to\\preset.preset");
+PFC_AutoCorrect(engine, &image, NULL, &param, CALC_ALL, false, NULL);
+```
+
+### 5. Save the Corrected Image
+
+```cpp
+imageFile.SaveImage(L"C:\\path\\to\\output.jpg", 92);
+```
+
+## Visual Studio Project Setup
+
+### Include Directories
+
+Add to your project's include paths:
+```
+$(SDK_PATH)\include
+```
+
+### Library Directories
+
+Add to your project's library paths:
+```
+$(SDK_PATH)\lib\x64
+```
+
+### Link Libraries
+
+```
+PerfectlyClearPro.lib
+PFCImageFile.lib
+```
+
+### DLL Deployment
+
+Copy these DLLs to your output directory:
+- `PerfectlyClearPro.dll`
+- `PFCImageFile.dll`
+- `onnxruntime.dll` (for AI features)
+- License protection DLLs
+
+## AVX Optimization
+
+For better performance on modern CPUs, use the AVX-optimized libraries:
+
+```
+PerfectlyClearProAVX.dll
+PerfectlyClearProAVX.lib
+```
+
+<Callout type="warning">
+AVX is required for AI Preset Detection and AI Correction models. AVX2 is required for license-protected SDKs.
+</Callout>
+
+## UTF-8 Path Support
+
+The SDK supports UTF-8 characters in file paths on Windows:
+
+```cpp
+// Use wide string functions
+imageFile.LoadImage(L"C:\\фотографии\\изображение.jpg");
+```
+
+## Building the Samples
+
+1. Open the solution file in Visual Studio
+2. Set the build configuration (Debug/Release, x64)
+3. Update include and library paths to match your SDK location
+4. Build the solution
+
+## Running the Samples
+
+```cmd
+cd samples\Win\SimpleAiSample\x64\Release
+SimpleAiSample.exe input.jpg output.jpg
+```
+
+---
+
+*Copyright © 2025 EyeQ Imaging Inc*

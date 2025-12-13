@@ -1,0 +1,79 @@
+---
+title: Video CLI
+description: Command-line video processing with Perfectly Clear
+---
+
+# Perfectly Clear Video CLI
+
+The Video CLI provides command-line access to Perfectly Clear video correction capabilities for batch processing workflows.
+
+## Overview
+
+Process video files from the command line on Windows, macOS, and Linux. Ideal for:
+
+- Batch video processing
+- Automated workflows
+- Server-side video enhancement
+- Integration with video pipelines
+
+## Platforms
+
+| Platform | Method | GPU Acceleration |
+|----------|--------|------------------|
+| Windows | Desktop Video app | OpenGL |
+| macOS | Desktop Video app | OpenGL |
+| Linux | ffmpeg + PfC filter | CUDA (NVIDIA) |
+
+## Quick Start
+
+### Windows / macOS
+
+```bash
+# Basic usage
+"Perfectly Clear Video.exe" -i input.mp4 -o output.mp4
+
+# With strength adjustment
+"Perfectly Clear Video.exe" -i input.mp4 -o output.mp4 -s 80
+```
+
+### Linux
+
+```bash
+# Basic usage
+./PfCVideo.sh -i input.mp4 -o output.mp4
+
+# With strength adjustment
+./PfCVideo.sh -i input.mp4 -o output.mp4 -s 80
+```
+
+## Key Features
+
+- **AI-Powered Correction**: Automatic exposure, color, and contrast adjustments
+- **White Balance**: Intelligent color temperature correction
+- **Frame Smoothing**: Reduces flicker between frames
+- **Split Processing**: Preview corrections on part of the frame
+- **GPU Acceleration**: Fast processing with hardware acceleration
+
+## Requirements
+
+### Windows / macOS
+- Perfectly Clear Desktop Video application (licensed)
+- OpenGL 3.0+ capable GPU
+
+### Linux
+- Custom ffmpeg build with Perfectly Clear filter
+- NVIDIA GPU with CUDA support
+- CUDA toolkit installed
+
+## Next Steps
+
+<Cards>
+  <Card title="Installation" href="/docs/video-cli/installation" />
+  <Card title="Usage Guide" href="/docs/video-cli/usage" />
+  <Card title="Command Options" href="/docs/video-cli/options" />
+  <Card title="Examples" href="/docs/video-cli/examples" />
+</Cards>
+
+---
+
+*Copyright © 2025 EyeQ Imaging Inc. All rights reserved.*

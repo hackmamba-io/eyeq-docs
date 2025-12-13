@@ -1,0 +1,185 @@
+---
+title: PDF Processing Examples
+description: Sample code for processing images in PDF files
+---
+
+# PDF Processing Examples
+
+The Perfectly Clear SDK can extract, correct, and replace images embedded in PDF files.
+
+## Overview
+
+The SDK provides classes for working with PDF files:
+
+| Class | Purpose |
+|-------|---------|
+| `PFCPDFImage` | Access individual PDF embedded images |
+| `PFCPDFImageIterator` | Iterate over images in a PDF |
+| `PFCImageFile` | Read/write operations |
+
+## Basic Workflow
+
+1. Load the PDF file
+2. Iterate over embedded images
+3. Correct each image
+4. Replace the image in the PDF
+5. Save the modified PDF
+
+## C++ Example
+
+### Load PDF and Setup Engine
+
+```cpp
+#include "PFCPDFImage.h"
+#include "PFCPDFImageIterator.h"
+
+// Setup license
+PFC_SetProtectionPath("/path/to/sdk_license");
+
+// Create correction engine
+PFCENGINE engine;
+PFC_CreateEngine(&engine, PFCENGINE_AI);
+PFC_LoadAIModels(engine, "/path/to/models/");
+
+// Load correction parameters
+PFCPARAM param;
+PFC_ReadPresets(param, "/path/to/preset.preset");
+
+// Open PDF file
+PFCPDFImageIterator pdfIterator;
+pdfIterator.Open("/path/to/input.pdf");
+```
+
+### Iterate and Correct Images
+
+```cpp
+// Iterate over all images in the PDF
+PFCPDFImage pdfImage;
+while (pdfIterator.GetNextImage(&pdfImage)) {
+    // Get the image data
+    PFCIMAGE image;
+    pdfImage.GetImage(&image);
+    
+    // Check if image is suitable for correction
+    if (image.width < 32 || image.height < 32) {
+        continue;  // Skip very small images
+    }
+    
+    // Apply corrections
+    PFCIMAGEPROFILE profile;
+    PFC_Calc(engine, &image, NULL, &profile, CALC_ALL);
+    PFC_Apply(engine, &image, &profile, &param);
+    
+    // Replace the image in the PDF
+    pdfImage.SetImage(&image);
+    
+    // Release profile
+    PFC_ReleaseProfile(&profile);
+}
+```
+
+### Save the Modified PDF
+
+```cpp
+// Save the PDF with corrected images
+pdfIterator.Save("/path/to/output.pdf");
+
+// Cleanup
+pdfIterator.Close();
+PFC_ReleaseEngine(&engine);
+```
+
+## C# Example
+
+```csharp
+using PerfectlyClearAdapter;
+
+// Create SDK instance
+var pfc = new PerfectlyClear("C:\\path\\to\\sdk_license");
+pfc.LoadAIModels("C:\\path\\to\\models\\");
+pfc.ReadPresets("C:\\path\\to\\preset.preset");
+
+// Open PDF
+var pdfIterator = new PFCPDFImageIterator();
+pdfIterator.Open("C:\\path\\to\\input.pdf");
+
+// Process each image
+while (pdfIterator.GetNextImage(out var pdfImage))
+{
+    // Get image
+    var bitmap = pdfImage.GetBitmap();
+    
+    if (bitmap.Width < 32 || bitmap.Height < 32)
+        continue;
+    
+    // Correct
+    pfc.LoadBitmap(bitmap);
+    pfc.AutoCorrectWithAI();
+    var corrected = pfc.GetCorrectedBitmap();
+    
+    // Replace
+    pdfImage.SetBitmap(corrected);
+}
+
+// Save
+pdfIterator.Save("C:\\path\\to\\output.pdf");
+pdfIterator.Close();
+```
+
+## Handling Large PDFs
+
+For PDFs with many images:
+
+```cpp
+// Track progress
+int imageCount = 0;
+int totalImages = pdfIterator.GetImageCount();
+
+while (pdfIterator.GetNextImage(&pdfImage)) {
+    imageCount++;
+    printf("Processing image %d of %d\n", imageCount, totalImages);
+    
+    // ... process image ...
+}
+```
+
+## Error Handling
+
+```cpp
+// Check if PDF opened successfully
+if (!pdfIterator.Open("/path/to/input.pdf")) {
+    printf("Failed to open PDF: %s\n", pdfIterator.GetLastError());
+    return -1;
+}
+
+// Check each image
+while (pdfIterator.GetNextImage(&pdfImage)) {
+    PFCIMAGE image;
+    if (!pdfImage.GetImage(&image)) {
+        printf("Failed to extract image, skipping\n");
+        continue;
+    }
+    
+    // ... process image ...
+}
+```
+
+## Supported PDF Features
+
+- Un-flattened PDFs with embedded JPEG images
+- Multiple images per page
+- Multi-page PDFs
+
+<Callout type="warning">
+Flattened PDFs (where images are merged into the page) are not supported. The SDK only works with PDFs containing discrete embedded images.
+</Callout>
+
+## Performance Tips
+
+- Process PDFs with many images in batches
+- Use multi-threading for large batches
+- Consider memory usage for high-resolution images
+
+---
+
+*Copyright © 2025 EyeQ Imaging Inc*

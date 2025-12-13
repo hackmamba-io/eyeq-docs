@@ -1,0 +1,281 @@
+---
+title: iOS Usage
+description: Using the Video SDK in iOS applications
+---
+
+# iOS Usage
+
+Learn how to use the Perfectly Clear Video SDK to process video frames in real-time on iOS.
+
+## Basic Usage
+
+### Processing Camera Frames
+
+```swift
+import PerfectlyClearDynamic
+import AVFoundation
+
+class CameraProcessor {
+    private var processor: PFCDynamicProcessor?
+    
+    func initialize() {
+        // Create processor
+        processor = PFCDynamicProcessor()
+        
+        // Load models from bundle
+        let modelsPath = Bundle.main.path(forResource: "Models", ofType: nil)!
+        processor?.loadModels(fromPath: modelsPath)
+        
+        // Configure
+        processor?.strength = 80
+        processor?.whiteBalance = 50
+    }
+    
+    func process(pixelBuffer: CVPixelBuffer) -> CVPixelBuffer? {
+        return processor?.process(pixelBuffer)
+    }
+    
+    func release() {
+        processor = nil
+    }
+}
+```
+
+### AVCaptureSession Integration
+
+```swift
+class VideoCaptureProcessor: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
+    private let processor = CameraProcessor()
+    private let processingQueue = DispatchQueue(label: "com.app.videoProcessing")
+    
+    func setupCapture() {
+        processor.initialize()
+        
+        let session = AVCaptureSession()
+        session.sessionPreset = .high
+        
+        // Setup camera input
+        guard let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
+              let input = try? AVCaptureDeviceInput(device: camera) else { return }
+        session.addInput(input)
+        
+        // Setup video output
+        let output = AVCaptureVideoDataOutput()
+        output.setSampleBufferDelegate(self, queue: processingQueue)
+        output.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
+        session.addOutput(output)
+        
+        session.startRunning()
+    }
+    
+    func captureOutput(_ output: AVCaptureOutput, 
+                       didOutput sampleBuffer: CMSampleBuffer, 
+                       from connection: AVCaptureConnection) {
+        guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+        
+        // Process frame
+        if let processed = processor.process(pixelBuffer: pixelBuffer) {
+            // Display processed frame
+            DispatchQueue.main.async {
+                self.displayFrame(processed)
+            }
+        }
+    }
+}
+```
+
+### Metal Integration
+
+```swift
+import Metal
+import MetalKit
+
+class MetalVideoProcessor {
+    private let processor: PFCDynamicProcessor
+    private let device: MTLDevice
+    private var textureCache: CVMetalTextureCache?
+    
+    init() {
+        processor = PFCDynamicProcessor()
+        device = MTLCreateSystemDefaultDevice()!
+        
+        CVMetalTextureCacheCreate(nil, nil, device, nil, &textureCache)
+    }
+    
+    func process(pixelBuffer: CVPixelBuffer) -> MTLTexture? {
+        // Process with PFC
+        guard let processed = processor.process(pixelBuffer) else { return nil }
+        
+        // Convert to Metal texture
+        var metalTexture: CVMetalTexture?
+        let width = CVPixelBufferGetWidth(processed)
+        let height = CVPixelBufferGetHeight(processed)
+        
+        CVMetalTextureCacheCreateTextureFromImage(
+            nil,
+            textureCache!,
+            processed,
+            nil,
+            .bgra8Unorm,
+            width,
+            height,
+            0,
+            &metalTexture
+        )
+        
+        return CVMetalTextureGetTexture(metalTexture!)
+    }
+}
+```
+
+## Configuration Options
+
+### Correction Strength
+
+```swift
+// Overall correction strength (0-100)
+processor.strength = 80
+
+// White balance correction strength (0-100)
+processor.whiteBalance = 50
+```
+
+### Frame Skipping
+
+```swift
+// Skip frames between AI detections
+// Higher values = smoother but less responsive
+processor.frameSkip = 4
+```
+
+### Quality Settings
+
+```swift
+// High quality (slower)
+processor.quality = .high
+
+// Balanced (default)
+processor.quality = .balanced
+
+// Performance (faster)
+processor.quality = .performance
+```
+
+## Processing Video Files
+
+```swift
+import AVFoundation
+
+class VideoFileProcessor {
+    func processVideo(inputURL: URL, outputURL: URL, completion: @escaping (Bool) -> Void) {
+        let asset = AVAsset(url: inputURL)
+        let processor = PFCDynamicProcessor()
+        
+        // Load models
+        let modelsPath = Bundle.main.path(forResource: "Models", ofType: nil)!
+        processor.loadModels(fromPath: modelsPath)
+        
+        // Setup reader
+        guard let reader = try? AVAssetReader(asset: asset),
+              let videoTrack = asset.tracks(withMediaType: .video).first else {
+            completion(false)
+            return
+        }
+        
+        let readerOutput = AVAssetReaderTrackOutput(track: videoTrack, outputSettings: [
+            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
+        ])
+        reader.add(readerOutput)
+        
+        // Setup writer
+        guard let writer = try? AVAssetWriter(outputURL: outputURL, fileType: .mp4) else {
+            completion(false)
+            return
+        }
+        
+        let writerInput = AVAssetWriterInput(mediaType: .video, outputSettings: [
+            AVVideoCodecKey: AVVideoCodecType.h264,
+            AVVideoWidthKey: videoTrack.naturalSize.width,
+            AVVideoHeightKey: videoTrack.naturalSize.height
+        ])
+        
+        let adaptor = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: writerInput, sourcePixelBufferAttributes: nil)
+        writer.add(writerInput)
+        
+        // Process
+        reader.startReading()
+        writer.startWriting()
+        writer.startSession(atSourceTime: .zero)
+        
+        while let sampleBuffer = readerOutput.copyNextSampleBuffer() {
+            guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { continue }
+            
+            if let processed = processor.process(pixelBuffer) {
+                let time = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
+                adaptor.append(processed, withPresentationTime: time)
+            }
+        }
+        
+        writerInput.markAsFinished()
+        writer.finishWriting {
+            completion(writer.status == .completed)
+        }
+    }
+}
+```
+
+## SwiftUI Integration
+
+```swift
+import SwiftUI
+import AVFoundation
+
+struct ProcessedCameraView: UIViewRepresentable {
+    @StateObject private var viewModel = CameraViewModel()
+    
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        viewModel.setupPreviewLayer(in: view)
+        return view
+    }
+    
+    func updateUIView(_ uiView: UIView, context: Context) {}
+}
+
+class CameraViewModel: ObservableObject {
+    private var processor: PFCDynamicProcessor?
+    private var previewLayer: AVCaptureVideoPreviewLayer?
+    
+    func setupPreviewLayer(in view: UIView) {
+        // Initialize processor
+        processor = PFCDynamicProcessor()
+        processor?.loadModels(fromPath: Bundle.main.path(forResource: "Models", ofType: nil)!)
+        
+        // Setup capture session
+        // ... (similar to AVCaptureSession example above)
+    }
+}
+```
+
+## Error Handling
+
+```swift
+do {
+    try processor.loadModels(fromPath: modelsPath)
+} catch PFCError.modelsNotFound {
+    print("Model files not found")
+} catch PFCError.invalidModel {
+    print("Invalid model file")
+}
+
+guard let processed = processor.process(pixelBuffer) else {
+    // Processing failed, use original frame
+    displayFrame(pixelBuffer)
+    return
+}
+```
+
+## Next Steps
+
+- [API Reference](/docs/video-sdk/ios/api-reference) - Complete API documentation
+- [Android Setup](/docs/video-sdk/android/setup) - Android platform guide

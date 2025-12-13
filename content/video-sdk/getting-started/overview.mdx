@@ -1,0 +1,57 @@
+---
+title: Overview
+description: Introduction to the Perfectly Clear Video SDK
+---
+
+# Video SDK Overview
+
+The Perfectly Clear Video SDK (Dynamic SDK) provides real-time AI-powered video and image correction capabilities for mobile applications.
+
+## What is the Dynamic Engine?
+
+The Dynamic engine is an AI-based correction system optimized for:
+
+- Real-time video processing
+- Camera preview enhancement
+- Batch photo correction on mobile devices
+
+Unlike traditional correction algorithms, the Dynamic engine uses machine learning models to analyze and correct images in a single pass, making it ideal for live video applications.
+
+## Use Cases
+
+### Live Camera Enhancement
+Enhance camera preview feeds in real-time, showing users corrected images as they capture.
+
+### Video Processing
+Apply corrections to recorded videos with consistent quality across all frames.
+
+### Photo Apps
+Batch process photos with AI-powered corrections optimized for mobile performance.
+
+## How It Works
+
+```
+Input Frame → AI Analysis → Dynamic Correction → Output Frame
+     ↓              ↓              ↓
+  Camera/      Scene Detection   Exposure,
+  Video File   Color Analysis    Color, etc.
+```
+
+1. **Input**: Raw frame from camera or video file
+2. **Analysis**: AI models analyze scene type and color characteristics
+3. **Correction**: Dynamic engine applies optimized corrections
+4. **Output**: Corrected frame ready for display or encoding
+
+## Performance
+
+| Platform | Processing Time (1080p) | Memory Usage |
+|----------|------------------------|--------------|
+| iOS (iPhone 12+) | ~15ms | ~50MB |
+| Android (Snapdragon 865+) | ~20ms | ~60MB |
+
+## Next Steps
+
+- [System Requirements](/docs/video-sdk/getting-started/requirements)
+- [Licensing](/docs/video-sdk/getting-started/licensing)
+- [Android Setup](/docs/video-sdk/android)
+- [iOS Setup](/docs/video-sdk/ios)

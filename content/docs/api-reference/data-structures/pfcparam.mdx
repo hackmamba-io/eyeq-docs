@@ -1,0 +1,169 @@
+---
+title: PFCPARAM
+description: Master structure containing all correction parameters
+---
+
+# PFCPARAM Structure
+
+The `PFCPARAM` structure is the master container for all Perfectly Clear correction parameters. It combines all parameter sub-structures into a single structure for easy management.
+
+## Definition
+
+```c
+typedef struct {
+    PFCCOREPARAM core;      // Core corrections
+    PFCNRPARAM nr;          // Noise reduction
+    PFCREPARAM re;          // Red-eye removal
+    PFCFBPARAM fb;          // Face beautification
+    PFCV3PARAM v3;          // V3 LOOKs and finishing
+    PFCLAYERPARAM layer[3]; // Graduated filter layers
+    PFCMASKPARAM mask[3];   // Layer masks
+} PFCPARAM;
+```
+
+## Members
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `core` | [PFCCOREPARAM](/docs/api-reference/data-structures/pfccoreparam) | Core image corrections (exposure, contrast, color) |
+| `nr` | [PFCNRPARAM](/docs/api-reference/data-structures/pfcnrparam) | Noise reduction settings |
+| `re` | [PFCREPARAM](/docs/api-reference/data-structures/pfcreparam) | Red-eye removal settings |
+| `fb` | [PFCFBPARAM](/docs/api-reference/data-structures/pfcfbparam) | Face beautification settings |
+| `v3` | [PFCV3PARAM](/docs/api-reference/data-structures/pfcv3param) | V3 LOOKs and finishing tools |
+| `layer[3]` | `PFCLAYERPARAM` | Graduated filter layer parameters |
+| `mask[3]` | `PFCMASKPARAM` | Layer mask parameters |
+
+## Setting Parameters
+
+### Method 1: Load from Preset File
+
+The easiest way to configure parameters:
+
+```c
+PFCPARAM param;
+int ret = PFC_ReadPresets(param, "/path/to/preset.preset");
+
+if (ret == 0) {
+    // Parameters loaded successfully
+}
+```
+
+### Method 2: Load Scene Detection Presets
+
+For AI-based scene detection:
+
+```c
+PFCPARAM param;
+int ret = PFC_ReadScenePreset(param, "/path/to/scene.preset", "People");
+```
+
+### Method 3: Use Built-in Preset
+
+```c
+PFCPARAM param;
+PFC_SetParam(&param, PRESET_IAUTO_PEOPLE);
+```
+
+### Method 4: Manual Configuration
+
+Set individual parameters programmatically:
+
+```c
+PFCPARAM param;
+
+// Enable core corrections
+param.core.bEnabled = true;
+param.core.bUseAutomaticStrengthSelection = true;
+param.core.eAggressiveness = AGGRESSIVENESS_CONSERVATIVE;
+param.core.bSharpen = true;
+param.core.fSharpenScale = 1.0f;
+
+// Disable noise reduction
+param.nr.bEnabled = false;
+
+// Disable red-eye
+param.re.bEnabled = false;
+
+// Disable face beautification
+param.fb.bEnabled = false;
+
+// Enable dynamic corrections
+param.v3.bDynamic = true;
+param.v3.iDynamic = 100;
+```
+
+## Complete Example
+
+```c
+#include "PerfectlyClearPro.h"
+#include "PFCImageFile.h"
+
+int main() {
+    // Setup license
+    PFC_SetProtectionPath("/path/to/license");
+    
+    // Load image
+    PFCImageFile imageFile;
+    imageFile.LoadImageFile("input.jpg", true, NULL);
+    
+    // Setup PFCIMAGE
+    PFCIMAGE im;
+    im.width = imageFile.width;
+    im.height = imageFile.height;
+    im.stride = imageFile.stride;
+    im.format = PFC_PixelFormat24bppBGR;
+    im.data = imageFile.raw_image;
+    
+    // Load parameters from preset
+    PFCPARAM param;
+    PFC_ReadPresets(param, "my_preset.preset");
+    
+    // Override specific settings
+    param.core.bSharpen = true;
+    param.core.fSharpenScale = 1.2f;
+    
+    // Apply corrections
+    PFC_AutoCorrect(&im, NULL, &param, NULL, NULL, 0, 0);
+    
+    // Save result
+    imageFile.SaveImageFile("output.jpg", 92, true, true);
+    
+    return 0;
+}
+```
+
+## Exporting Parameters
+
+You can export parameters from Perfectly Clear Workbench:
+
+1. **Export to Preset File**: Creates a `.preset` XML file
+2. **Export to API**: Creates C or C# code ready to copy/paste
+
+See the [Correction Parameters Guide](/docs/guides/parameters) for details.
+
+## Layers and Masks
+
+The `layer` and `mask` arrays support graduated filter effects:
+
+- `layer[0]` and `mask[0]`: First graduated filter
+- `layer[1]` and `mask[1]`: Second graduated filter  
+- `layer[2]` and `mask[2]`: Finishing tools
+
+Set `mask[n].type = MASK_NONE` to disable a layer.
+
+## Built-in Presets
+
+| Preset ID | Description |
+|-----------|-------------|
+| `PRESET_IAUTO_PEOPLE` | Default 2023 preset, great for portraits |
+| `PRESET_IAUTO_21` | Sharp images with accurate skin correction |
+| `PRESET_IAUTO_21_ASIA` | Brighter skin tones for Asian skin |
+| `PRESET_VIVID` | Good for landscapes |
+| `PRESET_BEAUTIFY` | Portrait-focused corrections |
+| `PRESET_BEAUTIFYPLUS` | Stronger beautification |
+
+## See Also
+
+- [PFCCOREPARAM](/docs/api-reference/data-structures/pfccoreparam)
+- [PFCFBPARAM](/docs/api-reference/data-structures/pfcfbparam)
+- [Correction Parameters Guide](/docs/guides/parameters)

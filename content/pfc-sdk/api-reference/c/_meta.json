@@ -1,0 +1,10 @@
+{
+  "title": "C API Reference",
+  "pages": [
+    "index",
+    "enums",
+    "structs",
+    "functions",
+    "error-codes"
+  ]
+}

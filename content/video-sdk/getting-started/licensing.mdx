@@ -1,0 +1,78 @@
+---
+title: Licensing
+description: Video SDK licensing information
+---
+
+# Licensing
+
+The Perfectly Clear Video SDK requires a valid license for production use.
+
+## License Types
+
+### Development License
+- Free for development and testing
+- Works on localhost and debug builds
+- Limited to non-production use
+
+### Production License
+- Required for App Store / Play Store distribution
+- Tied to your application's bundle identifier
+- Annual or perpetual options available
+
+## Obtaining a License
+
+1. Contact EyeQ sales at [sales@eyeq.com](mailto:sales@eyeq.com)
+2. Provide your application details:
+   - App name
+   - Bundle ID (iOS) / Package name (Android)
+   - Expected volume
+3. Receive your license key and SDK package
+
+## License Integration
+
+### iOS
+
+```swift
+import PerfectlyClearDynamic
+
+// Initialize with license
+let pfc = PerfectlyClear()
+pfc.setLicense("YOUR_LICENSE_KEY")
+```
+
+### Android
+
+```kotlin
+import com.eyeq.perfectlyclear.dynamic.PerfectlyClear
+
+// Initialize with license
+val pfc = PerfectlyClear(context)
+pfc.setLicense("YOUR_LICENSE_KEY")
+```
+
+## License Validation
+
+The SDK validates the license:
+
+1. **At initialization**: Checks license format and expiry
+2. **Bundle ID check**: Verifies app identifier matches license
+3. **Cached validation**: Subsequent launches use cached validation
+
+<Callout type="info">
+License validation requires network access on first launch. After initial validation, the SDK works offline.
+</Callout>
+
+## Error Handling
+
+| Error Code | Description | Resolution |
+|------------|-------------|------------|
+| `LICENSE_INVALID` | License key is malformed | Check license key format |
+| `LICENSE_EXPIRED` | License has expired | Contact EyeQ for renewal |
+| `BUNDLE_MISMATCH` | App ID doesn't match license | Verify bundle identifier |
+| `NETWORK_ERROR` | Cannot validate online | Check network connection |
+
+## Support
+
+For licensing questions:
+- Email: [support@eyeq.com](mailto:support@eyeq.com)
+- Portal: [https://eyeq.com/support](https://eyeq.com/support)

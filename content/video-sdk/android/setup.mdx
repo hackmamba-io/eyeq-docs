@@ -1,0 +1,133 @@
+---
+title: Android Setup
+description: Setting up the Video SDK for Android development
+---
+
+# Android Setup
+
+This guide walks through setting up the Perfectly Clear Video SDK (Dynamic SDK) for Android development.
+
+## Requirements
+
+- Android Studio Arctic Fox (2020.3.1) or later
+- Android SDK 24+ (Android 7.0 Nougat)
+- Kotlin 1.6+ or Java 8+
+- Gradle 7.0+
+
+## Installation
+
+### 1. Add the SDK to Your Project
+
+Add the SDK AAR file to your project's `libs` folder:
+
+```
+app/
+├── libs/
+│   └── perfectlyclear-dynamic-1.0.0.aar
+├── src/
+└── build.gradle
+```
+
+### 2. Update build.gradle
+
+```groovy
+// app/build.gradle
+android {
+    compileSdk 34
+    
+    defaultConfig {
+        minSdk 24
+        targetSdk 34
+    }
+}
+
+dependencies {
+    implementation files('libs/perfectlyclear-dynamic-1.0.0.aar')
+    
+    // Required dependencies
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+}
+```
+
+### 3. Add Permissions
+
+Add required permissions to `AndroidManifest.xml`:
+
+```xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Camera access for live video -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    
+    <!-- Storage for processing saved videos -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+</manifest>
+```
+
+### 4. Initialize the SDK
+
+```kotlin
+import com.eyeq.perfectlyclear.dynamic.PerfectlyClearDynamic
+
+class MyApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        
+        // Initialize the SDK
+        PerfectlyClearDynamic.initialize(this)
+    }
+}
+```
+
+## Project Structure
+
+```
+app/
+├── src/main/
+│   ├── java/com/yourapp/
+│   │   ├── MainActivity.kt
+│   │   └── CameraProcessor.kt
+│   ├── assets/
+│   │   └── models/           # AI model files
+│   │       ├── dynamic.pnn
+│   │       └── ...
+│   └── res/
+└── build.gradle
+```
+
+## Model Files
+
+Copy the AI model files to your assets folder:
+
+```
+app/src/main/assets/models/
+├── dynamic.pnn
+├── pro_and_universal_*.pnn
+├── skintone_*.pnn
+└── aicolor.pnn
+```
+
+## Verification
+
+Test that the SDK is properly integrated:
+
+```kotlin
+class MainActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        
+        // Verify SDK is loaded
+        val version = PerfectlyClearDynamic.getVersion()
+        Log.d("PFC", "SDK Version: $version")
+    }
+}
+```
+
+## Next Steps
+
+- [Usage Guide](/docs/video-sdk/android/usage) - Learn how to process video
+- [API Reference](/docs/video-sdk/android/api-reference) - Complete API documentation

@@ -1,0 +1,183 @@
+---
+title: Creative Filters
+description: Applying LOOKs and LUTs for creative color grading
+---
+
+# Creative Filters
+
+The Browser SDK supports applying creative filters (LOOKs) for stylized color grading and artistic effects.
+
+## What are LOOKs?
+
+LOOKs are predefined color transformations that give your images a distinctive style:
+
+- **Film Emulation**: Recreate classic film stocks
+- **Color Grading**: Professional cinematic looks
+- **Artistic Effects**: Stylized color treatments
+- **Mood Enhancement**: Warm, cool, vintage, etc.
+
+## Applying a LOOK
+
+LOOKs are applied using their GUID (globally unique identifier):
+
+```javascript
+// Apply a LOOK by its GUID
+param.setOutputLUT('{LOOK-GUID-HERE}');
+
+// Apply corrections with the LOOK
+await pfc.apply(pfcImage, param);
+pfcImage.drawToCanvas(canvas);
+```
+
+## Loading Additional LOOKs
+
+Some LOOKs are built-in; others can be loaded from files:
+
+```javascript
+// Initialize SDK
+await pfc.init(options);
+
+// Load additional LOOKs file (optional)
+const looksData = await fetch('./looks/addon.looks').then(r => r.text());
+pfc._loadAddonLooks(looksData);
+```
+
+## LOOK Strength
+
+Control the intensity of the applied LOOK:
+
+```javascript
+// Access the output LUT info
+param.v3.lutOutput.strength = 50; // 50% strength (0-100)
+
+// Apply the LOOK
+param.setOutputLUT('{LOOK-GUID}');
+await pfc.apply(pfcImage, param);
+```
+
+## Combining with Corrections
+
+LOOKs work alongside other corrections:
+
+```javascript
+// Apply scene-based corrections
+pfc.readScenePreset(param, pfcImage.sceneId);
+
+// Add a creative LOOK on top
+param.setOutputLUT('{LOOK-GUID}');
+
+// Adjust overall LUT strength
+param.v3.lutOutput.strength = 70;
+
+// Apply everything together
+await pfc.apply(pfcImage, param);
+```
+
+## LOOK Categories
+
+Common LOOK categories available:
+
+| Category | Description | Use Case |
+|----------|-------------|----------|
+| Natural | Subtle enhancements | Everyday photos |
+| Portrait | Skin-optimized | People photography |
+| Landscape | Vivid scenery | Outdoor shots |
+| Film | Classic film looks | Artistic style |
+| B&W | Black and white | Dramatic effect |
+| Vintage | Retro effects | Nostalgic feel |
+
+## Example: LOOK Selector
+
+Create a LOOK selector UI:
+
+```javascript
+const looks = [
+  { name: 'Natural', guid: '{guid-1}' },
+  { name: 'Warm Portrait', guid: '{guid-2}' },
+  { name: 'Cool Landscape', guid: '{guid-3}' },
+  { name: 'Classic Film', guid: '{guid-4}' },
+];
+
+async function applyLook(lookGuid, strength = 100) {
+  // Reset to base corrections
+  pfc.readScenePreset(param, pfcImage.sceneId);
+  
+  // Apply LOOK
+  if (lookGuid) {
+    param.setOutputLUT(lookGuid);
+    param.v3.lutOutput.strength = strength;
+  }
+  
+  // Render
+  await pfc.apply(pfcImage, param);
+  pfcImage.drawToCanvas(canvas);
+}
+
+// Usage
+document.getElementById('look-natural').onclick = () => 
+  applyLook(looks[0].guid);
+document.getElementById('look-strength').oninput = (e) => 
+  applyLook(currentLookGuid, e.target.value);
+```
+
+## Output LUT Parameters
+
+Fine-tune the LUT application:
+
+```javascript
+// LUT contrast adjustment
+param.v3.iOutLUTcontrast = 10;     // -100 to 100
+
+// LUT saturation adjustment  
+param.v3.iOutLUTsaturation = 0;    // -100 to 100
+
+// LUT strength
+param.v3.lutOutput.strength = 80;   // 0 to 100
+```
+
+## Input LUTs
+
+The SDK also supports input LUTs for corrective purposes:
+
+```javascript
+// Corrective input LUT (applied before corrections)
+param.v3.lutInputCorrective.strength = 50;
+
+// Sky-specific LUT
+param.v3.lutInputSky.strength = 30;
+
+// Foliage LUTs
+param.v3.lutInputFoliageGreen.strength = 40;
+param.v3.lutInputFoliageBrown.strength = 40;
+```
+
+## Removing a LOOK
+
+To remove an applied LOOK:
+
+```javascript
+// Clear the output LUT
+param.setOutputLUT('');
+
+// Or set strength to 0
+param.v3.lutOutput.strength = 0;
+
+// Re-apply corrections without the LOOK
+await pfc.apply(pfcImage, param);
+```
+
+## Best Practices
+
+1. **Preview LOOKs quickly** - Use low resolution for previews
+2. **Adjust strength** - Full strength isn't always best
+3. **Consider the scene** - Some LOOKs work better for certain scenes
+4. **Layer with corrections** - LOOKs add to, not replace, corrections
+
+## Getting More LOOKs
+
+Contact EyeQ for:
+
+- Custom LOOK creation
+- Additional LOOK packs
+- Enterprise LOOK licensing
+- Integration with your brand's color palette

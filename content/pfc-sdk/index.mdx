@@ -1,0 +1,56 @@
+---
+title: Perfectly Clear SDK v10
+description: Welcome to the Perfectly Clear SDK documentation
+---
+
+# Perfectly Clear SDK v10
+
+Welcome to the Perfectly Clear SDK! This guide explains how to use the Perfectly Clear SDK, Command Line application, or Docker solution to enable fully-automatic or interactive image corrections in your applications.
+
+<Callout type="info">
+**Note:** This version of the SDK requires using Presets from Workbench v4.6 or newer.
+</Callout>
+
+## SDK Components
+
+Perfectly Clear AI uses Artificial Intelligence tools for both [AI Preset Detection](/docs/pfc-sdk/scene-detection) and image corrections, together with our classical image correction suite, retouching correction tools, and creative LOOKs.
+
+This SDK includes the following main components:
+
+| Component | Description |
+|-----------|-------------|
+| [Command Line Application](/docs/pfc-sdk/cli) | Ready-for-production application for Linux, Windows and macOS. Supports several workflow styles and wide array of processing controls. Usually the fastest way to start using Perfectly Clear in server-side production environments. |
+| [Docker Container](/docs/pfc-sdk/docker) | Ready-for-production "private" version of our WebAPI correction system. Can be deployed in seconds, providing a self-hosted HTTP API to correct your photos. |
+| SDK for C and C# | Libraries and sample projects to embed Perfectly Clear within new or existing applications. |
+| iOS and Android SDKs | Mobile SDKs and sample projects for native app development. |
+
+## API Reference
+
+There are two main functional reference sections:
+
+- **C API** (`PerfectlyClearPro.h`) - For native C/C++ development
+- **.NET API** (`PerfectlyClearAdapter.cs`) - For .NET development platform
+
+The function names are very similar, and the calling patterns are nearly identical. The correction parameter structures are also slightly different across platforms. Our Perfectly Clear Workbench application allows exporting these parameters into code ready to copy/paste into your projects.
+
+## Sample Projects
+
+We provide sample projects for all platforms we support:
+
+- [Linux & OSX Samples](/docs/pfc-sdk/examples/linux-osx)
+- [Windows Samples](/docs/pfc-sdk/examples/windows)
+- [C# Samples](/docs/pfc-sdk/examples/csharp)
+- [iOS Samples](/docs/pfc-sdk/examples/ios)
+- [Android Samples](/docs/pfc-sdk/examples/android)
+
+Our sample applications read and write JPEG, PNG and WebP image files, as well as images embedded in un-flattened PDF files. They can also read `.preset` files exported from Perfectly Clear Workbench.
+
+## Next Steps
+
+- [Start Here](/docs/pfc-sdk/general-usage) - Quick introduction to using the SDK
+- [What's New](/docs/pfc-sdk/whats-new) - Changelog and version history
+- [Requirements](/docs/pfc-sdk/requirements) - System requirements and limitations
+
+---
+
+*Copyright © 2025 EyeQ Imaging Inc*

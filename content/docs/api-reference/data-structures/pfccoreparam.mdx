@@ -1,0 +1,191 @@
+---
+title: PFCCOREPARAM
+description: Structure encapsulating core image correction parameters
+---
+
+# PFCCOREPARAM Structure
+
+The `PFCCOREPARAM` structure contains all parameters for the core Perfectly Clear corrections including exposure, contrast, color, and sharpening.
+
+## Definition
+
+```c
+typedef struct {
+    BOOL bEnabled;                      // Enable entire core correction
+    BOOL bAbnormalTintRemoval;          // Enable abnormal tint removal
+    TINTCORRECTION eTintMode;           // Tint detection aggressiveness
+    float fTintScale;                   // Tint correction amount (0.0-1.0)
+    int iBlackEnhancement;              // Noise management threshold (0-25)
+    BOOL bVibrancy;                     // Color Restore enabled
+    int iVibrancy;                      // Color Restore strength (0-200)
+    int iStrength;                      // Exposure strength (0-150)
+    BOOL bContrast;                     // Depth enabled
+    CONTRASTMODE eContrastMode;         // Depth mode
+    int iContrast;                      // Depth strength (0-100)
+    BIASMODE eBiasMode;                 // Skin and Depth Bias mode
+    float fBiasScale;                   // Bias strength (0.0-1.0)
+    int iHighlightPreservation;         // Highlight preservation (0-100)
+    BOOL bHighlightPreservation;        // Enable highlight preservation
+    BOOL bSharpen;                      // Sharpening enabled
+    float fSharpenScale;                // Sharpening strength (0.0-2.0)
+    BOOL bUseAutomaticStrengthSelection;// Auto exposure enabled
+    BOOL bUseFAE;                       // Face Aware Exposure enabled
+    AGGRESSIVENESS eAggressiveness;     // Exposure aggressiveness
+    int iMaxStrength;                   // Max exposure limit (0-150)
+    int iMinStrength;                   // Min exposure limit
+    BOOL bInfrared;                     // Infrared removal enabled
+    float fInfrared;                    // Infrared removal strength (0.0-1.0)
+    BOOL bLightDiffusion;               // Light diffusion enabled
+    float fLightDiffusion;              // Light diffusion strength (0.0-1.0)
+    BOOL bDynamicRange;                 // Dynamic range correction
+    BOOL bDCF;                          // Fidelity enabled
+    DCFMODE eDCFMode;                   // Fidelity mode
+    float fDCF;                         // Fidelity strength (0.0-1.0)
+    int iLocalContrast;                 // Super Contrast strength (0-100)
+    BOOL bLocalContrast;                // Super Contrast enabled
+    int iSkintoneType;                  // AI detected skin tone (1-10)
+    int iSkintoneStrengthLut;           // Auto skin tone LUT strength
+    int iSkintoneStrengthExposure;      // Auto skin tone exposure strength
+    BOOL bSkintoneAuto;                 // Auto skin tone detection
+    int iSkintoneAutoStrength;          // Auto skin tone strength (0-100)
+    int iSplitColorWarm;                // Split Color warm slider
+    int iSplitColorCold;                // Split Color cool slider
+    BOOL bSelectiveColor;               // Selective color enabled
+    SELECTIVECOLOR selectiveColor[8];   // Selective color ranges
+} PFCCOREPARAM;
+```
+
+## Key Parameters
+
+### Exposure Control
+
+| Parameter | Type | Range | Description |
+|-----------|------|-------|-------------|
+| `bEnabled` | BOOL | - | Master enable for all core corrections |
+| `iStrength` | int | 0-150 | Exposure correction strength |
+| `bUseAutomaticStrengthSelection` | BOOL | - | Let SDK determine optimal exposure |
+| `eAggressiveness` | enum | - | Target lighting level |
+| `iMaxStrength` | int | 0-150 | Maximum auto exposure limit |
+| `iMinStrength` | int | 0-150 | Minimum auto exposure limit |
+| `bUseFAE` | BOOL | - | Face Aware Exposure |
+
+### Color Corrections
+
+| Parameter | Type | Range | Description |
+|-----------|------|-------|-------------|
+| `bVibrancy` | BOOL | - | Color Restore enable |
+| `iVibrancy` | int | 0-200 | Color Restore strength |
+| `bAbnormalTintRemoval` | BOOL | - | Remove color casts |
+| `eTintMode` | enum | - | Tint detection mode |
+| `fTintScale` | float | 0.0-1.0 | Tint correction amount |
+
+### Contrast & Detail
+
+| Parameter | Type | Range | Description |
+|-----------|------|-------|-------------|
+| `bContrast` | BOOL | - | Depth enable |
+| `iContrast` | int | 0-100 | Depth strength |
+| `eContrastMode` | enum | - | HIGH_CONTRAST or HIGH_DEFINITION |
+| `bLocalContrast` | BOOL | - | Super Contrast enable |
+| `iLocalContrast` | int | 0-100 | Super Contrast strength |
+
+### Sharpening
+
+| Parameter | Type | Range | Description |
+|-----------|------|-------|-------------|
+| `bSharpen` | BOOL | - | Sharpening enable |
+| `fSharpenScale` | float | 0.0-2.0 | Sharpening strength (1.0 = 100%) |
+
+### Skin Tone
+
+| Parameter | Type | Range | Description |
+|-----------|------|-------|-------------|
+| `eBiasMode` | enum | - | Skin and Depth Bias mode |
+| `fBiasScale` | float | 0.0-1.0 | Bias strength |
+| `bSkintoneAuto` | BOOL | - | AI skin tone detection |
+| `iSkintoneAutoStrength` | int | 0-100 | AI skin tone strength |
+| `iSkintoneType` | int | 1-10 | Detected skin tone level |
+
+## Enumerations
+
+### TINTCORRECTION
+
+| Value | Description |
+|-------|-------------|
+| `TINTCORRECT_AGGRESSIVE` | Aggressive tint detection |
+| `TINTCORRECT_DEFAULT` | Moderate detection |
+| `TINTCORRECT_CONSERVATIVE` | Minimize false positives |
+| `TINTCORRECT_STRONGEST` | Highest sensitivity |
+
+### CONTRASTMODE
+
+| Value | Description |
+|-------|-------------|
+| `HIGH_CONTRAST` | Optimized for higher contrast |
+| `HIGH_DEFINITION` | More shadow/highlight detail, pleasing skin tones |
+
+### AGGRESSIVENESS
+
+| Value | Description |
+|-------|-------------|
+| `AGGRESSIVENESS_CONSERVATIVE` | Less aggressive exposure |
+| `AGGRESSIVENESS_MODERATE` | Moderate exposure |
+| `AGGRESSIVENESS_AGGRESSIVE` | More aggressive exposure |
+
+### BIASMODE
+
+| Value | Description |
+|-------|-------------|
+| `BIAS_NONE` | No bias correction |
+| `BIAS_ASIAN_PREFERENCE` | Tuned for Asian skin |
+| `BIAS_AVERAGE_PREFERENCE` | Average usage ("Normal") |
+| `BIAS_BRIGHTER_PREFERENCE` | Brighter tone ("Bright") |
+| `BIAS_AUTO` | Auto-detected bias |
+
+## Usage Example
+
+```c
+PFCPARAM param;
+
+// Enable core corrections
+param.core.bEnabled = true;
+
+// Auto exposure with conservative settings
+param.core.bUseAutomaticStrengthSelection = true;
+param.core.eAggressiveness = AGGRESSIVENESS_CONSERVATIVE;
+param.core.iMaxStrength = 35;
+param.core.iMinStrength = 0;
+
+// Enable Face Aware Exposure
+param.core.bUseFAE = true;
+
+// Depth/Contrast in High Definition mode
+param.core.bContrast = true;
+param.core.eContrastMode = HIGH_DEFINITION;
+param.core.iContrast = 87;
+
+// Sharpening at 100%
+param.core.bSharpen = true;
+param.core.fSharpenScale = 1.0f;
+
+// Color Restore
+param.core.bVibrancy = true;
+param.core.iVibrancy = 5;
+
+// Skin tone bias
+param.core.eBiasMode = BIAS_AVERAGE_PREFERENCE;
+param.core.fBiasScale = 0.5f;
+
+// Enable AI skin tone
+param.core.bSkintoneAuto = true;
+param.core.iSkintoneAutoStrength = 100;
+
+// Dynamic range
+param.core.bDynamicRange = true;
+```
+
+## See Also
+
+- [PFCPARAM](/docs/api-reference/data-structures/pfcparam)
+- [Correction Parameters Guide](/docs/guides/parameters)
+- [AI Preset Selection](/docs/guides/ai-preset-selection)

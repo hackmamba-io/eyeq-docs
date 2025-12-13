@@ -1,242 +1,50 @@
 import Link from "next/link";
 
-// Abstract SVG Components for Cards
-function GetStartedIcon() {
+// Product Icons
+function ImageIcon() {
   return (
-    <svg
-      width="80"
-      height="80"
-      viewBox="0 0 80 80"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="text-foreground/60"
-    >
-      <rect
-        x="20"
-        y="25"
-        width="20"
-        height="18"
-        rx="2"
-        fill="currentColor"
-        opacity="0.4"
-      />
-      <rect
-        x="20"
-        y="20"
-        width="20"
-        height="18"
-        rx="2"
-        fill="currentColor"
-        opacity="0.5"
-      />
-      <circle cx="55" cy="47" r="5" fill="currentColor" opacity="0.4" />
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-blue-500">
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <circle cx="8.5" cy="8.5" r="1.5" />
+      <path d="M21 15l-5-5L5 21" />
     </svg>
   );
 }
 
-function DeveloperToolsIcon() {
+function VideoIcon() {
   return (
-    <svg
-      width="80"
-      height="80"
-      viewBox="0 0 80 80"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="text-foreground/60"
-    >
-      <circle cx="40" cy="40" r="10" fill="currentColor" opacity="0.4" />
-      <circle cx="18" cy="20" r="4" fill="currentColor" opacity="0.4" />
-      <circle cx="62" cy="20" r="4" fill="currentColor" opacity="0.4" />
-      <circle cx="18" cy="60" r="4" fill="currentColor" opacity="0.4" />
-      <circle cx="62" cy="60" r="4" fill="currentColor" opacity="0.4" />
-      <line
-        x1="18"
-        y1="20"
-        x2="40"
-        y2="40"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        opacity="0.4"
-      />
-      <line
-        x1="62"
-        y1="20"
-        x2="40"
-        y2="40"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        opacity="0.4"
-      />
-      <line
-        x1="18"
-        y1="60"
-        x2="40"
-        y2="40"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        opacity="0.4"
-      />
-      <line
-        x1="62"
-        y1="60"
-        x2="40"
-        y2="40"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        opacity="0.4"
-      />
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-purple-500">
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <polygon points="10 9 16 12 10 15" fill="currentColor" />
     </svg>
   );
 }
 
-function DocumentationIcon() {
+function CloudIcon() {
   return (
-    <svg
-      width="80"
-      height="80"
-      viewBox="0 0 80 80"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="text-foreground/60"
-    >
-      <rect
-        x="20"
-        y="27"
-        width="35"
-        height="5"
-        rx="1"
-        fill="currentColor"
-        opacity="0.4"
-      />
-      <rect
-        x="20"
-        y="39"
-        width="35"
-        height="5"
-        rx="1"
-        fill="currentColor"
-        opacity="0.4"
-      />
-      <rect
-        x="20"
-        y="51"
-        width="25"
-        height="5"
-        rx="1"
-        fill="currentColor"
-        opacity="0.4"
-      />
-      <circle cx="52" cy="29.5" r="3.5" fill="currentColor" opacity="0.4" />
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-green-500">
+      <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
     </svg>
   );
 }
 
-function APIReferenceIcon() {
+function BrowserIcon() {
   return (
-    <svg
-      width="80"
-      height="80"
-      viewBox="0 0 80 80"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="text-foreground/60"
-    >
-      <rect
-        x="22"
-        y="28"
-        width="14"
-        height="14"
-        rx="2"
-        fill="currentColor"
-        opacity="0.4"
-      />
-      <rect
-        x="22"
-        y="23"
-        width="14"
-        height="14"
-        rx="2"
-        fill="currentColor"
-        opacity="0.5"
-      />
-      <rect
-        x="44"
-        y="43"
-        width="14"
-        height="14"
-        rx="2"
-        fill="currentColor"
-        opacity="0.4"
-      />
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-orange-500">
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <line x1="3" y1="9" x2="21" y2="9" />
+      <circle cx="7" cy="6" r="1" fill="currentColor" />
+      <circle cx="11" cy="6" r="1" fill="currentColor" />
     </svg>
   );
 }
 
-function SDKReferenceIcon() {
+function TerminalIcon() {
   return (
-    <svg
-      width="80"
-      height="80"
-      viewBox="0 0 80 80"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="text-foreground/60"
-    >
-      <rect
-        x="20"
-        y="27"
-        width="35"
-        height="5"
-        rx="1"
-        fill="currentColor"
-        opacity="0.4"
-      />
-      <rect
-        x="20"
-        y="39"
-        width="32"
-        height="5"
-        rx="1"
-        fill="currentColor"
-        opacity="0.4"
-      />
-      <rect
-        x="20"
-        y="51"
-        width="22"
-        height="5"
-        rx="1"
-        fill="currentColor"
-        opacity="0.4"
-      />
-    </svg>
-  );
-}
-
-function KnowledgeBaseIcon() {
-  return (
-    <svg
-      width="80"
-      height="80"
-      viewBox="0 0 80 80"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="text-foreground/60"
-    >
-      <path
-        d="M40 18 L28 30 L28 58 Q28 63 33 63 L47 63 Q52 63 52 58 L52 30 Z"
-        fill="currentColor"
-        opacity="0.2"
-      />
-      <circle cx="40" cy="42" r="2.5" fill="currentColor" opacity="0.4" />
-      <circle cx="40" cy="51" r="2.5" fill="currentColor" opacity="0.4" />
-      <path
-        d="M36 58 L40 62 L44 58"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        fill="none"
-        opacity="0.4"
-      />
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-gray-500">
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <polyline points="7 10 10 13 7 16" />
+      <line x1="13" y1="16" x2="17" y2="16" />
     </svg>
   );
 }
@@ -244,11 +52,9 @@ function KnowledgeBaseIcon() {
 export default function HomePage() {
   return (
     <main className="flex flex-1 flex-col">
-      {/* Hero Section Container - Keep wider */}
+      {/* Hero Section */}
       <div className="mx-auto w-full max-w-6xl px-4 my-15 sm:px-6 sm:pt-10 lg:px-8 lg:pt-12">
-        {/* Hero Section with Dark Gradient Background */}
         <div className="relative mb-10 overflow-hidden rounded-xl border border-border/50 bg-gradient-to-r from-slate-900/90 via-slate-800/80 to-slate-900/70 px-8 py-10 text-center dark:from-slate-900 dark:via-slate-800 dark:to-slate-950 md:px-12 md:py-12">
-          {/* Subtle noise/texture overlay */}
           <div
             className="absolute inset-0 opacity-[0.02] dark:opacity-[0.04]"
             style={{
@@ -257,107 +63,139 @@ export default function HomePage() {
           />
 
           <h1 className="relative mb-4 text-4xl font-bold tracking-tight text-white dark:text-white md:mb-5 md:text-5xl lg:text-6xl">
-            Everything you need to build with Hackmamba
+            EyeQ Developer Documentation
           </h1>
           <p className="relative mx-auto max-w-2xl text-base text-white/80 dark:text-white/80 md:text-lg">
-            Learn how to connect, build, and scale with Hackmamba. Our docs
-            offer clear guides and technical references to help you get more
-            from our unified documentation infrastructure.
+            AI-powered image and video enhancement for any platform. 
+            Choose your SDK and start building beautiful experiences.
           </p>
         </div>
       </div>
 
-      {/* Content Grid Container - Narrower */}
+      {/* Products Grid */}
       <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8">
-        {/* Main Content Grid - 3x2 Layout */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5 lg:grid-cols-3 lg:gap-6">
-          {/* Get Started Card */}
+        <h2 className="mb-6 text-2xl font-bold">Choose Your Platform</h2>
+        
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+          {/* PFC SDK */}
           <Link
-            href="/docs/getting-started/configuration"
-            className="group rounded-lg border border-border/50 bg-slate-50/50 p-5 transition-all hover:border-border hover:bg-slate-100/50 dark:bg-slate-800/50 dark:hover:bg-slate-800/70 md:p-6"
+            href="/docs/pfc-sdk"
+            className="group rounded-lg border border-border/50 bg-slate-50/50 p-5 transition-all hover:border-blue-500/50 hover:bg-blue-50/30 dark:bg-slate-800/50 dark:hover:bg-blue-900/20 md:p-6"
           >
-            <div className="mb-3 flex h-20 items-center justify-center md:mb-4">
-              <GetStartedIcon />
+            <div className="mb-3 flex h-16 items-center justify-center md:mb-4">
+              <ImageIcon />
             </div>
-            <h3 className="mb-1.5 text-lg font-semibold">Get Started</h3>
+            <h3 className="mb-1.5 text-lg font-semibold">Perfectly Clear SDK</h3>
             <p className="text-sm text-muted-foreground">
-              Your first stop - everything you need to start building with
-              Hackmamba.
+              C/C++, .NET, and desktop SDKs for desktop and server image processing.
             </p>
+            <span className="mt-3 inline-block text-xs font-medium text-blue-600 dark:text-blue-400">
+              Windows • macOS • Linux
+            </span>
           </Link>
 
-          {/* Developer Tools Card */}
+          {/* Browser SDK */}
           <Link
-            href="/docs/developer-tools/sdks"
-            className="group rounded-lg border border-border/50 bg-slate-50/50 p-5 transition-all hover:border-border hover:bg-slate-100/50 dark:bg-slate-800/50 dark:hover:bg-slate-800/70 md:p-6"
+            href="/docs/browser-sdk"
+            className="group rounded-lg border border-border/50 bg-slate-50/50 p-5 transition-all hover:border-orange-500/50 hover:bg-orange-50/30 dark:bg-slate-800/50 dark:hover:bg-orange-900/20 md:p-6"
           >
-            <div className="mb-3 flex h-20 items-center justify-center md:mb-4">
-              <DeveloperToolsIcon />
+            <div className="mb-3 flex h-16 items-center justify-center md:mb-4">
+              <BrowserIcon />
             </div>
-            <h3 className="mb-1.5 text-lg font-semibold">Developer Tools</h3>
+            <h3 className="mb-1.5 text-lg font-semibold">Browser SDK</h3>
             <p className="text-sm text-muted-foreground">
-              Plug into your favorite tools and start building powerful
-              integrations.
+              WebAssembly SDK with local AI inference for client-side processing.
             </p>
+            <span className="mt-3 inline-block text-xs font-medium text-orange-600 dark:text-orange-400">
+              JavaScript • TypeScript • WebAssembly
+            </span>
           </Link>
 
-          {/* Documentation Card */}
+          {/* Video SDK */}
           <Link
-            href="/docs/overview"
-            className="group rounded-lg border border-border/50 bg-slate-50/50 p-5 transition-all hover:border-border hover:bg-slate-100/50 dark:bg-slate-800/50 dark:hover:bg-slate-800/70 md:p-6"
+            href="/docs/video-sdk"
+            className="group rounded-lg border border-border/50 bg-slate-50/50 p-5 transition-all hover:border-purple-500/50 hover:bg-purple-50/30 dark:bg-slate-800/50 dark:hover:bg-purple-900/20 md:p-6"
           >
-            <div className="mb-3 flex h-20 items-center justify-center md:mb-4">
-              <DocumentationIcon />
+            <div className="mb-3 flex h-16 items-center justify-center md:mb-4">
+              <VideoIcon />
             </div>
-            <h3 className="mb-1.5 text-lg font-semibold">Documentation</h3>
+            <h3 className="mb-1.5 text-lg font-semibold">Video SDK</h3>
             <p className="text-sm text-muted-foreground">
-              See what&apos;s new, what&apos;s better, and what&apos;s coming
-              next.
+              Real-time video frame enhancement for mobile applications.
             </p>
+            <span className="mt-3 inline-block text-xs font-medium text-purple-600 dark:text-purple-400">
+              iOS • Android
+            </span>
           </Link>
 
-          {/* API Reference Card */}
+          {/* Video CLI */}
           <Link
-            href="/docs/api-reference/api-overview"
-            className="group rounded-lg border border-border/50 bg-slate-50/50 p-5 transition-all hover:border-border hover:bg-slate-100/50 dark:bg-slate-800/50 dark:hover:bg-slate-800/70 md:p-6"
+            href="/docs/video-cli"
+            className="group rounded-lg border border-border/50 bg-slate-50/50 p-5 transition-all hover:border-gray-500/50 hover:bg-gray-50/30 dark:bg-slate-800/50 dark:hover:bg-gray-700/20 md:p-6"
           >
-            <div className="mb-3 flex h-20 items-center justify-center md:mb-4">
-              <APIReferenceIcon />
+            <div className="mb-3 flex h-16 items-center justify-center md:mb-4">
+              <TerminalIcon />
             </div>
-            <h3 className="mb-1.5 text-lg font-semibold">API Reference</h3>
+            <h3 className="mb-1.5 text-lg font-semibold">Video CLI</h3>
             <p className="text-sm text-muted-foreground">
-              All the endpoints and payloads you need to build with Hackmamba.
+              Command-line tool for batch video processing and automation.
             </p>
+            <span className="mt-3 inline-block text-xs font-medium text-gray-600 dark:text-gray-400">
+              Windows • macOS • Linux
+            </span>
           </Link>
 
-          {/* SDK Reference Card */}
+          {/* Web API */}
           <Link
-            href="/docs/developer-tools/sdks"
-            className="group rounded-lg border border-border/50 bg-slate-50/50 p-5 transition-all hover:border-border hover:bg-slate-100/50 dark:bg-slate-800/50 dark:hover:bg-slate-800/70 md:p-6"
+            href="/docs/web-api"
+            className="group rounded-lg border border-border/50 bg-slate-50/50 p-5 transition-all hover:border-green-500/50 hover:bg-green-50/30 dark:bg-slate-800/50 dark:hover:bg-green-900/20 md:p-6"
           >
-            <div className="mb-3 flex h-20 items-center justify-center md:mb-4">
-              <SDKReferenceIcon />
+            <div className="mb-3 flex h-16 items-center justify-center md:mb-4">
+              <CloudIcon />
             </div>
-            <h3 className="mb-1.5 text-lg font-semibold">SDK Reference</h3>
+            <h3 className="mb-1.5 text-lg font-semibold">Web API</h3>
             <p className="text-sm text-muted-foreground">
-              Add our SDKs and bring your integration to life with just a few
-              lines of code.
+              REST API for cloud-based image enhancement and batch processing.
             </p>
+            <span className="mt-3 inline-block text-xs font-medium text-green-600 dark:text-green-400">
+              REST • Any Language
+            </span>
           </Link>
 
-          {/* Knowledge Base Card */}
+          {/* All Products */}
           <Link
-            href="/docs/community-support/support"
-            className="group rounded-lg border border-border/50 bg-slate-50/50 p-5 transition-all hover:border-border hover:bg-slate-100/50 dark:bg-slate-800/50 dark:hover:bg-slate-800/70 md:p-6"
+            href="/docs"
+            className="group rounded-lg border border-dashed border-border/50 bg-transparent p-5 transition-all hover:border-border hover:bg-slate-50/50 dark:hover:bg-slate-800/30 md:p-6"
           >
-            <div className="mb-3 flex h-20 items-center justify-center md:mb-4">
-              <KnowledgeBaseIcon />
+            <div className="mb-3 flex h-16 items-center justify-center md:mb-4">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-muted-foreground">
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+              </svg>
             </div>
-            <h3 className="mb-1.5 text-lg font-semibold">Knowledge Base</h3>
+            <h3 className="mb-1.5 text-lg font-semibold">View All Products</h3>
             <p className="text-sm text-muted-foreground">
-              Got questions? Find answers, practical tips, and how-tos.
+              Browse all EyeQ products and find the right solution for your needs.
             </p>
           </Link>
+        </div>
+
+        {/* Quick Links */}
+        <div className="mt-12 border-t border-border/50 pt-8">
+          <h2 className="mb-4 text-lg font-semibold">Quick Links</h2>
+          <div className="flex flex-wrap gap-4">
+            <Link href="/docs/pfc-sdk/getting-started" className="text-sm text-blue-600 hover:underline dark:text-blue-400">
+              Quick Start Guide →
+            </Link>
+            <Link href="/docs/pfc-sdk/api-reference" className="text-sm text-blue-600 hover:underline dark:text-blue-400">
+              API Reference →
+            </Link>
+            <Link href="https://eyeq.com/support" className="text-sm text-blue-600 hover:underline dark:text-blue-400">
+              Get Support →
+            </Link>
+          </div>
         </div>
       </div>
     </main>

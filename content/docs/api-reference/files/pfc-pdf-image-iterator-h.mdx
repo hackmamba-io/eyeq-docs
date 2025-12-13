@@ -1,0 +1,81 @@
+---
+title: PFCPDFImageIterator.h
+description: Header file for iterating over PDF images
+---
+
+# PFCPDFImageIterator.h
+
+Header file for the `PFCPDFImageIterator` class which allows iterating over images in PDF documents.
+
+## Include
+
+```cpp
+#include "PFCPDFImageIterator.h"
+```
+
+## Classes
+
+### PFCPDFImageIterator
+
+See [PFCPDFImageIterator Class](/docs/api-reference/data-structures/pfc-pdf-image-iterator) for complete documentation.
+
+## Enumerations
+
+### LoadStatus
+
+```cpp
+enum class LoadStatus {
+    Ok,              // Success
+    FileNotFound,    // File not found
+    InvalidPassword, // Password protected
+    DocumentError    // Other error
+};
+```
+
+### SaveStatus
+
+```cpp
+enum class SaveStatus {
+    Ok,              // Success
+    InvalidPath,     // Cannot create path
+    DocumentError    // Write error
+};
+```
+
+## Quick Reference
+
+```cpp
+class PFCPDFImageIterator {
+public:
+    PFCPDFImageIterator();
+    PFCPDFImageIterator(PoDoFo::PdfMemDocument* document);
+    ~PFCPDFImageIterator();
+    
+    // File operations
+    LoadStatus load(const char* path);
+    SaveStatus save(const char* path);
+    
+    // Iteration
+    PFCPDFImage* nextImage();
+    
+    // Document access
+    PoDoFo::PdfMemDocument* document();
+    PoDoFo::PdfMemDocument* takeDocument();
+    
+    // Configuration
+    void setExpandImageData(bool expand);
+    bool expandImageData();
+};
+```
+
+## Dependencies
+
+This header requires:
+- PoDoFo library
+- `PFCPDFImage.h`
+
+## See Also
+
+- [PFCPDFImageIterator Class](/docs/api-reference/data-structures/pfc-pdf-image-iterator)
+- [PFCPDFImage.h](/docs/api-reference/files/pfc-pdf-image-h)
+- [PDF Usage Example](/docs/examples/pdf)

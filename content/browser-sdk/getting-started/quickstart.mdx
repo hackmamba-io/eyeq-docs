@@ -1,0 +1,186 @@
+---
+title: Quick Start
+description: Get started with the Browser SDK in 5 minutes
+---
+
+# Quick Start
+
+This guide will get you up and running with the Browser SDK in just a few minutes.
+
+## Prerequisites
+
+- A modern web browser (Chrome 90+, Firefox 89+, Safari 15+)
+- A web server (even a simple local one)
+- Your API key from EyeQ
+
+## Step 1: Initialize the SDK
+
+```javascript
+import { Pfc, InferenceOption } from './dist/pfc.mjs';
+
+// Get cached certificate from localStorage (optional optimization)
+const cachedCert = localStorage.getItem('pfc_wasm_certificate');
+
+const options = {
+  distDir: './dist',                    // Path to SDK files
+  modelsDir: './dist/models',           // Path to AI models
+  clientAPIKey: 'YOUR_API_KEY',         // Your EyeQ API key
+  urlGetCertificate: 'https://cert.perfectlyclear.photos/wasm_certificate/',
+  pfcWasmCertificate: cachedCert,       // Cached certificate
+  inference: InferenceOption.local,     // Use local AI inference
+};
+
+const pfc = new Pfc();
+const certificate = await pfc.init(options);
+
+// Cache the certificate for faster startup next time
+if (certificate) {
+  localStorage.setItem('pfc_wasm_certificate', certificate);
+}
+```
+
+## Step 2: Load an Image
+
+```javascript
+// Helper function to load an image onto a canvas
+async function loadImage(imageUrl, canvasId) {
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  
+  return new Promise((resolve) => {
+    img.onload = () => {
+      const canvas = document.getElementById(canvasId);
+      canvas.width = img.width;
+      canvas.height = img.height;
+      
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      resolve();
+    };
+    img.src = imageUrl;
+  });
+}
+
+// Load your image
+await loadImage('photo.jpg', 'my-canvas');
+```
+
+## Step 3: Load Scene Presets
+
+```javascript
+// Fetch and load scene detection presets
+const response = await fetch('./presets/sd.preset');
+const presetText = await response.text();
+pfc.loadScenePresets(presetText);
+```
+
+## Step 4: Create Image and Parameter Objects
+
+```javascript
+// Get the canvas element
+const canvas = document.getElementById('my-canvas');
+
+// Create a PFC image object from the canvas
+const pfcImage = pfc.createImage(canvas);
+if (!pfcImage) throw new Error('Failed to create image');
+
+// Create parameter object
+const param = pfc.createParam();
+if (!param) throw new Error('Failed to create param');
+```
+
+## Step 5: Calculate AI Features
+
+```javascript
+import { PFCFEATURE } from './dist/pfc.mjs';
+
+// Define which features to calculate
+const features = PFCFEATURE.CALC_ALL | PFCFEATURE.CALC_NOTINTCALC;
+const aiFeatures = PFCFEATURE.CALC_SCENE_DETECTION | 
+                   PFCFEATURE.CALC_SKINTONE | 
+                   PFCFEATURE.CALC_AICOLOR |
+                   PFCFEATURE.CALC_DYNAMIC;
+
+// Create profile with AI features
+await pfc.createProfile(pfcImage, features, aiFeatures);
+
+// The scene ID is now available
+console.log('Detected scene:', pfcImage.sceneId);
+```
+
+## Step 6: Apply Corrections
+
+```javascript
+// Apply scene-specific preset to parameters
+pfc.readScenePreset(param, pfcImage.sceneId);
+
+// Apply corrections to the image
+await pfc.apply(pfcImage, param);
+
+// Render the corrected image to the canvas
+pfcImage.drawToCanvas(canvas);
+```
+
+## Complete Example
+
+Here's the full code in one place:
+
+```javascript
+import { Pfc, PFCFEATURE, InferenceOption } from './dist/pfc.mjs';
+
+async function correctImage(imageUrl, canvasId) {
+  // Initialize SDK
+  const pfc = new Pfc();
+  await pfc.init({
+    distDir: './dist',
+    clientAPIKey: 'YOUR_API_KEY',
+    urlGetCertificate: 'https://cert.perfectlyclear.photos/wasm_certificate/',
+    pfcWasmCertificate: localStorage.getItem('pfc_wasm_certificate'),
+    inference: InferenceOption.local,
+  });
+
+  // Load image to canvas
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  await new Promise(resolve => {
+    img.onload = resolve;
+    img.src = imageUrl;
+  });
+  
+  const canvas = document.getElementById(canvasId);
+  canvas.width = img.width;
+  canvas.height = img.height;
+  canvas.getContext('2d').drawImage(img, 0, 0);
+
+  // Load presets
+  const preset = await fetch('./presets/sd.preset').then(r => r.text());
+  pfc.loadScenePresets(preset);
+
+  // Create objects
+  const pfcImage = pfc.createImage(canvas);
+  const param = pfc.createParam();
+
+  // Calculate AI features
+  const features = PFCFEATURE.CALC_ALL | PFCFEATURE.CALC_NOTINTCALC;
+  const aiFeatures = PFCFEATURE.CALC_SCENE_DETECTION | 
+                     PFCFEATURE.CALC_SKINTONE | 
+                     PFCFEATURE.CALC_AICOLOR;
+  await pfc.createProfile(pfcImage, features, aiFeatures);
+
+  // Apply corrections
+  pfc.readScenePreset(param, pfcImage.sceneId);
+  await pfc.apply(pfcImage, param);
+  pfcImage.drawToCanvas(canvas);
+
+  console.log('Image corrected!');
+}
+
+// Usage
+correctImage('photo.jpg', 'my-canvas');
+```
+
+## What's Next?
+
+- [Guides](/docs/browser-sdk/guides) - Learn about AI inference, parameters, and more
+- [Examples](/docs/browser-sdk/examples) - See full working examples
+- [API Reference](/docs/browser-sdk/api-reference) - Complete API documentation

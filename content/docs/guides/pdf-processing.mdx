@@ -1,0 +1,33 @@
+---
+title: PDF Processing
+description: Correct images embedded in PDF documents
+---
+
+# PDF Processing
+
+{/* TODO: Migrate content from examples_pdf.md */}
+
+The SDK can extract, correct, and replace JPEG images in PDF files.
+
+## Example
+
+```cpp
+// Load PDF
+PFCPDFImage pdf;
+pdf.Open("/path/to/document.pdf");
+
+// Iterate over images
+PFCPDFImageIterator iter(&pdf);
+while (iter.Next()) {
+    PFCIMAGE* pImage = iter.GetImage();
+    
+    // Apply corrections
+    PFC_AutoCorrect(pImage, NULL, &param, &engine, NULL, 0, 0);
+    
+    // Replace image in PDF
+    iter.ReplaceImage(pImage);
+}
+
+// Save corrected PDF
+pdf.Save("/path/to/output.pdf");
+```

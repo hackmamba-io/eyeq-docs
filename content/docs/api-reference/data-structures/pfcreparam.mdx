@@ -1,0 +1,89 @@
+---
+title: PFCREPARAM
+description: Structure for red-eye removal parameters
+---
+
+# PFCREPARAM Structure
+
+The `PFCREPARAM` structure contains parameters for automatic red-eye removal.
+
+## Definition
+
+```c
+typedef struct {
+    BOOL bEnabled;  // Enable red-eye removal
+} PFCREPARAM;
+```
+
+## Members
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `bEnabled` | BOOL | Enable or disable red-eye detection and removal |
+
+## Usage Example
+
+```c
+PFCPARAM param;
+
+// Enable red-eye removal
+param.re.bEnabled = true;
+```
+
+## Notes
+
+<Callout type="info">
+Red-eye correction works best when EXIF flash data indicates the flash was fired. The SDK's automatic detection may occasionally produce false positives on non-flash images.
+</Callout>
+
+<Callout type="info">
+The Command Line Interface automatically enables red-eye correction only when EXIF data shows the flash was used.
+</Callout>
+
+## Flash Detection
+
+You can use the `PFC_FLASH_STATUS` enum to check if flash was used:
+
+```c
+PFCImageFile imageFile;
+imageFile.LoadImageFile("input.jpg", true, NULL);
+
+if (imageFile.flashStatus == PFC_FLASH_FIRED) {
+    param.re.bEnabled = true;
+} else {
+    param.re.bEnabled = false;
+}
+```
+
+### PFC_FLASH_STATUS Values
+
+| Value | Code | Description |
+|-------|------|-------------|
+| `PFC_FLASH_UNKNOWN` | -1 | Cannot determine flash state |
+| `PFC_FLASH_NOT_FIRED` | 0 | EXIF shows flash was not used |
+| `PFC_FLASH_FIRED` | 1 | EXIF shows flash was used |
+
+## Status Codes (PFCRE_STATUS)
+
+| Status | Value | Description |
+|--------|-------|-------------|
+| `PFC_RE_SUCCESS` | 0 | Success |
+| `PFC_RE_NOTENABLED` | 1 | Feature not enabled |
+| `PFC_RE_FULLRES_REQUIRED` | 2 | Full-res image required |
+| `PFC_RE_NOT_FOUND` | 3 | Red-eye not detected |
+| `PFC_RE_GEN_ERROR` | 4 | General error |
+| `PFC_RE_INVALID_PARAMETER` | 5 | Invalid parameter |
+| `PFC_RE_NO_MEMORY` | 6 | Insufficient memory |
+| `PFC_RE_CANCELLED` | 7 | Process cancelled |
+| `PFC_RE_NOT_SUPPORTED` | 8 | Not supported (e.g., Linux ARM) |
+
+## Platform Notes
+
+<Callout type="warn">
+Red-eye correction is not currently supported on Linux ARM platforms. All other platforms are fully supported.
+</Callout>
+
+## See Also
+
+- [PFCPARAM](/docs/api-reference/data-structures/pfcparam)
+- [PFCImageFile](/docs/api-reference/data-structures/pfc-image-file)

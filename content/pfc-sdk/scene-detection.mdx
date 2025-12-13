@@ -1,0 +1,270 @@
+---
+title: AI Preset Selection
+description: Using AI-powered scene detection for automatic preset selection
+---
+
+# AI Preset Selection
+
+![AI Scene Detection](/images/scenes.png)
+
+[AI Preset Selection](https://eyeq.photos/business/ai-scene-detection) is a system developed by EyeQ to apply different presets to photos of differing subject matter, lighting conditions, or content. Instead of applying a single preset to every image that you process - you can create a family of presets, each tuned for a specific scene. Starting in SDK 10.0.2, we have updated our AI Preset Selection model to be faster, more accurate, and much smaller - leading to substantially faster model loading times.
+
+This AI Preset Detection is also useful to simply learn more about the photos your customers are sending to your business - we call this **"Image Intelligence"**. There are two main parts to AI Preset Selection:
+
+1. **Scene Detection** - Using AI to determine the content of the photo
+2. **Automatic Preset Selection** - Based on our carefully chosen defaults, or using presets you have tuned and edited in Workbench
+
+There are over 20 Scenes currently defined in the SDK, and these are visible in the latest version of Workbench. You may edit the presets for each of the scenes, then "Export Presets..." to create a `.preset` file, which you can use in the SDK or Command Line Application.
+
+## AI Preset Groups
+
+We provide models and presets for the following AI Preset Detection groups:
+
+| AI Preset Groups | Server SDK | Android SDK | iOS SDK |
+|------------------|------------|-------------|---------|
+| Universal | `pro_and_universal_20211221.pnn`<br/>`skintone_20211221.pnn` | `sd_20211221_tflite.pnn`<br/>`skintone_20211221_tflite.pnn` | `sd_20211221_coreml.pnn`<br/>`skintone_20211221_coreml.pnn` |
+| Pro | `pro_and_universal_20211221.pnn`<br/>`skintone_20211221.pnn` | `sd_20211221_tflite.pnn`<br/>`skintone_20211221_tflite.pnn` | `sd_20211221_coreml.pnn`<br/>`skintone_20211221_coreml.pnn` |
+| School and Sports | `school_and_sports_5000200.pnn`<br/>`skintone_5000200.pnn` | `sd_5000200_tflite.pnn`<br/>`skintone_5000200_tflite.pnn` | `sd_5000200_coreml.pnn`<br/>`skintone_5000200_coreml.pnn` |
+
+These AI Preset Groups can be exported from Perfectly Clear Workbench and loading them in the SDK, CLI or Docker solution will require both the presets and the `.pnn` model files provided in your SDK package. We can [help tune these presets for you](https://eyeq.photos/faq/can-you-define-each-preset-and-what-it-is-meant-for/).
+
+<Callout type="info">
+EyeQ can create **Custom Scenes** designed for your business. [Read more here](https://eyeq.photos/business/faq/can-i-request-my-own-scenes-and-categories-for-ai-scene-detection/)
+</Callout>
+
+<Callout type="warning">
+**Note:** Scene Detection is an optional component to our SDK. Contact your SDK account executive for pricing and availability.
+</Callout>
+
+---
+
+## Using AI Preset Selection
+
+There are three main ways to use this AI Preset Selection component, from the most simple, to the most advanced:
+
+### 1. Command Line Application and Container Solutions
+
+If your business opts-in for Scene Detection support, then this module will be enabled by default. See the documentation for the [command line application](/docs/pfc-sdk/cli) or [Docker container](/docs/pfc-sdk/docker) for details.
+
+---
+
+### 2. Using AutoCorrect
+
+This is the simplest way to enable Scene Detection using the Perfectly Clear SDK. The only additional step that is required is to simply create a [PFCENGINE](/docs/pfc-sdk/data-structures#pfcengine) and then load the detection model. Once this is done, include the PFCENGINE when calling [PFC_AutoCorrect](/docs/pfc-sdk/api-reference#pfc_autocorrect).
+
+#### Load the AI Engine
+
+```cpp
+// Use AI-enabled PFCENGINE to do scene detection and apply a scene preset accordingly.
+// IMPORTANT: initialization of AI engine takes time, so better keep a SINGLE INSTANCE of the AI-enabled
+// engine per worker thread throughout your app session.
+
+start = duration_cast< milliseconds >(system_clock::now().time_since_epoch());
+
+PFCENGINE *pAiEngine = PFC_CreateEngine();
+
+// Load AI engine (assuming all dlls and models are in exe folder):
+std::string exePath = std::string(argv[0]);
+std::string binPath = exePath.substr(0, exePath.find_last_of('/')).c_str();
+int aistatus  = PFC_LoadAIEngine(pAiEngine, AI_SCENE_DETECTION | AI_CORRECTIONS | AI_COLOR | AI_FACEMESH, binPath.c_str());
+```
+
+#### Optionally, Load Custom Presets
+
+```cpp
+// AI Scene Detection includes default presets for all scenes it defines.
+// These presets are immediately available after the call to PFC_LoadAIEngine().
+// One can return to these presets calling with a null pointer like
+//
+// int retLoadPresets = PFC_LoadScenePresets(pAiEngine, nullptr);
+//
+// You may modify these presets by editing them in Workbench, then exporting
+// a Scene Detection compatible .preset file then load those presets
+// with the following code.
+if (profilename == NULL)
+{
+    if (bVerbose) {
+        printf("Using default presets for detected scenes\n");
+    }
+} else {
+    int retLoadPresets = PFC_LoadScenePresets(pAiEngine, profilename);
+    if (0 != retLoadPresets) {
+        printf("Cannot load scene presets file '%s' error '%i'\n", profilename, retLoadPresets);
+        exit(1);
+    } else {
+        printf("Loaded scene presets file '%s'\n", profilename);
+    }
+}
+
+stop = duration_cast< milliseconds >(system_clock::now().time_since_epoch());
+if (bVerbose) {
+    printf("AI Engine loaded in %f ms\n", (double)(stop.count() - start.count()));
+}
+```
+
+#### Call AutoCorrect to Process Image with AI Selected Preset
+
+```cpp
+// AutoCorrect with a valid AiEngine will ignore PFCPARAM and use AI determined presets instead
+PFCPARAM ignoredParam;
+
+//measure the time in milliseconds
+start = duration_cast< milliseconds >(system_clock::now().time_since_epoch());
+    
+int status = PFC_AutoCorrect(&im, NULL, ignoredParam, -1, NULL, false, NULL, pAiEngine, true);
+stop = duration_cast< milliseconds >(system_clock::now().time_since_epoch());
+double elapsed = (double)(stop.count() - start.count());
+if (bVerbose) {
+    printf("Processing time: %f ms\n", elapsed);
+}
+
+if (status == APPLY_SUCCESS && bVerbose)
+{
+    printf("Image processed successfully.\n");
+}
+```
+
+#### Read the Detected Scene
+
+```cpp
+// Scenes are uniquely identified by an integer label.
+int lastSceneLabel = 0;
+int lastSceneConfidence = 0;
+PFC_GetLastSceneProperties(pAiEngine, &lastSceneLabel, &lastSceneConfidence);
+printf("AI assigned scene '%i' with confidence '%i'\n", lastSceneLabel, lastSceneConfidence);
+```
+
+---
+
+### 3. Using Separate Calc and Apply Calls
+
+This method allows more fine-grained control of the scene detection process, extracting which scene was detected, and optionally loading custom Scene Detection Presets.
+
+**Load the AI Engine** - same as in the example above.
+
+**Optionally, load custom Presets** for the Scenes you will be detecting.
+
+#### Run PFC_Calc to Gather Image Stats and Run AI Scene Detection
+
+```cpp
+// Analyze image and obtain image specific profile and categorization.
+// For performance reasons CALC_ALL is kept to mean all classic corrections.
+// Scene Detection is its own feature.
+PFCPROFILE pProfile = PFC_Calc(&im, NULL, pEngine, CALC_ALL | CALC_SCENE_DETECTION | CALC_AICOLOR, -1, NULL, NULL, bVerbose? myStatus : NULL, PFC_REJECT_MONOLITH, pAiEngine);
+```
+
+#### Read the Detected Scene from the Profile
+
+```cpp
+// After detection the scene id and model version can be obtained through PFC_GetScene.
+// The specific meaning depends on the model loaded.
+int version = 0;
+int detectedScene = PFC_GetScene(pProfile, &version);
+printf("AI version '%i' assigned scene '%i' to the image.\n", version, detectedScene);
+
+// Apply scene preset for detected scene by getting the params to apply from the AI-enabled engine
+PFCPARAM param;
+
+if (detectedScene >= 0) {
+    PFCPARAM sceneParam;
+    if (0 == PFC_ReadScenePreset(sceneParam, pAiEngine, detectedScene)) {
+        param = sceneParam;
+    }
+}
+
+// Its name can be obtained through PFC_GetSceneDescription. This should *not* be done in a tight loop.
+if(bVerbose) {
+    PFCSCENEDESCRIPTION description;
+    int i = 0;
+    while(PFC_GetSceneDescription(pAiEngine, i, &description)) {
+        if(description.profileUUID == detectedScene) {
+            printf("Scene '%i' is named '%s'.\n", detectedScene, description.name);
+        }
+        ++i;
+    }
+}
+```
+
+#### Process the Image with PFC_Apply
+
+```cpp
+// Process image with user or scene parameters.
+PFCAPPLYSTATUS status = PFC_Apply(&im, pEngine, pProfile, param, bVerbose? myStatus : NULL);
+
+// Optional display of status.
+if (status == APPLY_SUCCESS && bVerbose)
+{
+    printf("Image processed successfully.\n");
+}
+else if (status > APPLY_SUCCESS && bVerbose)
+{
+    // Check return code for Noise Removal
+    printf("Noise removal status %d\n", NRRETCODE(status));
+
+    // Check return code for Perfectly Clear Core correction
+    printf("Perfectly Clear correction status %d\n", CORERETCODE(status));
+
+    // Check return code for Face Beautification
+    printf("Face beautification status %d\n", FBRETCODE(status));
+
+    // Check return code for Red Eye Removal
+    printf("Red eye removal status %d\n", RERETCODE(status));
+}
+else if (status < APPLY_SUCCESS )
+{
+    printf("Image processing failed with return code:  %d\n", status);
+}
+```
+
+---
+
+## API Reference
+
+### Functions Used in Scene Detection
+
+| Function | Description |
+|----------|-------------|
+| [PFC_CreateEngine](/docs/pfc-sdk/api-reference) | Create a PFCENGINE instance |
+| [PFC_LoadAIEngine](/docs/pfc-sdk/api-reference) | Load AI models into engine. Takes time and memory. Use single PFCENGINE with loaded modules per worker thread |
+| [PFC_LoadScenePresets](/docs/pfc-sdk/api-reference) | Load AI Scene Detection group presets from a presets file |
+| [PFC_AutoCorrect](/docs/pfc-sdk/api-reference) | Single function to perform Perfectly Clear correction with optional AI scene detection |
+| [PFC_Calc](/docs/pfc-sdk/api-reference) | Perform initial analysis on images, including scene detection |
+| [PFC_Apply](/docs/pfc-sdk/api-reference) | Correct image with parameters |
+| [PFC_GetScene](/docs/pfc-sdk/api-reference) | Get scene detection label from profile obtained with PFC_Calc |
+| [PFC_GetLastSceneProperties](/docs/pfc-sdk/api-reference) | Get last detected scene properties (label and confidence) |
+| [PFC_GetSceneDescription](/docs/pfc-sdk/api-reference) | Get the scene description for a given index number |
+| [PFC_ReadScenePreset](/docs/pfc-sdk/api-reference) | Fill param for the scene from the engine with previously loaded scene presets |
+
+### Enumerations
+
+| Enum | Description |
+|------|-------------|
+| `AI_SCENE_DETECTION` | Loads scene detection model, requiring one or two `.pnn` files |
+| `AI_CORRECTIONS` | Loads AI-based corrections model, requiring `dynamic.pnn` |
+| `AI_COLOR` | Loads AI White Balance color corrections model, requiring `aicolor.pnn` |
+| `CALC_ALL` | Calculates for all classic features |
+| `CALC_SCENE_DETECTION` | Calculate Scene Detection |
+| `CALC_AICOLOR` | Calculate Auto WB params |
+| `APPLY_SUCCESS` | Success return code (0) |
+| `PFC_REJECT_MONOLITH` | Reject simple images that don't benefit from correction |
+
+### Status Decoding Macros
+
+| Macro | Description |
+|-------|-------------|
+| `NRRETCODE(x)` | Decode return status of Noise Removal from master return code |
+| `CORERETCODE(x)` | Decode return status of Core correction from master return code |
+| `FBRETCODE(x)` | Decode return status of Face Beautification from master return code |
+| `RERETCODE(x)` | Decode return status of Red Eye correction from master return code |
+
+### Data Structures
+
+| Structure | Description |
+|-----------|-------------|
+| [PFCENGINE](/docs/pfc-sdk/data-structures#pfcengine) | Struct defining a PFC engine instance |
+| [PFCPARAM](/docs/pfc-sdk/data-structures#pfcparam) | Master structure of all processing parameters |
+| [PFCSCENEDESCRIPTION](/docs/pfc-sdk/data-structures#pfcscenedescription) | Scene description structure containing scene ID and name |
+
+---
+
+*Copyright © 2025 EyeQ Imaging Inc*

@@ -1,16 +1,38 @@
-import { getPageImage, source } from '@/lib/source';
+import { 
+  pfcSdkSource, 
+  videoSdkSource, 
+  videoCliSource, 
+  webApiSource, 
+  browserSdkSource,
+  getSourceByProduct 
+} from '@/lib/source';
 import { notFound } from 'next/navigation';
 import { ImageResponse } from 'next/og';
 import { generate as DefaultImage } from 'fumadocs-ui/og';
 
 export const revalidate = false;
 
+// Helper to get page from slug
+function getPageFromSlug(slug: string[]) {
+  if (!slug || slug.length === 0) return null;
+  
+  // First segment should be the product
+  const productSlug = slug[0];
+  const source = getSourceByProduct(productSlug);
+  
+  if (!source) return null;
+  
+  // Get page with remaining slug (excluding the last segment which is the image extension)
+  const pageSlug = slug.slice(1, -1);
+  return source.getPage(pageSlug);
+}
+
 export async function GET(
   _req: Request,
   { params }: RouteContext<'/og/docs/[...slug]'>,
 ) {
   const { slug } = await params;
-  const page = source.getPage(slug.slice(0, -1));
+  const page = getPageFromSlug(slug);
   if (!page) notFound();
 
   return new ImageResponse(
@@ -18,7 +40,7 @@ export async function GET(
       <DefaultImage
         title={page.data.title}
         description={page.data.description}
-        site="My App"
+        site="EyeQ Documentation"
       />
     ),
     {
@@ -29,8 +51,26 @@ export async function GET(
 }
 
 export function generateStaticParams() {
-  return source.getPages().map((page) => ({
-    lang: page.locale,
-    slug: getPageImage(page).segments,
-  }));
+  const allSources = [
+    { source: pfcSdkSource, prefix: 'pfc-sdk' },
+    { source: videoSdkSource, prefix: 'video-sdk' },
+    { source: videoCliSource, prefix: 'video-cli' },
+    { source: webApiSource, prefix: 'web-api' },
+    { source: browserSdkSource, prefix: 'browser-sdk' },
+  ];
+
+  const allParams: { slug: string[] }[] = [];
+  
+  for (const { source, prefix } of allSources) {
+    const pages = source.getPages();
+    for (const page of pages) {
+      // Add .png extension to the slug for OG images
+      const slugSegments = page.slugs || [];
+      allParams.push({
+        slug: [prefix, ...slugSegments, 'og.png'],
+      });
+    }
+  }
+
+  return allParams;
 }

@@ -1,12 +1,18 @@
 {
-  "title": "Documentation",
+  "title": "PFC SDK Documentation",
   "pages": [
-    "---Guide---",
+    "---Getting Started---",
     "getting-started",
-    "developer-tools",
-    "---API References---",
+    "---Guides---",
+    "guides",
+    "---Examples---",
+    "examples",
+    "---API Reference---",
     "api-reference",
-    "---Community & Support---",
-    "community-support"
+    "---Tools---",
+    "tools",
+    "---Other---",
+    "changelog",
+    "legal"
   ]
 }

@@ -1,71 +1,31 @@
 ---
 title: Installation
-description: Step-by-step installation and setup guide for Hackmamba documentation template
+description: How to install and set up the Perfectly Clear SDK
 ---
 
 # Installation
 
-Get started with the Hackmamba documentation template in just a few steps.
+{/* TODO: Migrate installation steps */}
 
 ## Prerequisites
 
-Before you begin, make sure you have the following installed:
-
-- **Node.js** (version 18 or higher)
-- **npm** or **yarn** package manager
-- **Git** for version control
-
-## Quick Start
-
-### 1. Clone the Template
+### Linux
 
 ```bash
-git clone <repository-url>
-cd hmb-docs-template
+# Ubuntu/Debian
+sudo apt-get install --no-install-recommends libcurl4 build-essential
+
+# Red Hat/CentOS
+sudo yum -y install gcc gcc-c++ make libcurl
 ```
 
-### 2. Install Dependencies
+### Windows
 
-```bash
-npm install
-```
+- vcruntime140.dll must be present
+- ONNX runtime DLL in PATH for AI features
 
-### 3. Start Development Server
+## SDK Installation
 
-```bash
-npm run dev
-```
-
-### 4. Open in Browser
-
-Navigate to `http://localhost:3000` to see your documentation site.
-
-## Project Structure
-
-```
-├── app/                    # Next.js app directory
-├── content/docs/          # Documentation content
-├── lib/                   # Utility functions
-├── public/                # Static assets
-└── package.json          # Dependencies
-```
-
-## Next Steps
-
-<Cards>
-  <Card
-    title="Configuration"
-    href="/docs/configuration"
-    description="Learn how to configure your documentation"
-  />
-  <Card
-    title="Customization"
-    href="/docs/customization"
-    description="Customize the template to match your brand"
-  />
-  <Card
-    title="Deployment"
-    href="/docs/customization"
-    description="Deploy your documentation site"
-  />
-</Cards>
+1. Extract the SDK package to your project directory
+2. Add include paths to your build system
+3. Link against the SDK libraries

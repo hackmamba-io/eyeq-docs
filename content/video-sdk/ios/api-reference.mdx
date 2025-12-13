@@ -1,0 +1,208 @@
+---
+title: iOS API Reference
+description: Complete API reference for the Video SDK on iOS
+---
+
+# iOS API Reference
+
+Complete API documentation for the Perfectly Clear Video SDK on iOS.
+
+## PFCDynamicProcessor
+
+Main class for video frame processing.
+
+### Initialization
+
+```swift
+init()
+```
+
+Creates a new processor instance.
+
+### Properties
+
+#### strength
+
+```swift
+var strength: Int { get set }
+```
+
+Overall correction strength (0-100). Default: 50.
+
+---
+
+#### whiteBalance
+
+```swift
+var whiteBalance: Int { get set }
+```
+
+White balance correction strength (0-100). Default: 50.
+
+---
+
+#### frameSkip
+
+```swift
+var frameSkip: Int { get set }
+```
+
+Frames to skip between AI detections (0-100). Default: 4.
+
+---
+
+#### quality
+
+```swift
+var quality: PFCQuality { get set }
+```
+
+Processing quality mode. Default: `.balanced`.
+
+### Methods
+
+#### loadModels(fromPath:)
+
+```swift
+func loadModels(fromPath path: String) throws
+```
+
+Load AI models from the specified path.
+
+**Parameters:**
+- `path`: Path to models directory
+
+**Throws:** `PFCError` if loading fails
+
+---
+
+#### process(_:)
+
+```swift
+func process(_ pixelBuffer: CVPixelBuffer) -> CVPixelBuffer?
+```
+
+Process a single video frame.
+
+**Parameters:**
+- `pixelBuffer`: Input pixel buffer (BGRA format)
+
+**Returns:** Processed pixel buffer, or nil on failure
+
+---
+
+#### version()
+
+```swift
+class func version() -> String
+```
+
+Get SDK version string.
+
+---
+
+## PFCQuality
+
+Processing quality enum.
+
+```swift
+enum PFCQuality {
+    case high        // Best quality, slower
+    case balanced    // Default balance
+    case performance // Fastest, lower quality
+}
+```
+
+## PFCError
+
+Error types thrown by the SDK.
+
+```swift
+enum PFCError: Error {
+    case modelsNotFound
+    case invalidModel
+    case processingFailed
+    case invalidInput
+}
+```
+
+## Objective-C API
+
+### PFCDynamicProcessor
+
+```objc
+@interface PFCDynamicProcessor : NSObject
+
+@property (nonatomic, assign) NSInteger strength;
+@property (nonatomic, assign) NSInteger whiteBalance;
+@property (nonatomic, assign) NSInteger frameSkip;
+@property (nonatomic, assign) PFCQuality quality;
+
+- (BOOL)loadModelsFromPath:(NSString *)path error:(NSError **)error;
+- (CVPixelBufferRef)processPixelBuffer:(CVPixelBufferRef)pixelBuffer;
+
++ (NSString *)version;
+
+@end
+```
+
+### Usage in Objective-C
+
+```objc
+#import <PerfectlyClearDynamic/PerfectlyClearDynamic.h>
+
+@implementation VideoProcessor
+
+- (void)setupProcessor {
+    self.processor = [[PFCDynamicProcessor alloc] init];
+    
+    NSString *modelsPath = [[NSBundle mainBundle] pathForResource:@"Models" ofType:nil];
+    NSError *error;
+    [self.processor loadModelsFromPath:modelsPath error:&error];
+    
+    if (error) {
+        NSLog(@"Failed to load models: %@", error);
+        return;
+    }
+    
+    self.processor.strength = 80;
+    self.processor.whiteBalance = 50;
+}
+
+- (CVPixelBufferRef)processFrame:(CVPixelBufferRef)frame {
+    return [self.processor processPixelBuffer:frame];
+}
+
+@end
+```
+
+## Example
+
+### Swift
+
+```swift
+import PerfectlyClearDynamic
+
+class VideoProcessor {
+    private let processor = PFCDynamicProcessor()
+    
+    init() throws {
+        let modelsPath = Bundle.main.path(forResource: "Models", ofType: nil)!
+        try processor.loadModels(fromPath: modelsPath)
+        
+        processor.strength = 80
+        processor.whiteBalance = 50
+        processor.quality = .balanced
+    }
+    
+    func process(frame: CVPixelBuffer) -> CVPixelBuffer? {
+        return processor.process(frame)
+    }
+}
+```
+
+## See Also
+
+- [iOS Setup](/docs/video-sdk/ios/setup)
+- [iOS Usage](/docs/video-sdk/ios/usage)
+- [Android Reference](/docs/video-sdk/android/api-reference)

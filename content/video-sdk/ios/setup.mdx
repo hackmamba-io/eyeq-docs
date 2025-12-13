@@ -1,0 +1,123 @@
+---
+title: iOS Setup
+description: Setting up the Video SDK for iOS development
+---
+
+# iOS Setup
+
+This guide walks through setting up the Perfectly Clear Video SDK (Dynamic SDK) for iOS development.
+
+## Requirements
+
+- Xcode 14.0 or later
+- iOS 13.0+ deployment target
+- Swift 5.0+ or Objective-C
+- CocoaPods or Swift Package Manager
+
+## Installation
+
+### Option 1: CocoaPods
+
+Add to your `Podfile`:
+
+```ruby
+platform :ios, '13.0'
+
+target 'YourApp' do
+  use_frameworks!
+  pod 'PerfectlyClearDynamic', '~> 1.0'
+end
+```
+
+Then run:
+
+```bash
+pod install
+```
+
+### Option 2: Manual Integration
+
+1. Download the SDK framework
+2. Drag `PerfectlyClearDynamic.xcframework` into your Xcode project
+3. Ensure it's added to "Frameworks, Libraries, and Embedded Content"
+4. Set "Embed & Sign" for the framework
+
+### Option 3: Swift Package Manager
+
+Add the package URL to your Xcode project:
+
+```
+https://github.com/eyeq/perfectlyclear-dynamic-ios
+```
+
+## Project Configuration
+
+### Info.plist
+
+Add camera usage description:
+
+```xml
+<key>NSCameraUsageDescription</key>
+<string>This app uses the camera for video enhancement</string>
+```
+
+### Build Settings
+
+Ensure these build settings:
+
+- **Enable Bitcode**: No
+- **Valid Architectures**: arm64
+- **iOS Deployment Target**: 13.0+
+
+## Import the SDK
+
+### Swift
+
+```swift
+import PerfectlyClearDynamic
+```
+
+### Objective-C
+
+```objc
+@import PerfectlyClearDynamic;
+// or
+#import <PerfectlyClearDynamic/PerfectlyClearDynamic.h>
+```
+
+## Model Files
+
+Add AI model files to your app bundle:
+
+1. Create a `Models` folder in your project
+2. Add model files:
+   - `dynamic.pnn`
+   - `pro_and_universal_*.pnn`
+   - `skintone_*.pnn`
+   - `aicolor.pnn`
+3. Ensure files are included in "Copy Bundle Resources"
+
+## Verification
+
+Test the SDK is properly integrated:
+
+```swift
+import PerfectlyClearDynamic
+
+class AppDelegate: UIResponder, UIApplicationDelegate {
+    func application(_ application: UIApplication, 
+                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        
+        // Verify SDK
+        let version = PFCDynamic.version()
+        print("PFC Dynamic SDK Version: \(version)")
+        
+        return true
+    }
+}
+```
+
+## Next Steps
+
+- [Usage Guide](/docs/video-sdk/ios/usage) - Learn how to process video
+- [API Reference](/docs/video-sdk/ios/api-reference) - Complete API documentation

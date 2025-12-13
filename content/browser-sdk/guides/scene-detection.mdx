@@ -1,0 +1,199 @@
+---
+title: Scene Detection
+description: Using AI scene detection to automatically select optimal corrections
+---
+
+# Scene Detection
+
+The Browser SDK includes AI-powered scene detection that automatically identifies the type of image and applies optimized corrections.
+
+## How It Works
+
+1. **Analysis**: AI analyzes the image content
+2. **Classification**: Image is classified into a scene type
+3. **Preset Selection**: Optimal correction preset is selected
+4. **Application**: Scene-specific parameters are applied
+
+## Loading Scene Presets
+
+Before using scene detection, load the preset configuration:
+
+```javascript
+// Fetch the scene detection preset file
+const response = await fetch('./presets/sd.preset');
+const presetText = await response.text();
+
+// Load presets into the SDK
+pfc.loadScenePresets(presetText);
+```
+
+## Detecting the Scene
+
+```javascript
+import { PFCFEATURE } from './dist/pfc.mjs';
+
+// Create image object
+const pfcImage = pfc.createImage(canvas);
+
+// Calculate AI features including scene detection
+const features = PFCFEATURE.CALC_ALL;
+const aiFeatures = PFCFEATURE.CALC_SCENE_DETECTION | 
+                   PFCFEATURE.CALC_SKINTONE |
+                   PFCFEATURE.CALC_AICOLOR;
+
+await pfc.createProfile(pfcImage, features, aiFeatures);
+
+// Scene ID is now available
+console.log('Detected scene ID:', pfcImage.sceneId);
+```
+
+## Applying Scene Preset
+
+```javascript
+// Create parameter object
+const param = pfc.createParam();
+
+// Apply the preset for the detected scene
+pfc.readScenePreset(param, pfcImage.sceneId);
+
+// Apply corrections
+await pfc.apply(pfcImage, param);
+pfcImage.drawToCanvas(canvas);
+```
+
+## Scene Types
+
+The SDK detects various scene types:
+
+| Scene ID | Type | Description |
+|----------|------|-------------|
+| 1 | Portrait | People/faces prominent |
+| 2 | Landscape | Outdoor scenery |
+| 3 | Indoor | Interior spaces |
+| 4 | Night | Low light scenes |
+| 5 | Sunset | Golden hour/sunset |
+| 6 | Food | Food photography |
+| 7 | Document | Text/documents |
+| 8 | Snow | Winter/snow scenes |
+| 9 | Beach | Beach/coastal |
+| 10 | Macro | Close-up shots |
+
+*Scene IDs may vary based on preset configuration*
+
+## Complete Example
+
+```javascript
+import { Pfc, PFCFEATURE, InferenceOption, PFCPRESETID } from './dist/pfc.mjs';
+
+async function autoCorrectImage(imageUrl, canvasId) {
+  // Initialize SDK
+  const pfc = new Pfc();
+  await pfc.init({
+    distDir: './dist',
+    clientAPIKey: 'YOUR_API_KEY',
+    urlGetCertificate: 'https://cert.perfectlyclear.photos/wasm_certificate/',
+    inference: InferenceOption.local,
+  });
+
+  // Load image
+  await loadImageToCanvas(imageUrl, canvasId);
+  const canvas = document.getElementById(canvasId);
+
+  // Load scene presets
+  const presetText = await fetch('./presets/sd.preset').then(r => r.text());
+  pfc.loadScenePresets(presetText);
+
+  // Create objects
+  const pfcImage = pfc.createImage(canvas);
+  const param = pfc.createParam();
+  pfc.setParam(param, PFCPRESETID.PRESET_NONE);
+
+  // Calculate AI features
+  const features = PFCFEATURE.CALC_ALL | PFCFEATURE.CALC_NOTINTCALC;
+  const aiFeatures = PFCFEATURE.CALC_SCENE_DETECTION | 
+                     PFCFEATURE.CALC_SKINTONE | 
+                     PFCFEATURE.CALC_AICOLOR |
+                     PFCFEATURE.CALC_DYNAMIC;
+
+  await pfc.createProfile(pfcImage, features, aiFeatures);
+  
+  console.log('Detected scene:', pfcImage.sceneId);
+
+  // Apply scene preset
+  const status = pfc.readScenePreset(param, pfcImage.sceneId);
+  console.log('Preset status:', status);
+
+  // Apply corrections
+  await pfc.apply(pfcImage, param);
+  pfcImage.drawToCanvas(canvas);
+  
+  return pfcImage.sceneId;
+}
+```
+
+## Customizing Scene Presets
+
+After applying a scene preset, you can further customize:
+
+```javascript
+// Apply scene preset
+pfc.readScenePreset(param, pfcImage.sceneId);
+
+// Customize further
+param.core.iStrength = 90;           // Increase exposure correction
+param.fb.iSmoothLevel = 60;          // Adjust skin smoothing
+
+// Apply with customizations
+await pfc.apply(pfcImage, param);
+```
+
+## Skin Tone Detection
+
+For portrait scenes, the SDK also detects skin tones:
+
+```javascript
+// Include skin tone detection
+const aiFeatures = PFCFEATURE.CALC_SCENE_DETECTION | 
+                   PFCFEATURE.CALC_SKINTONE;
+
+await pfc.createProfile(pfcImage, features, aiFeatures);
+
+// Skin tone influences face beautification parameters
+// The scene preset automatically adjusts for detected skin tones
+```
+
+## Fallback Handling
+
+If scene detection fails, use a default preset:
+
+```javascript
+await pfc.createProfile(pfcImage, features, aiFeatures);
+
+if (pfcImage.sceneId === undefined || pfcImage.sceneId === 0) {
+  // Use default preset
+  pfc.setParam(param, PFCPRESETID.PRESET_IAUTO_PEOPLE);
+} else {
+  // Use detected scene
+  pfc.readScenePreset(param, pfcImage.sceneId);
+}
+```
+
+## Multiple Preset Files
+
+You can load multiple preset configurations:
+
+```javascript
+// Load standard scene detection
+const sdPreset = await fetch('./presets/sd.preset').then(r => r.text());
+pfc.loadScenePresets(sdPreset);
+
+// Load additional universal preset
+const universalPreset = await fetch('./presets/universal.preset').then(r => r.text());
+pfc.loadScenePresets(universalPreset);
+```
+
+## Performance Tips
+
+1. **Cache the scene ID** - Don't recalculate for the same image
+2. **Show loading state** - Scene detection takes 500-2000ms
+3. **Preload models** - Load AI models before user uploads

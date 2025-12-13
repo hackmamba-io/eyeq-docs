@@ -1,0 +1,234 @@
+---
+title: Android Examples
+description: Sample code for Android development
+---
+
+# Android Examples
+
+Sample source code for Android applications using the Perfectly Clear SDK.
+
+<Callout type="info">
+The Android SDK is now packaged as a single `.aar` archive with improved documentation.
+</Callout>
+
+## Prerequisites
+
+- Android Studio Arctic Fox or later
+- Android SDK 21+ (Android 5.0 Lollipop)
+- Perfectly Clear Android AAR
+
+## Installation
+
+### Gradle (build.gradle)
+
+```groovy
+dependencies {
+    implementation files('libs/perfectlyclear.aar')
+}
+```
+
+### AAR Setup
+
+1. Copy `perfectlyclear.aar` to your `app/libs/` directory
+2. Add the dependency as shown above
+3. Sync Gradle
+
+## Basic Usage (Kotlin)
+
+### Initialize the SDK
+
+```kotlin
+import com.eyeq.perfectlyclear.PerfectlyClear
+
+class ImageProcessor(context: Context) {
+    private val pfc = PerfectlyClear(context)
+    
+    init {
+        // Set license
+        pfc.setLicenseKey("YOUR_LICENSE_KEY")
+        
+        // Load AI models from assets
+        pfc.loadAIModels(context.assets, "models/")
+    }
+}
+```
+
+### Correct a Bitmap
+
+```kotlin
+fun correctImage(bitmap: Bitmap): Bitmap? {
+    // Load bitmap into SDK
+    if (!pfc.loadBitmap(bitmap)) {
+        return null
+    }
+    
+    // Apply auto correction with AI
+    pfc.autoCorrectWithAI()
+    
+    // Get corrected bitmap
+    return pfc.getCorrectedBitmap()
+}
+```
+
+## Using Scene Detection
+
+```kotlin
+// Enable scene detection
+pfc.enableSceneDetection(true)
+
+// Load and correct
+pfc.loadBitmap(inputBitmap)
+pfc.autoCorrectWithAI()
+
+// Get detected scene
+val sceneId = pfc.sceneId
+val sceneName = pfc.sceneLabel
+Log.d("PFC", "Detected: $sceneName (ID: $sceneId)")
+```
+
+## Loading Custom Presets
+
+```kotlin
+// Load preset from assets
+context.assets.open("presets/custom.preset").use { stream ->
+    pfc.loadPreset(stream)
+}
+
+// Apply with preset
+pfc.apply()
+```
+
+## CameraX Integration
+
+```kotlin
+class CameraAnalyzer(private val pfc: PerfectlyClear) : ImageAnalysis.Analyzer {
+    
+    override fun analyze(imageProxy: ImageProxy) {
+        val bitmap = imageProxy.toBitmap()
+        
+        pfc.loadBitmap(bitmap)
+        pfc.autoCorrect()
+        val corrected = pfc.getCorrectedBitmap()
+        
+        // Use corrected bitmap
+        corrected?.let { displayImage(it) }
+        
+        imageProxy.close()
+    }
+}
+```
+
+## Jetpack Compose Integration
+
+```kotlin
+@Composable
+fun CorrectedImage(
+    sourceImage: Bitmap,
+    modifier: Modifier = Modifier
+) {
+    var correctedImage by remember { mutableStateOf<Bitmap?>(null) }
+    val context = LocalContext.current
+    
+    LaunchedEffect(sourceImage) {
+        withContext(Dispatchers.Default) {
+            val pfc = PerfectlyClear(context)
+            pfc.loadBitmap(sourceImage)
+            pfc.autoCorrectWithAI()
+            correctedImage = pfc.getCorrectedBitmap()
+            pfc.release()
+        }
+    }
+    
+    correctedImage?.let { bitmap ->
+        Image(
+            bitmap = bitmap.asImageBitmap(),
+            contentDescription = "Corrected image",
+            modifier = modifier
+        )
+    } ?: CircularProgressIndicator()
+}
+```
+
+## Model Files
+
+Include AI model files in your assets:
+
+```
+app/src/main/assets/models/
+├── sd_*_tflite.pnn
+└── skintone_*_tflite.pnn
+```
+
+## 16KB Page Size Support
+
+SDK version 10.7.2+ supports new Google requirements for 16KB page files:
+
+```groovy
+android {
+    defaultConfig {
+        // No special configuration needed
+    }
+}
+```
+
+## Memory Management
+
+```kotlin
+// Release resources when done
+pfc.releaseImage()
+pfc.release()
+```
+
+## Background Processing with WorkManager
+
+```kotlin
+class ImageCorrectionWorker(
+    context: Context,
+    params: WorkerParameters
+) : CoroutineWorker(context, params) {
+    
+    override suspend fun doWork(): Result {
+        val inputPath = inputData.getString("input_path") ?: return Result.failure()
+        val outputPath = inputData.getString("output_path") ?: return Result.failure()
+        
+        return withContext(Dispatchers.Default) {
+            try {
+                val pfc = PerfectlyClear(applicationContext)
+                val bitmap = BitmapFactory.decodeFile(inputPath)
+                
+                pfc.loadBitmap(bitmap)
+                pfc.autoCorrectWithAI()
+                
+                val corrected = pfc.getCorrectedBitmap()
+                corrected?.compress(Bitmap.CompressFormat.JPEG, 92, 
+                    FileOutputStream(outputPath))
+                
+                pfc.release()
+                Result.success()
+            } catch (e: Exception) {
+                Result.failure()
+            }
+        }
+    }
+}
+```
+
+## Error Handling
+
+```kotlin
+try {
+    pfc.loadBitmap(bitmap)
+    pfc.autoCorrect()
+    val result = pfc.getCorrectedBitmap()
+} catch (e: PFCLicenseException) {
+    Log.e("PFC", "License error: ${e.message}")
+} catch (e: PFCImageException) {
+    Log.e("PFC", "Image error: ${e.message}")
+} catch (e: PFCException) {
+    Log.e("PFC", "SDK error: ${e.message}")
+}
+```
+
+---
+
+*Copyright © 2025 EyeQ Imaging Inc*

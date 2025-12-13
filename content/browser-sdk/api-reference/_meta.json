@@ -1,0 +1,9 @@
+{
+  "title": "API Reference",
+  "pages": [
+    "pfc-class",
+    "pfc-image",
+    "parameters",
+    "enums"
+  ]
+}

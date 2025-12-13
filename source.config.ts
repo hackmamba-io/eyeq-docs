@@ -5,14 +5,51 @@ import {
   metaSchema,
 } from "fumadocs-mdx/config";
 
-// You can customise Zod schemas for frontmatter and `meta.json` here
-// see https://fumadocs.dev/docs/mdx/collections
-export const docs = defineDocs({
+// Define multiple doc sources for each product
+export const pfcSdk = defineDocs({
+  dir: "content/pfc-sdk",
   docs: {
     schema: frontmatterSchema,
-    postprocess: {
-      includeProcessedMarkdown: true,
-    },
+  },
+  meta: {
+    schema: metaSchema,
+  },
+});
+
+export const videoSdk = defineDocs({
+  dir: "content/video-sdk",
+  docs: {
+    schema: frontmatterSchema,
+  },
+  meta: {
+    schema: metaSchema,
+  },
+});
+
+export const videoCli = defineDocs({
+  dir: "content/video-cli",
+  docs: {
+    schema: frontmatterSchema,
+  },
+  meta: {
+    schema: metaSchema,
+  },
+});
+
+export const webApi = defineDocs({
+  dir: "content/web-api",
+  docs: {
+    schema: frontmatterSchema,
+  },
+  meta: {
+    schema: metaSchema,
+  },
+});
+
+export const browserSdk = defineDocs({
+  dir: "content/browser-sdk",
+  docs: {
+    schema: frontmatterSchema,
   },
   meta: {
     schema: metaSchema,

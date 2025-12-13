@@ -1,0 +1,183 @@
+---
+title: PFCENGINE
+description: Structure defining an AI engine instance
+---
+
+# PFCENGINE Structure
+
+The `PFCENGINE` structure represents an AI engine instance used for scene detection, AI corrections, and other AI-powered features.
+
+## Definition
+
+```c
+typedef struct {
+    PFCINTERNAL pEngine;    // Pointer to internal engine data
+    PFCENGINESTATUS status; // Engine initialization status
+} PFCENGINE;
+```
+
+## Members
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `pEngine` | PFCINTERNAL | Internal pointer to the engine (opaque) |
+| `status` | PFCENGINESTATUS | Status of engine initialization |
+
+## PFCENGINESTATUS Enum
+
+| Value | Description |
+|-------|-------------|
+| `ENGINESTATUS_OK` | Engine created successfully |
+| `ENGINESTATUS_FB_LIBRARY_LOAD_FAIL` | Failed to load SFB library |
+| `ENGINESTATUS_FB_FUNCTION_NOT_FOUND` | SFB functions not found |
+
+## Creating an Engine
+
+### C API
+
+```c
+PFCENGINE engine;
+
+// Create engine with all AI features
+int ret = PFC_LoadAIEngine(
+    &engine,
+    "/path/to/models",
+    AI_SCENE_DETECTION | AI_CORRECTIONS | AI_SKINTONE | AI_COLOR
+);
+
+if (ret == 0 && engine.status == ENGINESTATUS_OK) {
+    // Engine ready to use
+}
+```
+
+### Required Model Files
+
+| Feature | Required Files |
+|---------|---------------|
+| Scene Detection | `pro_and_universal_*.pnn`, `skintone_*.pnn` |
+| AI Corrections | `dynamic.pnn` |
+| Composite Detection | `composite.pnn` |
+| AI White Balance | `aicolor.pnn` |
+| Face Detection | Face mesh model files |
+
+## Using the Engine
+
+### With AutoCorrect
+
+```c
+PFCPARAM param;
+PFCIMAGEPROFILE profile;
+
+// AutoCorrect with AI scene detection
+PFC_AutoCorrect(&image, NULL, &param, &engine, &profile, 
+                PFC_REJECT_CLIPART, 0);
+
+// Get detected scene
+const char* scene = PFC_GetSceneLabel(&engine);
+int sceneId = PFC_GetSceneId(&engine);
+```
+
+### With Calc/Apply
+
+```c
+PFCIMAGEPROFILE profile;
+
+// Calculate with scene detection
+PFC_Calc(&image, NULL, CALC_ALL | CALC_SCENE_DETECTION, 
+         &engine, &profile);
+
+// Get scene from profile
+int detectedScene = profile.detectedScene;
+
+// Apply corrections
+PFC_Apply(&image, &param, &engine, &profile);
+```
+
+## Loading Scene Presets
+
+```c
+// Load custom presets for detected scenes
+int ret = PFC_LoadScenePresets(&engine, "/path/to/presets.preset");
+
+if (ret == 0) {
+    // Presets loaded successfully
+}
+```
+
+## Releasing the Engine
+
+Always release the engine when done:
+
+```c
+PFC_ReleaseEngine(&engine);
+```
+
+## AI Feature Flags (PFCAIFEATURE)
+
+Use these flags when creating the engine:
+
+| Flag | Description |
+|------|-------------|
+| `AI_SCENE_DETECTION` | Scene detection model |
+| `AI_CORRECTIONS` | AI-based corrections (`dynamic.pnn`) |
+| `AI_COMPOSITE` | Composite image detection |
+| `AI_SKINTONE` | Skin tone detection (auto with scene detection) |
+| `AI_COLOR` | AI White Balance |
+| `AI_FACEMESH` | Face detection and analysis |
+
+## Complete Example
+
+```c
+#include "PerfectlyClearPro.h"
+#include "PFCImageFile.h"
+
+int main() {
+    // Setup license
+    PFC_SetProtectionPath("/path/to/license");
+    
+    // Create AI engine
+    PFCENGINE engine;
+    int ret = PFC_LoadAIEngine(&engine, "/path/to/models",
+        AI_SCENE_DETECTION | AI_CORRECTIONS | AI_SKINTONE | AI_COLOR);
+    
+    if (ret != 0 || engine.status != ENGINESTATUS_OK) {
+        printf("Failed to create AI engine\n");
+        return -1;
+    }
+    
+    // Load scene presets
+    PFC_LoadScenePresets(&engine, "/path/to/universal.preset");
+    
+    // Load and process image
+    PFCImageFile imageFile;
+    imageFile.LoadImageFile("input.jpg", true, NULL);
+    
+    PFCIMAGE im;
+    im.width = imageFile.width;
+    im.height = imageFile.height;
+    im.stride = imageFile.stride;
+    im.format = PFC_PixelFormat24bppBGR;
+    im.data = imageFile.raw_image;
+    
+    PFCPARAM param;
+    PFCIMAGEPROFILE profile;
+    
+    PFC_AutoCorrect(&im, NULL, &param, &engine, &profile, 
+                    PFC_REJECT_CLIPART, 0);
+    
+    printf("Detected scene: %s\n", PFC_GetSceneLabel(&engine));
+    
+    imageFile.SaveImageFile("output.jpg", 92, true, true);
+    
+    // Cleanup
+    PFC_ReleaseEngine(&engine);
+    
+    return 0;
+}
+```
+
+## See Also
+
+- [AI Preset Selection Guide](/docs/guides/ai-preset-selection)
+- [PFCIMAGEPROFILE](/docs/api-reference/data-structures/pfcimageprofile)
+- [PFCPARAM](/docs/api-reference/data-structures/pfcparam)

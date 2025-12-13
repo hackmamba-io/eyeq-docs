@@ -1,0 +1,250 @@
+---
+title: PfcImage Class
+description: Image container class for processing with the Browser SDK
+---
+
+# PfcImage Class
+
+The `PfcImage` class represents an image being processed by the SDK. It contains the image data, profile information, and methods for rendering.
+
+## Creating a PfcImage
+
+```javascript
+const canvas = document.getElementById('myCanvas');
+const pfcImage = pfc.createImage(canvas);
+```
+
+Or from ImageData:
+
+```javascript
+const ctx = canvas.getContext('2d');
+const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+const pfcImage = pfc.createImage(imageData);
+```
+
+## Properties
+
+### originalImage
+
+```typescript
+originalImage: PFCIMAGE
+```
+
+The unprocessed original image data. Useful for re-applying corrections with different parameters.
+
+### image
+
+```typescript
+image: PFCIMAGE
+```
+
+The current image data, updated after calling `apply()`.
+
+### profile
+
+```typescript
+profile: PFCIMAGEPROFILE | null
+```
+
+Profile data from the Calc phase, containing analysis results.
+
+### sceneId
+
+```typescript
+sceneId: number | undefined
+```
+
+The detected scene ID after AI scene detection.
+
+### imageId
+
+```typescript
+imageId: number | undefined
+```
+
+Unique identifier for this image. Used when re-processing in WebWorkers.
+
+### dynamicCurves
+
+```typescript
+dynamicCurves: any
+```
+
+AI-generated correction curves for dynamic corrections.
+
+## Methods
+
+### drawToCanvas(canvas)
+
+Render the processed image to a canvas.
+
+```typescript
+drawToCanvas(canvas: HTMLCanvasElement): void
+```
+
+**Parameters:**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `canvas` | `HTMLCanvasElement` | Target canvas |
+
+**Example:**
+```javascript
+await pfc.apply(pfcImage, param);
+pfcImage.drawToCanvas(document.getElementById('output'));
+```
+
+### copyProfile(image)
+
+Copy profile data from another PfcImage.
+
+```typescript
+copyProfile(image: PfcImage): void
+```
+
+**Parameters:**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `image` | `PfcImage` | Source image |
+
+### delete()
+
+Release memory for this image.
+
+```typescript
+delete(): void
+```
+
+**Example:**
+```javascript
+pfcImage.delete();
+```
+
+## PFCIMAGE Structure
+
+The underlying `PFCIMAGE` structure:
+
+```typescript
+interface PFCIMAGE {
+  width: number;
+  height: number;
+  format: PFCPIXELFORMAT;
+  getImageData(): ImageData;
+  setImageData(data: ImageData): number;
+}
+```
+
+### getImageData()
+
+Get the current image as ImageData.
+
+```javascript
+const imageData = pfcImage.image.getImageData();
+```
+
+### setImageData(data)
+
+Set image data from an ImageData object.
+
+```javascript
+pfcImage.image.setImageData(newImageData);
+```
+
+## PFCIMAGEPROFILE Structure
+
+The profile contains analysis results:
+
+```typescript
+interface PFCIMAGEPROFILE {
+  CORE_Status: PFCCORE_STATUS;
+  NR_Status: PFCNR_STATUS;
+  FB_Status: PFCFB_STATUS;
+  RE_Status: PFCRE_STATUS;
+  Status: number;
+}
+```
+
+### Status Properties
+
+Check the status of different correction modules:
+
+```javascript
+await pfc.createProfile(pfcImage, features, aiFeatures);
+
+const profile = pfcImage.profile;
+console.log('Core status:', profile.CORE_Status);
+console.log('Noise reduction status:', profile.NR_Status);
+console.log('Face beautification status:', profile.FB_Status);
+```
+
+## Usage Patterns
+
+### Basic Processing
+
+```javascript
+// Create image
+const pfcImage = pfc.createImage(canvas);
+
+// Calculate profile
+await pfc.createProfile(pfcImage, features, aiFeatures);
+
+// Apply corrections
+await pfc.apply(pfcImage, param);
+
+// Render result
+pfcImage.drawToCanvas(canvas);
+```
+
+### Comparing Original and Corrected
+
+```javascript
+// Keep reference to original canvas
+const originalCanvas = document.getElementById('original');
+const resultCanvas = document.getElementById('result');
+
+// Create image
+const pfcImage = pfc.createImage(originalCanvas);
+
+// Apply corrections
+await pfc.createProfile(pfcImage, features, aiFeatures);
+await pfc.apply(pfcImage, param);
+
+// Draw corrected to result canvas
+pfcImage.drawToCanvas(resultCanvas);
+
+// Original canvas is unchanged
+// Result canvas shows corrections
+```
+
+### Re-applying with Different Parameters
+
+```javascript
+// Initial correction
+await pfc.apply(pfcImage, param1);
+pfcImage.drawToCanvas(canvas);
+
+// User adjusts parameters...
+
+// Re-apply from original
+// (originalImage is preserved)
+await pfc.apply(pfcImage, param2);
+pfcImage.drawToCanvas(canvas);
+```
+
+### Memory Management
+
+```javascript
+// When done with an image
+pfcImage.delete();
+
+// Or use the pfc method
+await pfc.deleteImage(pfcImage);
+```
+
+## Best Practices
+
+1. **Delete when done** - Call `delete()` to free memory
+2. **Reuse images** - Modify parameters rather than creating new images
+3. **Check status** - Verify profile status before applying corrections
+4. **Use original** - The `originalImage` is preserved for re-processing

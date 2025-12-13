@@ -1,0 +1,12 @@
+{
+  "title": "Video CLI",
+  "root": true,
+  "pages": [
+    "---Getting Started---",
+    "installation",
+    "---Usage---",
+    "usage",
+    "options",
+    "examples"
+  ]
+}

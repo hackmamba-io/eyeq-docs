@@ -1,0 +1,297 @@
+---
+title: Enumerations
+description: All enums and constants available in the Browser SDK
+---
+
+# Enumerations
+
+Complete reference for all enums available in the Browser SDK.
+
+## InferenceOption
+
+AI inference mode selection.
+
+```typescript
+enum InferenceOption {
+  local = 0,        // Process in browser
+  remote = 1,       // Process on server
+  remoteSocket = 2  // Legacy WebSocket
+}
+```
+
+## PFCFEATURE
+
+Feature flags for calculation.
+
+```typescript
+enum PFCFEATURE {
+  CALC_CORE = 1,              // Core corrections
+  CALC_NR = 2,                // Noise reduction
+  CALC_FB = 4,                // Face beautification
+  CALC_RE = 8,                // Red-eye removal
+  CALC_ALL = 15,              // All classic features
+  CALC_NOTINTCALC = 16,       // Skip tint calculation
+  CALC_NOFAE = 32,            // Skip FAE
+  CALC_FAEHISPEED = 64,       // High-speed FAE
+  CALC_CARTOON_DETECTOR = 128,// Cartoon detection
+  CALC_SHARP = 256,           // Sharpness analysis
+  CALC_SCENE_DETECTION = 512, // AI scene detection
+  CALC_COMPOSITE = 1024,      // Composite detection
+  CALC_SKINTONE = 2048,       // Skin tone detection
+  CALC_AICOLOR = 4096,        // AI white balance
+  CALC_DYNAMIC = 65536        // Dynamic corrections
+}
+```
+
+**Usage:**
+```javascript
+const features = PFCFEATURE.CALC_ALL | PFCFEATURE.CALC_NOTINTCALC;
+const aiFeatures = PFCFEATURE.CALC_SCENE_DETECTION | PFCFEATURE.CALC_SKINTONE;
+```
+
+## PFCPRESETID
+
+Built-in preset identifiers.
+
+```typescript
+enum PFCPRESETID {
+  PRESET_NONE = -1,           // No preset
+  PRESET_BEAUTIFY = 0,        // Portrait beautify
+  PRESET_BEAUTIFYPLUS = 1,    // Strong beautification
+  PRESET_DETAILS = 2,         // Detail enhancement
+  PRESET_VIVID = 3,           // Vivid colors
+  PRESET_INTELLIGENTAUTO = 4, // Legacy auto
+  PRESET_IAUTO_2019 = 5,      // iAuto 2019
+  PRESET_IAUTO_2019_RE = 6,   // iAuto 2019 + red-eye
+  PRESET_IAUTO_21 = 7,        // iAuto 2021
+  PRESET_IAUTO_21_ASIA = 8,   // iAuto 2021 Asian
+  PRESET_IAUTO_PEOPLE = 9     // iAuto People (default)
+}
+```
+
+## PFCAPPLYSTATUS
+
+Return status from apply operations.
+
+```typescript
+enum PFCAPPLYSTATUS {
+  APPLY_SUCCESS = 0,                    // Success
+  APPLY_ERROR_PROFILE_MISSING = -1,     // No profile
+  APPLY_ERROR_ENGINE_MISSING = -2,      // No engine
+  APPLY_CANCELLED = -3,                 // Operation cancelled
+  APPLY_NOSOURCE = -4,                  // No source image
+  APPLY_BADFORMAT = -5,                 // Bad image format
+  APPLY_INVALIDLICENSE = -6,            // License invalid
+  APPLY_WASM_INVALID_DOMAIN = -7,       // Domain not allowed
+  APPLY_WASM_INVALID_APIKEY = -8,       // Invalid API key
+  APPLY_WASM_INVALID_CERTIFICATE = -9,  // Certificate invalid
+  APPLY_WASM_EXPIRED_CERTIFICATE = -10, // Certificate expired
+  APPLY_WASM_CERTIFICATE_WRONG_VERSION = -11, // Version mismatch
+  APPLY_LOOKS_MISSING = -12,            // LOOKs not loaded
+  APPLY_ERROR_AI_CORRECTION_MISSING = -13 // AI data missing
+}
+```
+
+## PFCPIXELFORMAT
+
+Image pixel formats.
+
+```typescript
+enum PFCPIXELFORMAT {
+  PFC_PixelFormat24bppRGB = 0,  // 24-bit RGB
+  PFC_PixelFormat24bppBGR = 1,  // 24-bit BGR
+  PFC_PixelFormat32bppABGR = 2, // 32-bit ABGR
+  PFC_PixelFormat32bppARGB = 5  // 32-bit ARGB
+}
+```
+
+## Status Enums
+
+### PFCCORE_STATUS
+
+```typescript
+enum PFCCORE_STATUS {
+  PFC_CORE_SUCCESS = 0,
+  PFC_CORE_NOTENABLED = 1,
+  PFC_CORE_CANCELLED = 2,
+  PFC_CORE_NOSOURCEIMAGE = 3,
+  PFC_CORE_INSUFFICIENTMEMORY = 4,
+  PFC_CORE_MONOLITHIMAGE = 5,
+  PFC_CORE_BELOWMINSIZE = 6,
+  PFC_CORE_CLIPARTIMAGE = 7
+}
+```
+
+### PFCNR_STATUS
+
+```typescript
+enum PFCNR_STATUS {
+  PFC_NR_SUCCESS = 0,
+  PFC_NR_NOTENABLED = 1,
+  PFC_NR_FULLRES_REQUIRED = 2,
+  PFC_NR_CANCELLED = 3,
+  PFC_NR_ERRBITMAP = 4,
+  PFC_NR_ERRSETTINGS = 5,
+  PFC_NR_MISC_ERROR = 6,
+  PFC_NR_NOTFOUND = 7
+}
+```
+
+### PFCFB_STATUS
+
+```typescript
+enum PFCFB_STATUS {
+  PFC_FB_SUCCESS = 0,
+  PFC_FB_NOTENABLED = 1,
+  PFC_FB_WARNING = 2,
+  PFC_FB_FULLRES_REQUIRED = 3,
+  PFC_FB_CANCELLED = 4,
+  PFC_FB_FUNCTION_ERROR = 5,
+  PFC_FB_CREATE_ENGINE_FAILED = 6,
+  PFC_FB_ANALYSIS_FAILED = 7,
+  PFC_FB_NO_CORRECTION = 8,
+  PFC_FB_NOT_EXECUTED = 9,
+  PFC_FB_NOT_AVAILABLE = 10
+}
+```
+
+### PFCRE_STATUS
+
+```typescript
+enum PFCRE_STATUS {
+  PFC_RE_SUCCESS = 0,
+  PFC_RE_NOTENABLED = 1,
+  PFC_RE_NOT_FOUND = 3,
+  PFC_RE_GEN_ERROR = 4,
+  PFC_RE_INVALID_PARAMETER = 5,
+  PFC_RE_NO_MEMORY = 6,
+  PFC_RE_CANCELLED = 7,
+  PFC_RE_NOT_SUPPORTED = 8
+}
+```
+
+## Parameter Enums
+
+### TINTCORRECTION
+
+```typescript
+enum TINTCORRECTION {
+  TINTCORRECT_AGGRESSIVE = 0,
+  TINTCORRECT_DEFAULT = 1,
+  TINTCORRECT_CONSERVATIVE = 2,
+  TINTCORRECT_STRONGEST = 3
+}
+```
+
+### CONTRASTMODE
+
+```typescript
+enum CONTRASTMODE {
+  HIGH_CONTRAST = 0,
+  HIGH_DEFINITION = 1
+}
+```
+
+### AGGRESSIVENESS
+
+```typescript
+enum AGGRESSIVENESS {
+  AGGRESSIVENESS_CONSERVATIVE = 0,
+  AGGRESSIVENESS_MODERATE = 1,
+  AGGRESSIVENESS_AGGRESSIVE = 2
+}
+```
+
+### BIASMODE
+
+```typescript
+enum BIASMODE {
+  BIAS_NONE = 0,
+  BIAS_ASIAN_PREFERENCE = 1,
+  BIAS_AVERAGE_PREFERENCE = 2,
+  BIAS_BRIGHTER_PREFERENCE = 3,
+  BIAS_DONT_BOTHER = 4,
+  BIAS_AUTO = 5
+}
+```
+
+### DCFMODE
+
+```typescript
+enum DCFMODE {
+  DCF_STANDARD = 0,
+  DCF_VIVID = 1
+}
+```
+
+### SKINMODE
+
+```typescript
+enum SKINMODE {
+  SKINMODE_FACE = 1,
+  SKINMODE_BODY = 2
+}
+```
+
+### SKINSMOOTHTYPE
+
+```typescript
+enum SKINSMOOTHTYPE {
+  SKINSMOOTHTYPE_SUBTLE = 1,
+  SKINSMOOTHTYPE_DEFAULT = 2,
+  SKINSMOOTHTYPE_SUPERSMOOTH = 3
+}
+```
+
+### SKINTONINGTYPE
+
+```typescript
+enum SKINTONINGTYPE {
+  SKINTONINGTYPE_WHITE = 1,
+  SKINTONINGTYPE_PALE = 2,
+  SKINTONINGTYPE_WARM = 3,
+  SKINTONINGTYPE_TAN = 4,
+  SKINTONINGTYPE_FOUNDATION = 5
+}
+```
+
+### LIPSHARPENTYPE
+
+```typescript
+enum LIPSHARPENTYPE {
+  LIPSHARPENTYPE_FINE = 1,
+  LIPSHARPENTYPE_MEDIUM = 2,
+  LIPSHARPENTYPE_COARSE = 3
+}
+```
+
+### PFCCORE_MASK_TYPE
+
+```typescript
+enum PFCCORE_MASK_TYPE {
+  MASK_NONE = 0,
+  MASK_ALL = 1,
+  MASK_RADIAL = 2,
+  MASK_TOP = 3,
+  MASK_BOTTOM = 4,
+  MASK_ROUNDRECT = 5
+}
+```
+
+## Importing Enums
+
+```javascript
+import {
+  Pfc,
+  PfcImage,
+  InferenceOption,
+  PFCFEATURE,
+  PFCPRESETID,
+  PFCAPPLYSTATUS,
+  SKINMODE,
+  SKINSMOOTHTYPE,
+  SKINTONINGTYPE,
+  LIPSHARPENTYPE,
+  PFCCORE_MASK_TYPE
+} from './dist/pfc.mjs';
+```

@@ -1,0 +1,168 @@
+---
+title: PFCIMAGEPROFILE
+description: Structure containing image analysis data from the Calc phase
+---
+
+# PFCIMAGEPROFILE Structure
+
+The `PFCIMAGEPROFILE` structure contains image analysis data generated during the `PFC_Calc` phase. This data is used by `PFC_Apply` to perform corrections.
+
+## Definition
+
+```c
+typedef struct {
+    PFCINTERNAL pProfile;       // Internal profile data
+    PFCNR_STATUS nrStatus;      // Noise removal calc status
+    PFCCORE_STATUS coreStatus;  // Core calc status
+    PFCFB_STATUS fbStatus;      // Face beautification calc status
+    PFCRE_STATUS reStatus;      // Red-eye calc status
+    int detectedScene;          // Detected scene ID
+    int detectedSkintone;       // Detected skin tone level (1-10)
+    int faceCount;              // Number of faces detected
+} PFCIMAGEPROFILE;
+```
+
+## Members
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `pProfile` | PFCINTERNAL | Internal pointer to profile data (opaque) |
+| `nrStatus` | PFCNR_STATUS | Status of noise removal calculation |
+| `coreStatus` | PFCCORE_STATUS | Status of core calculation |
+| `fbStatus` | PFCFB_STATUS | Status of face beautification calculation |
+| `reStatus` | PFCRE_STATUS | Status of red-eye calculation |
+| `detectedScene` | int | Scene ID from AI detection |
+| `detectedSkintone` | int | Skin tone level (1-10, pale to dark) |
+| `faceCount` | int | Number of faces detected in image |
+
+## Usage
+
+### With Separate Calc/Apply
+
+```c
+PFCENGINE engine;
+PFCIMAGEPROFILE profile;
+PFCPARAM param;
+
+// Run calculation phase
+int calcResult = PFC_Calc(&image, NULL, 
+    CALC_ALL | CALC_SCENE_DETECTION | CALC_SKINTONE,
+    &engine, &profile);
+
+// Check calculation status
+if (profile.coreStatus == PFC_CORE_SUCCESS) {
+    printf("Core calc successful\n");
+}
+
+if (profile.coreStatus == PFC_CORE_CLIPARTIMAGE) {
+    printf("Image detected as clipart, skipping\n");
+    return;
+}
+
+// Get detected scene
+printf("Detected scene: %d\n", profile.detectedScene);
+printf("Detected skin tone: %d\n", profile.detectedSkintone);
+printf("Faces found: %d\n", profile.faceCount);
+
+// Apply corrections using the profile
+PFC_Apply(&image, &param, &engine, &profile);
+
+// Release profile when done
+PFC_ReleaseProfile(&profile);
+```
+
+### With AutoCorrect
+
+When using `PFC_AutoCorrect`, you can optionally pass a profile to receive analysis data:
+
+```c
+PFCIMAGEPROFILE profile;
+
+PFC_AutoCorrect(&image, NULL, &param, &engine, &profile, 
+                PFC_REJECT_CLIPART, 0);
+
+// Profile now contains analysis results
+printf("Scene: %d, Skin tone: %d\n", 
+       profile.detectedScene, profile.detectedSkintone);
+```
+
+## Status Interpretation
+
+### Core Status (PFCCORE_STATUS)
+
+| Status | Meaning |
+|--------|---------|
+| `PFC_CORE_SUCCESS` | Calculation successful |
+| `PFC_CORE_NOTENABLED` | Core corrections disabled |
+| `PFC_CORE_CANCELLED` | User cancelled |
+| `PFC_CORE_NOSOURCEIMAGE` | No image provided |
+| `PFC_CORE_INSUFFICIENTMEMORY` | Out of memory |
+| `PFC_CORE_MONOLITHIMAGE` | Solid color image |
+| `PFC_CORE_BELOWMINSIZE` | Image too small (&lt;32px) |
+| `PFC_CORE_CLIPARTIMAGE` | Detected as clipart |
+
+### Using Status for Flow Control
+
+```c
+PFC_Calc(&image, NULL, CALC_ALL, &engine, &profile);
+
+switch (profile.coreStatus) {
+    case PFC_CORE_SUCCESS:
+        // Proceed with Apply
+        PFC_Apply(&image, &param, &engine, &profile);
+        break;
+        
+    case PFC_CORE_CLIPARTIMAGE:
+    case PFC_CORE_MONOLITHIMAGE:
+        // Skip processing
+        printf("Image not suitable for correction\n");
+        break;
+        
+    case PFC_CORE_BELOWMINSIZE:
+        printf("Image too small\n");
+        break;
+        
+    default:
+        printf("Calculation failed: %d\n", profile.coreStatus);
+        break;
+}
+```
+
+## Scene Detection
+
+The `detectedScene` value corresponds to predefined scene categories:
+
+```c
+const char* sceneLabel = PFC_GetSceneLabelFromId(profile.detectedScene);
+printf("Scene: %s\n", sceneLabel);
+```
+
+## Skin Tone Detection
+
+The `detectedSkintone` value ranges from 1-10:
+
+| Value | Description |
+|-------|-------------|
+| 1-2 | Very pale skin |
+| 3-4 | Light skin |
+| 5-6 | Medium skin |
+| 7-8 | Tan skin |
+| 9-10 | Dark skin |
+
+## Memory Management
+
+Always release the profile when done:
+
+```c
+PFC_ReleaseProfile(&profile);
+```
+
+<Callout type="warn">
+Failing to release profiles can cause memory leaks, especially when processing many images.
+</Callout>
+
+## See Also
+
+- [PFCENGINE](/docs/api-reference/data-structures/pfcengine)
+- [AI Preset Selection](/docs/guides/ai-preset-selection)
+- [C API Reference](/docs/api-reference/c-api)

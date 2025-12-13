@@ -1,0 +1,25 @@
+---
+title: Docker Container
+description: Using the Perfectly Clear Docker solution
+---
+
+# Docker Container
+
+{/* TODO: Migrate from Container/Docs/README.html */}
+
+The Docker container provides a self-hosted HTTP API for image corrections.
+
+## Quick Start
+
+```bash
+docker pull eyeq/perfectlyclear
+docker run -p 8080:8080 eyeq/perfectlyclear
+```
+
+## API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/correct` | POST | Correct an image |
+| `/health` | GET | Health check |
+| `/status` | GET | Server status |

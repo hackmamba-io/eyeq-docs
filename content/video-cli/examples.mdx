@@ -1,0 +1,205 @@
+---
+title: Examples
+description: Common usage examples for the Video CLI
+---
+
+# Examples
+
+## Basic Workflows
+
+### Simple Correction
+
+Apply default corrections to a single video:
+
+```bash
+./PfCVideo.sh -i vacation.mp4 -o vacation_enhanced.mp4
+```
+
+### Batch Processing
+
+Process multiple videos with a shell script:
+
+```bash
+#!/bin/bash
+# batch_process.sh
+
+INPUT_DIR="./raw_videos"
+OUTPUT_DIR="./corrected_videos"
+
+mkdir -p "$OUTPUT_DIR"
+
+for video in "$INPUT_DIR"/*.mp4; do
+    filename=$(basename "$video")
+    echo "Processing: $filename"
+    ./PfCVideo.sh -i "$video" -o "$OUTPUT_DIR/$filename" -s 80
+done
+
+echo "Done! Processed $(ls -1 "$OUTPUT_DIR" | wc -l) videos"
+```
+
+### Quality Control Comparison
+
+Create a side-by-side comparison video:
+
+```bash
+./PfCVideo.sh -i original.mp4 -o comparison.mp4 -d 50
+```
+
+## Optimization Examples
+
+### Fast Preview
+
+Quick preview with reduced quality analysis:
+
+```bash
+./PfCVideo.sh -i input.mp4 -o preview.mp4 -k 15
+```
+
+### Maximum Quality
+
+Best quality with more frequent analysis:
+
+```bash
+./PfCVideo.sh -i input.mp4 -o high_quality.mp4 -k 2 -s 100
+```
+
+### Smooth Video (Reduce Flicker)
+
+For videos with variable lighting:
+
+```bash
+./PfCVideo.sh -i interview.mp4 -o interview_smooth.mp4 -k 10
+```
+
+## Use Case Examples
+
+### Wedding Video
+
+Warm, natural enhancement:
+
+```bash
+./PfCVideo.sh -i wedding_raw.mp4 -o wedding_final.mp4 -s 70 -w 80
+```
+
+### Corporate Content
+
+Subtle, professional look:
+
+```bash
+./PfCVideo.sh -i presentation.mp4 -o presentation_final.mp4 -s 40 -w 60
+```
+
+### Social Media Content
+
+Punchy, vibrant corrections:
+
+```bash
+./PfCVideo.sh -i vlog.mp4 -o vlog_enhanced.mp4 -s 90 -w 100
+```
+
+### Real Estate Video
+
+Balanced, true-to-life correction:
+
+```bash
+./PfCVideo.sh -i property_tour.mp4 -o property_final.mp4 -s 60 -w 70
+```
+
+## Advanced Workflows
+
+### Multi-GPU Processing (Linux)
+
+Process multiple videos in parallel on different GPUs:
+
+```bash
+#!/bin/bash
+# parallel_process.sh
+
+CUDA_VISIBLE_DEVICES=0 ./PfCVideo.sh -i video1.mp4 -o out1.mp4 &
+CUDA_VISIBLE_DEVICES=1 ./PfCVideo.sh -i video2.mp4 -o out2.mp4 &
+wait
+
+echo "Both videos processed"
+```
+
+### Pipeline Integration
+
+Integrate with ffmpeg for additional processing:
+
+```bash
+# First: apply Perfectly Clear
+./PfCVideo.sh -i raw.mp4 -o corrected.mp4
+
+# Then: add watermark with ffmpeg
+ffmpeg -i corrected.mp4 -i watermark.png \
+  -filter_complex "overlay=10:10" \
+  final_with_watermark.mp4
+```
+
+### Watch Folder Automation
+
+Monitor a folder and process new videos:
+
+```bash
+#!/bin/bash
+# watch_folder.sh
+
+WATCH_DIR="./incoming"
+OUTPUT_DIR="./processed"
+DONE_DIR="./completed"
+
+mkdir -p "$OUTPUT_DIR" "$DONE_DIR"
+
+while true; do
+    for video in "$WATCH_DIR"/*.mp4; do
+        [ -e "$video" ] || continue
+        
+        filename=$(basename "$video")
+        echo "$(date): Processing $filename"
+        
+        ./PfCVideo.sh -i "$video" -o "$OUTPUT_DIR/$filename" -s 80
+        
+        mv "$video" "$DONE_DIR/"
+        echo "$(date): Completed $filename"
+    done
+    sleep 10
+done
+```
+
+## Troubleshooting Examples
+
+### Test Installation
+
+Verify the CLI works:
+
+```bash
+# Process a 5-second test clip
+./PfCVideo.sh -i test_clip.mp4 -o test_output.mp4
+
+# Check exit code
+echo "Exit code: $?"
+```
+
+### Diagnose Issues
+
+Create a diagnostic comparison:
+
+```bash
+# Create comparison with different settings
+./PfCVideo.sh -i problem.mp4 -o diag_full.mp4 -s 100 -d 50
+./PfCVideo.sh -i problem.mp4 -o diag_half.mp4 -s 50 -d 50
+./PfCVideo.sh -i problem.mp4 -o diag_color_only.mp4 -s 0 -w 100 -d 50
+```
+
+### Performance Testing
+
+Measure processing speed:
+
+```bash
+time ./PfCVideo.sh -i benchmark.mp4 -o benchmark_out.mp4
+
+# Output:
+# real    1m23.456s
+# user    0m45.123s
+# sys     0m12.345s
+```

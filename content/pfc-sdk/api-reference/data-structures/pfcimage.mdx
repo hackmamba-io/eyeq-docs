@@ -1,0 +1,118 @@
+---
+title: PFCIMAGE
+description: Structure defining an image for use in the PFC library
+---
+
+# PFCIMAGE Structure
+
+The `PFCIMAGE` structure defines an image to be used in the Perfectly Clear library. This is the primary container for passing image data to SDK functions.
+
+## Definition
+
+```c
+typedef struct {
+    int width;              // Pixel width of image
+    int height;             // Pixel height of image
+    int stride;             // Byte width of each scanline
+    PFCPIXELFORMAT format;  // Defines byte order of input buffer
+    unsigned char *data;    // Pointer to first byte of image data
+} PFCIMAGE;
+```
+
+## Members
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `width` | `int` | Pixel width of the image |
+| `height` | `int` | Pixel height of the image |
+| `stride` | `int` | Byte width of each scanline (row). Usually `width * bytes_per_pixel`, but may include padding |
+| `format` | `PFCPIXELFORMAT` | Defines the byte order and bit depth of the image data |
+| `data` | `unsigned char*` | Pointer to the first byte of the image data buffer |
+
+## Pixel Formats
+
+The `format` member accepts the following values:
+
+| Format | Bits | Description |
+|--------|------|-------------|
+| `PFC_PixelFormat24bppRGB` | 24 | BGR order: B₀, G₀, R₀, B₁, G₁, R₁, ... |
+| `PFC_PixelFormat24bppBGR` | 24 | RGB order: R₀, G₀, B₀, R₁, G₁, B₁, ... |
+| `PFC_PixelFormat32bppABGR` | 32 | RGBA order: R₀, G₀, B₀, A₀, ... |
+| `PFC_PixelFormat32bppARGB` | 32 | BGRA order: B₀, G₀, R₀, A₀, ... |
+| `PFC_PixelFormat48bppRGB` | 48 | 16-bit BGR (Little-endian) |
+| `PFC_PixelFormat48bppBGR` | 48 | 16-bit RGB (Little-endian) |
+| `PFC_PixelFormat64bppARGB` | 64 | 16-bit BGRA (Little-endian) |
+| `PFC_PixelFormat64bppABGR` | 64 | 16-bit RGBA (Little-endian) |
+
+## Usage Example
+
+### From PFCImageFile
+
+```c
+PFCImageFile imageFile;
+imageFile.LoadImageFile("input.jpg", true, NULL);
+
+PFCIMAGE im;
+im.width = imageFile.width;
+im.height = imageFile.height;
+im.stride = imageFile.stride;
+im.format = PFC_PixelFormat24bppBGR;
+im.data = imageFile.raw_image;
+
+// Now use 'im' with PFC_AutoCorrect or PFC_Calc/PFC_Apply
+```
+
+### From Raw Buffer
+
+```c
+// Assuming you have raw RGB data
+unsigned char* rawData = /* your image buffer */;
+int imageWidth = 1920;
+int imageHeight = 1080;
+
+PFCIMAGE im;
+im.width = imageWidth;
+im.height = imageHeight;
+im.stride = imageWidth * 3;  // 3 bytes per pixel for 24bpp
+im.format = PFC_PixelFormat24bppBGR;
+im.data = rawData;
+```
+
+### With Alpha Channel
+
+```c
+// 32-bit RGBA image
+PFCIMAGE im;
+im.width = imageWidth;
+im.height = imageHeight;
+im.stride = imageWidth * 4;  // 4 bytes per pixel
+im.format = PFC_PixelFormat32bppABGR;
+im.data = rawData;
+```
+
+## Important Notes
+
+<Callout type="warn">
+The SDK operates on sRGB color space. If using `PFCIMAGE` directly (not `PFCImageFile`), ensure your data is in sRGB format to avoid color shifts.
+</Callout>
+
+<Callout type="info">
+The `stride` value may be larger than `width * bytes_per_pixel` if your image buffer includes padding bytes at the end of each row.
+</Callout>
+
+## Memory Management
+
+- The SDK does **not** allocate or free the `data` buffer
+- You are responsible for allocating sufficient memory before passing to SDK functions
+- The SDK modifies the image data **in place** - the corrected image overwrites the original
+
+## Size Limits
+
+- Minimum image size: 32 pixels on the shorter side
+- Maximum aspect ratio: 21:1
+
+## See Also
+
+- [PFCPIXELFORMAT Enum](/docs/pfc-sdk/api-reference/data-structures#pixel-formats-pfcpixelformat)
+- [PFCImageFile Class](/docs/pfc-sdk/api-reference/data-structures/pfc-image-file)
+- [Color Management Guide](/docs/pfc-sdk/guides/color-management)

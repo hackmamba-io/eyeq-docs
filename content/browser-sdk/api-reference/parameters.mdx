@@ -1,0 +1,193 @@
+---
+title: Parameters Reference
+description: Complete reference for PFCPARAM and its sub-structures
+---
+
+# Parameters Reference
+
+The `PFCPARAM` structure contains all correction parameters organized into sub-structures.
+
+## PFCPARAM
+
+Top-level parameter container.
+
+```typescript
+interface PFCPARAM {
+  core: PFCCOREPARAM;   // Core corrections
+  fb: PFCFBPARAM;       // Face beautification
+  nr: PFCNRPARAM;       // Noise reduction
+  re: PFCREPARAM;       // Red-eye removal
+  v3: PFCV3PARAM;       // V3 advanced params
+  dp2: DP2PARAM;        // DP2 params
+  
+  // Methods
+  getParamBuffer(): any;
+  setOutputLUT(guid: string): void;
+  getLayerProperty(layer: number, property: string): any;
+  setLayerProperty(layer: number, property: string, value: any): void;
+  getMaskProperty(layer: number, property: string): any;
+  setMaskProperty(layer: number, property: string, value: any): void;
+  getSelectiveColor(index: number, property: string): any;
+  setSelectiveColor(index: number, property: string, value: number): void;
+}
+```
+
+## PFCCOREPARAM
+
+Core image corrections.
+
+| Property | Type | Range | Description |
+|----------|------|-------|-------------|
+| `bEnabled` | number | 0-1 | Enable core corrections |
+| `iStrength` | number | 0-100 | Exposure correction strength |
+| `bUseAutomaticStrengthSelection` | number | 0-1 | Use auto strength |
+| `iMinStrength` | number | 0-100 | Minimum auto strength |
+| `iMaxStrength` | number | 0-100 | Maximum auto strength |
+| `bContrast` | number | 0-1 | Enable contrast |
+| `iContrast` | number | 0-100 | Contrast level |
+| `eContrastMode` | CONTRASTMODE | - | Contrast mode |
+| `bLocalContrast` | number | 0-1 | Enable local contrast |
+| `iLocalContrast` | number | 0-100 | Local contrast level |
+| `bVibrancy` | number | 0-1 | Enable vibrancy |
+| `iVibrancy` | number | 0-100 | Vibrancy level |
+| `bSharpen` | number | 0-1 | Enable sharpening |
+| `fSharpenScale` | number | 0-1 | Sharpening scale |
+| `bAbnormalTintRemoval` | number | 0-1 | Enable tint removal |
+| `eTintMode` | TINTCORRECTION | - | Tint correction mode |
+| `fTintScale` | number | 0-1 | Tint correction scale |
+| `iBlackEnhancement` | number | 0-100 | Black enhancement |
+| `bHighlightPreservation` | number | 0-1 | Enable highlight preserve |
+| `iHighlightPreservation` | number | 0-100 | Highlight preserve level |
+| `bUseFAE` | number | 0-1 | Use face-aware exposure |
+| `eAggressiveness` | AGGRESSIVENESS | - | Correction aggressiveness |
+| `eBiasMode` | BIASMODE | - | Exposure bias mode |
+| `fBiasScale` | number | 0-1 | Bias scale |
+| `bInfrared` | number | 0-1 | Enable infrared correction |
+| `fInfrared` | number | 0-1 | Infrared strength |
+| `bLightDiffusion` | number | 0-1 | Enable light diffusion |
+| `fLightDiffusion` | number | 0-1 | Light diffusion strength |
+| `bDynamicRange` | number | 0-1 | Enable dynamic range |
+| `bDCF` | number | 0-1 | Enable DCF |
+| `eDCFMode` | DCFMODE | - | DCF mode |
+| `fDCF` | number | 0-1 | DCF strength |
+| `bSelectiveColor` | number | 0-1 | Enable selective color |
+
+## PFCFBPARAM
+
+Face beautification parameters.
+
+| Property | Type | Range | Description |
+|----------|------|-------|-------------|
+| `bEnabled` | number | 0-1 | Enable face beautification |
+| `bSmooth` | number | 0-1 | Enable skin smoothing |
+| `iSmoothLevel` | number | 0-100 | Smoothing level |
+| `eSmoothMode` | SKINMODE | - | Smoothing mode |
+| `eSmoothType` | SKINSMOOTHTYPE | - | Smoothing type |
+| `bEnlarge` | number | 0-1 | Enable eye enlargement |
+| `iEnlargeLevel` | number | 0-100 | Enlargement level |
+| `bEnhance` | number | 0-1 | Enable eye enhancement |
+| `iEnhanceLevel` | number | 0-100 | Enhancement level |
+| `bEyeCirc` | number | 0-1 | Enable eye circle removal |
+| `iEyeCirc` | number | 0-100 | Eye circle removal level |
+| `bTeeth` | number | 0-1 | Enable teeth whitening |
+| `iTeethLevel` | number | 0-100 | Whitening level |
+| `bBlemish` | number | 0-1 | Enable blemish removal |
+| `iBlemish` | number | 0-100 | Blemish removal level |
+| `bSlim` | number | 0-1 | Enable face slimming |
+| `iSlim` | number | 0-100 | Slimming level |
+| `bDeFlash` | number | 0-1 | Enable flash removal |
+| `iDeFlash` | number | 0-100 | Flash removal level |
+| `bCatchLight` | number | 0-1 | Enable catchlight |
+| `iCatchLight` | number | 0-100 | Catchlight intensity |
+| `iCatchLightMode` | number | - | Catchlight mode |
+| `bSkinToning` | number | 0-1 | Enable skin toning |
+| `iSkinToning` | number | 0-100 | Toning level |
+| `eSkinToningMode` | SKINMODE | - | Toning mode |
+| `eSkinToningType` | SKINTONINGTYPE | - | Toning type |
+| `colorSkinToning` | number | - | Toning color value |
+| `bLipSharpen` | number | 0-1 | Enable lip sharpening |
+| `iLipSharpen` | number | 0-100 | Lip sharpening level |
+| `eLipSharpenType` | LIPSHARPENTYPE | - | Lip sharpen type |
+| `bBlush` | number | 0-1 | Enable blush |
+| `iBlush` | number | 0-100 | Blush intensity |
+| `colorBlush` | number | - | Blush color value |
+
+## PFCNRPARAM
+
+Noise reduction parameters.
+
+| Property | Type | Range | Description |
+|----------|------|-------|-------------|
+| `bEnabled` | number | 0-1 | Enable noise reduction |
+| `iPreset` | number | 0-4 | Noise reduction preset level |
+| `iStrengthOffset` | number | -50 to 50 | Strength offset |
+| `iDetailOffset` | number | -50 to 50 | Detail preservation offset |
+
+## PFCREPARAM
+
+Red-eye removal parameters.
+
+| Property | Type | Range | Description |
+|----------|------|-------|-------------|
+| `bEnabled` | number | 0-1 | Enable red-eye removal |
+
+## PFCV3PARAM
+
+V3 advanced parameters.
+
+| Property | Type | Range | Description |
+|----------|------|-------|-------------|
+| `bPreprocessEV` | boolean | - | Enable EV preprocessing |
+| `iPreprocessEV` | number | -100 to 100 | EV adjustment |
+| `iNeutralDensity` | number | -100 to 100 | Neutral density |
+| `iColorVibrancy` | number | -100 to 100 | Color vibrancy |
+| `iDarkSkin` | number | 0-100 | Dark skin optimization |
+| `iFinishTemp` | number | -100 to 100 | Temperature adjust |
+| `iFinishTint` | number | -100 to 100 | Tint adjust |
+| `iFinishExposure` | number | -100 to 100 | Exposure adjust |
+| `iFinishBlacks` | number | -100 to 100 | Blacks adjust |
+| `iFinishShadows` | number | -100 to 100 | Shadows adjust |
+| `iFinishHighlights` | number | -100 to 100 | Highlights adjust |
+| `iFinishWhites` | number | -100 to 100 | Whites adjust |
+| `iFinishSaturation` | number | -100 to 100 | Saturation adjust |
+| `iFinishVibrancy` | number | -100 to 100 | Vibrancy adjust |
+| `iFinishContrast` | number | -100 to 100 | Contrast adjust |
+| `iFinishPositiveContrast` | number | 0-100 | Positive contrast |
+| `iDeltaR` | number | -100 to 100 | Red channel delta |
+| `iDeltaG` | number | -100 to 100 | Green channel delta |
+| `iDeltaB` | number | -100 to 100 | Blue channel delta |
+| `bDynamic` | number | 0-1 | Enable AI dynamic |
+| `iDynamic` | number | 0-100 | Dynamic strength |
+| `iDynamicWB` | number | 0-100 | Dynamic white balance |
+| `iOutLUTcontrast` | number | -100 to 100 | Output LUT contrast |
+| `iOutLUTsaturation` | number | -100 to 100 | Output LUT saturation |
+| `lutInputCorrective` | PFC3DLutInfo | - | Input corrective LUT |
+| `lutInputSky` | PFC3DLutInfo | - | Sky LUT |
+| `lutInputFoliageGreen` | PFC3DLutInfo | - | Green foliage LUT |
+| `lutInputFoliageBrown` | PFC3DLutInfo | - | Brown foliage LUT |
+| `lutOutput` | PFC3DLutInfo | - | Output LUT |
+
+## PFC3DLutInfo
+
+LUT information structure.
+
+| Property | Type | Range | Description |
+|----------|------|-------|-------------|
+| `strength` | number | 0-100 | LUT strength |
+
+## DP2PARAM
+
+DP2 parameters.
+
+| Property | Type | Range | Description |
+|----------|------|-------|-------------|
+| `bEnable` | number | 0-1 | Enable DP2 |
+| `bAuto` | number | 0-1 | Auto mode |
+| `mode` | number | - | DP2 mode |
+| `iDensity` | number | 0-100 | Density |
+| `iDeltaR` | number | -100 to 100 | Red delta |
+| `iDeltaG` | number | -100 to 100 | Green delta |
+| `iDeltaB` | number | -100 to 100 | Blue delta |
+| `fGamma` | number | 0-2 | Gamma |
+| `iContrast` | number | -100 to 100 | Contrast |
+| `iSaturation` | number | -100 to 100 | Saturation |

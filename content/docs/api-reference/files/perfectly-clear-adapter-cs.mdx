@@ -1,0 +1,170 @@
+---
+title: PerfectlyClearAdapter.cs
+description: .NET wrapper for the Perfectly Clear SDK
+---
+
+# PerfectlyClearAdapter.cs
+
+The .NET wrapper providing C# access to the Perfectly Clear SDK functionality.
+
+## Namespace
+
+```csharp
+using PerfectlyClearAdapter;
+```
+
+## Overview
+
+This file contains:
+
+- `PerfectlyClear` class - Main SDK wrapper
+- `PFCImageFile` class - .NET image file handling  
+- All parameter structures (PFCPARAM, PFCCOREPARAM, etc.)
+- All enumerations (PFCFEATURE, PFCAPPLYSTATUS, etc.)
+
+See [PerfectlyClearAdapter Namespace](/docs/api-reference/namespaces/perfectly-clear-adapter) for complete documentation.
+
+## Main Classes
+
+### PerfectlyClear
+
+The primary class for image correction operations.
+
+```csharp
+public class PerfectlyClear : IDisposable
+{
+    // Constructor with license path
+    public PerfectlyClear(string protectionPath);
+    
+    // Preset loading
+    public int ReadPresets(ref PFCPARAM param, string presetPath);
+    
+    // Correction
+    public PFCAPPLYSTATUS AutoCorrect(IntPtr pImage, PFCPARAM param,
+        PFCREJECTOPTION rejectOption = PFCREJECTOPTION.PFC_REJECT_CLIPART);
+    
+    // AI Engine
+    public int LoadAIEngine(string modelPath, PFCAIFEATURE features);
+    public void ReleaseAIEngine();
+    public int LoadScenePresets(string presetPath);
+    public string GetSceneLabel();
+    public int GetSceneId();
+    
+    // Calc/Apply
+    public int Calc(IntPtr pImage, IntPtr pReducedImage, PFCFEATURE features);
+    public PFCAPPLYSTATUS Apply(IntPtr pImage, PFCPARAM param);
+}
+```
+
+### PFCImageFile
+
+.NET class for image file I/O.
+
+```csharp
+public class PFCImageFile : IDisposable
+{
+    public PFC_FILE_LOAD_STATUS LoadImage(string filename, 
+        bool convertToSRGB = true);
+    public bool SaveImage(string filename, int quality,
+        bool convertToOriginalColorSpace = true,
+        bool embedOriginalMetadata = true);
+    public IntPtr PFCImageGet();
+    
+    public int Width { get; }
+    public int Height { get; }
+    public int Stride { get; }
+    public PFC_FLASH_STATUS FlashStatus { get; }
+}
+```
+
+## Structures
+
+All C structures are available as .NET structs:
+
+- `PFCPARAM` - All correction parameters
+- `PFCCOREPARAM` - Core corrections
+- `PFCNRPARAM` - Noise reduction
+- `PFCFBPARAM` - Face beautification
+- `PFCV3PARAM` - V3 LOOKs
+- `PFCREPARAM` - Red-eye removal
+- `PFCPOINT` - Point structure
+- `PFCRECT` - Rectangle structure
+- `PFCFACERECT` - Face detection data
+
+## Enumerations
+
+All C enums are available:
+
+- `PFCFEATURE` - Calculation features
+- `PFCAIFEATURE` - AI model features
+- `PFCPIXELFORMAT` - Pixel formats
+- `PFCPRESETID` - Built-in presets
+- `PFCAPPLYSTATUS` - Apply return codes
+- `PFCCORE_STATUS` - Core status
+- `PFCNR_STATUS` - Noise status
+- `PFCFB_STATUS` - Face beautification status
+- `PFCREJECTOPTION` - Rejection options
+
+## Usage Example
+
+```csharp
+using System;
+using PerfectlyClearAdapter;
+
+class Program
+{
+    static void Main()
+    {
+        using (var pfc = new PerfectlyClear(@"C:\SDK\license"))
+        {
+            // Load AI engine
+            pfc.LoadAIEngine(@"C:\SDK\models",
+                PFCAIFEATURE.AI_SCENE_DETECTION | 
+                PFCAIFEATURE.AI_CORRECTIONS);
+            
+            // Load image
+            var imageFile = new PFCImageFile();
+            if (imageFile.LoadImage(@"input.jpg") == PFC_FILE_LOAD_STATUS.LOAD_OK)
+            {
+                // Setup parameters
+                var param = new PFCPARAM();
+                pfc.ReadPresets(ref param, @"preset.preset");
+                
+                // Apply corrections
+                var result = pfc.AutoCorrect(imageFile.PFCImageGet(), param);
+                
+                if (result == PFCAPPLYSTATUS.APPLY_SUCCESS)
+                {
+                    Console.WriteLine($"Scene: {pfc.GetSceneLabel()}");
+                    imageFile.SaveImage(@"output.jpg", 92);
+                }
+            }
+            
+            pfc.ReleaseAIEngine();
+        }
+    }
+}
+```
+
+## P/Invoke Declarations
+
+The file includes all necessary P/Invoke declarations to call the native `PerfectlyClearPro.dll`:
+
+```csharp
+[DllImport("PerfectlyClearPro.dll")]
+private static extern int PFC_SetProtectionPath(string path);
+
+[DllImport("PerfectlyClearPro.dll")]
+private static extern int PFC_AutoCorrect(
+    IntPtr pImage, IntPtr pReducedImage, 
+    ref PFCPARAM pParam, IntPtr pEngine,
+    IntPtr pProfile, int iRejectOption, int iFAEOption);
+
+// ... additional declarations
+```
+
+## See Also
+
+- [PerfectlyClearAdapter Namespace](/docs/api-reference/namespaces/perfectly-clear-adapter)
+- [C# Examples](/docs/examples/csharp)
+- [Data Structures](/docs/api-reference/data-structures)

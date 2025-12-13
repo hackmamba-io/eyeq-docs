@@ -1,0 +1,40 @@
+---
+title: Linux & macOS Examples
+description: Sample code for Linux and macOS platforms
+---
+
+# Linux & macOS Examples
+
+{/* TODO: Migrate content from examples_unix.md */}
+
+## Simple AI Sample
+```cpp
+// 1. Setup license
+PFC_SetProtectionPath(protectionPath);
+
+// 2. Load image
+PFCImageFile imageFile;
+imageFile.LoadImage(inputPath);
+
+// 3. Initialize AI engine
+PFCENGINE engine;
+PFC_CreateEngine(&engine, modelPath, PFCFEATURE_ALL);
+
+// 4. Apply corrections
+PFCIMAGE* pImage = imageFile.PFCImageGet();
+PFC_AutoCorrect(pImage, NULL, &param, &engine, NULL, 0, 0);
+
+// 5. Save result
+imageFile.SaveImage(outputPath, quality);
+```
+
+## Detailed AI Sample
+
+See the `DetailedAiSample` in the SDK for loading custom presets and reading detected scenes.
+
+## Building Samples
+```bash
+cd SampleProjects/Linux/SimpleAiSample
+make -f makefile.linux
+./SimpleAiSample input.jpg output.jpg
+```

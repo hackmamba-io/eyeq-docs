@@ -1,0 +1,94 @@
+---
+title: Web API
+description: REST API for cloud-based image correction with Perfectly Clear
+---
+
+# Perfectly Clear Web API
+
+The Perfectly Clear Web API provides cloud-based image correction through a simple REST interface. Process images from any platform or language with our AI-powered correction engine.
+
+## Overview
+
+Send images to our cloud service and receive corrected images in return. No SDK installation required - just HTTP requests.
+
+## Key Features
+
+- **Simple REST API**: Standard HTTP requests with JSON responses
+- **AI-Powered**: Same correction engine as our desktop and mobile SDKs
+- **Scalable**: Process from one to millions of images
+- **Fast**: Optimized for low latency
+- **Flexible**: Multiple output formats and quality settings
+
+## Base URL
+
+```
+https://api.perfectlyclear.io/v1
+```
+
+## Quick Start
+
+### 1. Get Your API Key
+
+Sign up at [perfectlyclear.io](https://perfectlyclear.io) to get your API key.
+
+### 2. Make Your First Request
+
+```bash
+curl -X POST https://api.perfectlyclear.io/v1/correct \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: multipart/form-data" \
+  -F "image=@photo.jpg" \
+  -o corrected.jpg
+```
+
+### 3. Receive Corrected Image
+
+The API returns the corrected image directly, or a JSON response with a download URL.
+
+## Authentication
+
+All requests require an API key in the Authorization header:
+
+```
+Authorization: Bearer YOUR_API_KEY
+```
+
+## Endpoints Overview
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/correct` | POST | Correct a single image |
+| `/correct/batch` | POST | Submit batch job |
+| `/jobs/{id}` | GET | Check batch job status |
+| `/presets` | GET | List available presets |
+| `/usage` | GET | Get usage statistics |
+
+## Pricing
+
+| Tier | Images/Month | Price |
+|------|--------------|-------|
+| Free | 100 | $0 |
+| Starter | 5,000 | $49/mo |
+| Pro | 50,000 | $199/mo |
+| Enterprise | Unlimited | Custom |
+
+## Rate Limits
+
+| Tier | Requests/Minute | Concurrent |
+|------|-----------------|------------|
+| Free | 10 | 2 |
+| Starter | 60 | 5 |
+| Pro | 300 | 20 |
+| Enterprise | Custom | Custom |
+
+## Next Steps
+
+<Cards>
+  <Card title="Quick Start Guide" href="/docs/web-api/getting-started" />
+  <Card title="API Endpoints" href="/docs/web-api/endpoints" />
+  <Card title="Client SDKs" href="/docs/web-api/sdks" />
+</Cards>
+
+---
+
+*Documentation for the Perfectly Clear Web API at [perfectlyclear.io](https://perfectlyclear.io)*

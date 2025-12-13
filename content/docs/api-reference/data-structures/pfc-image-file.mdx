@@ -1,0 +1,284 @@
+---
+title: PFCImageFile Class
+description: Class for loading and saving image files with color management
+---
+
+# PFCImageFile Class
+
+The `PFCImageFile` class handles loading and saving image files (JPEG, PNG, WebP) with full color management support, EXIF metadata preservation, and easy integration with the Perfectly Clear SDK.
+
+## Overview
+
+This optional class provides:
+
+- Reading JPEG, PNG, and WebP files
+- Automatic color space conversion to/from sRGB
+- EXIF metadata preservation
+- Easy integration with PFCIMAGE structure
+- Thumbnail handling
+
+## Basic Usage
+
+```cpp
+#include "PFCImageFile.h"
+#include "PerfectlyClearPro.h"
+
+// Load image
+PFCImageFile imageFile;
+bool bConvertToSRGB = true;
+PFC_FILE_LOAD_STATUS status = imageFile.LoadImageFile(
+    "input.jpg", bConvertToSRGB, NULL);
+
+if (status == LOAD_OK) {
+    // Create PFCIMAGE from the loaded data
+    PFCIMAGE im;
+    im.width = imageFile.width;
+    im.height = imageFile.height;
+    im.stride = imageFile.stride;
+    im.format = PFC_PixelFormat24bppBGR;
+    im.data = imageFile.raw_image;
+    
+    // Apply corrections
+    PFCPARAM param;
+    PFC_SetParam(&param, PRESET_IAUTO_PEOPLE);
+    PFC_AutoCorrect(&im, NULL, &param, NULL, NULL, 0, 0);
+    
+    // Save result
+    bool bConvertBack = true;
+    bool bPreserveMetadata = true;
+    imageFile.SaveImageFile("output.jpg", 92, bConvertBack, bPreserveMetadata);
+}
+```
+
+## Constructors
+
+### Default Constructor
+
+```cpp
+PFCImageFile();
+```
+
+Creates an empty PFCImageFile to be filled with `LoadImageFile()`.
+
+### From Model
+
+```cpp
+PFCImageFile(int width, int height, const PFCImageFile &model);
+```
+
+Creates a new image inheriting pixel format and metadata from an existing image.
+
+### With Dimensions
+
+```cpp
+PFCImageFile(int width, int height, int bytes_per_pixel, int stride);
+```
+
+Creates an image with pre-allocated buffer of specified size.
+
+## Loading Methods
+
+### LoadImageFile
+
+```cpp
+PFC_FILE_LOAD_STATUS LoadImageFile(
+    const char *filename,
+    bool bConvertToSRGB,
+    const char *iccFolderPath
+);
+```
+
+Loads a JPEG, PNG, or WebP file from disk.
+
+**Parameters:**
+- `filename` - Path to file
+- `bConvertToSRGB` - Convert to sRGB color space (recommended: true)
+- `iccFolderPath` - Path to folder containing AdobeRGB1998.icc (for untagged AdobeRGB images)
+
+### ExpandImageBuffer
+
+```cpp
+PFC_FILE_LOAD_STATUS ExpandImageBuffer(
+    char *data, 
+    long size, 
+    PFC_FILETYPE type,
+    bool bConvertToSRGB, 
+    const char *iccFolderPath
+);
+```
+
+Expands compressed image data from a memory buffer.
+
+## Saving Methods
+
+### SaveImageFile
+
+```cpp
+bool SaveImageFile(
+    const char *filename, 
+    int quality,
+    bool bConvertToOriginalColorSpace, 
+    bool bEmbedOriginalMetadata
+);
+```
+
+Writes the image to disk. File type is determined by extension (.jpg, .png, .webp).
+
+**Parameters:**
+- `filename` - Output path (extension determines format)
+- `quality` - JPEG/WebP quality (1-100, recommended: 92)
+- `bConvertToOriginalColorSpace` - Convert back to input color space
+- `bEmbedOriginalMetadata` - Preserve EXIF data
+
+### CompressImageBuffer
+
+```cpp
+int CompressImageBuffer(
+    unsigned char** destination, 
+    PFC_FILETYPE type,
+    int quality, 
+    bool bConvertToOriginalColorSpace, 
+    bool bEmbedOriginalMetadata
+);
+```
+
+Compresses image to a memory buffer. Returns buffer size.
+
+## Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `raw_image` | unsigned char* | Pointer to image data |
+| `width` | int | Image width in pixels |
+| `height` | int | Image height in pixels |
+| `bytes_per_pixel` | int | Bytes per pixel |
+| `stride` | int | Row stride in bytes |
+| `sourceSRGB` | bool | True if input was tagged sRGB |
+| `flashStatus` | PFC_FLASH_STATUS | Flash status from EXIF |
+
+## EXIF Accessors
+
+```cpp
+int exifOrientation();      // EXIF orientation tag
+int iISO();                 // ISO value
+const char* cameraModel();  // Camera model string
+const char* exifSoftware(); // Software tag
+```
+
+## File Types (PFC_FILETYPE)
+
+| Value | Description |
+|-------|-------------|
+| `PFC_JPEG` | JPEG format |
+| `PFC_PNG` | PNG format |
+| `PFC_WEBP` | WebP format |
+
+## Load Status (PFC_FILE_LOAD_STATUS)
+
+| Status | Description |
+|--------|-------------|
+| `LOAD_OK` | Success |
+| `LOAD_ERROR` | General error |
+| `LOAD_ERROR_UNSUPPORTED` | Unsupported file format |
+| `LOAD_FAILED_CONVERT_SRGB` | Color conversion failed |
+
+## Flash Status (PFC_FLASH_STATUS)
+
+| Status | Value | Description |
+|--------|-------|-------------|
+| `PFC_FLASH_UNKNOWN` | -1 | Cannot determine |
+| `PFC_FLASH_NOT_FIRED` | 0 | Flash not used |
+| `PFC_FLASH_FIRED` | 1 | Flash was used |
+
+## Color Management
+
+### Output ICC Profile
+
+```cpp
+bool SetOutputIccProfile(const char* filename);
+```
+
+Sets a custom output ICC profile. When set, `bConvertToOriginalColorSpace` is ignored.
+
+```cpp
+PFCImageFile imageFile;
+imageFile.LoadImageFile("input.jpg", true, NULL);
+
+// Convert all output to sRGB
+imageFile.SetOutputIccProfile("/path/to/sRGB.icc");
+imageFile.SaveImageFile("output.jpg", 92, false, true);
+```
+
+## Thumbnail Support
+
+```cpp
+// Enable thumbnail expansion (expensive, disabled by default)
+imageFile.expandThumbnailImage = true;
+
+// After loading, check for thumbnail
+if (imageFile.hasSourceThumbnail) {
+    printf("Thumbnail: %dx%d\n", 
+           imageFile.sourceThumbnailWidth,
+           imageFile.sourceThumbnailHeight);
+}
+
+// Set custom output thumbnail
+imageFile.outputThumbnailBuffer = thumbnailData;
+imageFile.outputThumbnailBufferSize = thumbnailSize;
+```
+
+## Complete Example
+
+```cpp
+#include "PFCImageFile.h"
+#include "PerfectlyClearPro.h"
+
+int processImage(const char* input, const char* output) {
+    // Setup license
+    PFC_SetProtectionPath("/path/to/license");
+    
+    // Load image with color conversion
+    PFCImageFile imageFile;
+    PFC_FILE_LOAD_STATUS loadStatus = imageFile.LoadImageFile(
+        input, true, "/path/to/icc");
+    
+    if (loadStatus != LOAD_OK) {
+        printf("Failed to load: %d\n", loadStatus);
+        return -1;
+    }
+    
+    printf("Loaded: %dx%d, Flash: %d\n", 
+           imageFile.width, imageFile.height, imageFile.flashStatus);
+    
+    // Create PFCIMAGE
+    PFCIMAGE im;
+    im.width = imageFile.width;
+    im.height = imageFile.height;
+    im.stride = imageFile.stride;
+    im.format = PFC_PixelFormat24bppBGR;
+    im.data = imageFile.raw_image;
+    
+    // Setup parameters with red-eye based on flash
+    PFCPARAM param;
+    PFC_SetParam(&param, PRESET_IAUTO_PEOPLE);
+    param.re.bEnabled = (imageFile.flashStatus == PFC_FLASH_FIRED);
+    
+    // Apply corrections
+    PFC_AutoCorrect(&im, NULL, &param, NULL, NULL, PFC_REJECT_CLIPART, 0);
+    
+    // Save with original color space and metadata
+    if (!imageFile.SaveImageFile(output, 92, true, true)) {
+        printf("Failed to save\n");
+        return -1;
+    }
+    
+    printf("Saved: %s\n", output);
+    return 0;
+}
+```
+
+## See Also
+
+- [PFCIMAGE](/docs/api-reference/data-structures/pfcimage)
+- [Color Management Guide](/docs/guides/color-management)
+- [PFCPDFImage](/docs/api-reference/data-structures/pfc-pdf-image)

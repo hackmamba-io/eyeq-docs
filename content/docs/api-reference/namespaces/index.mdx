@@ -1,0 +1,68 @@
+---
+title: Namespaces
+description: C# namespace reference for the Perfectly Clear SDK
+---
+
+# Namespaces
+
+The Perfectly Clear .NET SDK organizes its classes and structures within the following namespace:
+
+## Available Namespaces
+
+| Namespace | Description |
+|-----------|-------------|
+| [PerfectlyClearAdapter](/docs/api-reference/namespaces/perfectly-clear-adapter) | Main namespace containing all .NET wrapper classes for the Perfectly Clear SDK |
+
+## Namespace Hierarchy
+
+```
+PerfectlyClearAdapter
+├── Classes
+│   ├── PerfectlyClear        (Main SDK class)
+│   ├── PFCImageFile          (Image file handling)
+│   ├── PFCFBFACEINFO         (Face detection info)
+│   └── PFCFACERECT           (Face rectangle data)
+├── Structures
+│   ├── PFCPARAM              (All correction parameters)
+│   ├── PFCCOREPARAM          (Core corrections)
+│   ├── PFCNRPARAM            (Noise reduction)
+│   ├── PFCFBPARAM            (Face beautification)
+│   ├── PFCV3PARAM            (V3 LOOKs)
+│   ├── PFCREPARAM            (Red-eye removal)
+│   ├── PFCPOINT              (Point structure)
+│   ├── PFCRECT               (Rectangle structure)
+│   └── SELECTIVECOLOR        (Selective color params)
+└── Enumerations
+    ├── PFCFEATURE            (Calculation features)
+    ├── PFCAIFEATURE          (AI model features)
+    ├── PFCPIXELFORMAT        (Pixel formats)
+    ├── PFCPRESETID           (Built-in presets)
+    ├── PFCAPPLYSTATUS        (Apply return codes)
+    ├── PFCCORE_STATUS        (Core calc status)
+    ├── PFCNR_STATUS          (Noise calc status)
+    ├── PFCFB_STATUS          (Face beautification status)
+    └── PFCREJECTOPTION       (Image rejection options)
+```
+
+## Usage Example
+
+```csharp
+using PerfectlyClearAdapter;
+
+// All SDK classes are accessed through the PerfectlyClearAdapter namespace
+var pfc = new PerfectlyClear("/path/to/license");
+var imageFile = new PFCImageFile();
+var param = new PFCPARAM();
+
+// Load and correct an image
+imageFile.LoadImage("/path/to/input.jpg");
+pfc.ReadPresets(ref param, "/path/to/preset.preset");
+pfc.AutoCorrect(imageFile.PFCImageGet(), param);
+imageFile.SaveImage("/path/to/output.jpg", 95);
+```
+
+## See Also
+
+- [PerfectlyClearAdapter Namespace Details](/docs/api-reference/namespaces/perfectly-clear-adapter)
+- [C# API Reference](/docs/api-reference/csharp-api)
+- [Data Structures](/docs/api-reference/data-structures)

@@ -1,0 +1,139 @@
+---
+title: Installation
+description: How to install and set up the EyeQ Browser SDK
+---
+
+# Installation
+
+The Browser SDK can be installed via npm or by directly including the distribution files in your project.
+
+## Package Contents
+
+The SDK package includes:
+
+```
+PfC_Browser_SDK-2.0.3/
+├── dist/
+│   ├── pfc.mjs              # Main ES module
+│   ├── pfc.d.mts            # TypeScript definitions
+│   ├── pfc.wasm             # WebAssembly binary
+│   ├── image.worker.js      # Image processing worker
+│   ├── inference.worker.js  # AI inference worker
+│   ├── get-image-from-webapi.js  # Web API helper
+│   └── models/              # AI model files
+│       ├── aicolor.pnn
+│       ├── dynamic.pnn
+│       ├── pro_and_universal_*.pnn
+│       └── skintone_*.pnn
+├── option-a/ through option-f/  # Example implementations
+└── README.md
+```
+
+## Installation Methods
+
+### Method 1: Direct Include
+
+Copy the `dist` folder to your project and import directly:
+
+```javascript
+import { Pfc, PFCFEATURE, InferenceOption } from './dist/pfc.mjs';
+```
+
+### Method 2: NPM (Coming Soon)
+
+```bash
+npm install @eyeq/browser-sdk
+```
+
+## Project Setup
+
+### 1. Copy SDK Files
+
+Copy the entire `dist` folder to your project's public/static directory:
+
+```bash
+cp -r PfC_Browser_SDK-2.0.3/dist ./public/pfc/
+```
+
+### 2. Copy Presets
+
+Copy scene detection presets to your project:
+
+```bash
+mkdir -p ./public/pfc/presets
+cp option-a/src/resources/presets/*.preset ./public/pfc/presets/
+```
+
+### 3. Import the SDK
+
+```javascript
+import { 
+  Pfc, 
+  PfcImage,
+  PFCFEATURE, 
+  PFCPRESETID,
+  InferenceOption 
+} from './pfc/pfc.mjs';
+```
+
+## TypeScript Support
+
+The SDK includes full TypeScript definitions. Import types as needed:
+
+```typescript
+import type { PfcOptions, PfcImage } from './pfc/pfc.mjs';
+import { 
+  Pfc, 
+  PFCFEATURE, 
+  InferenceOption,
+  PFCPRESETID 
+} from './pfc/pfc.mjs';
+
+const options: PfcOptions = {
+  distDir: './pfc',
+  clientAPIKey: 'your-api-key',
+  urlGetCertificate: 'https://cert.perfectlyclear.photos/wasm_certificate/',
+  inference: InferenceOption.local,
+};
+```
+
+## Required Files
+
+At minimum, you need these files accessible from your web server:
+
+| File | Purpose | Required |
+|------|---------|----------|
+| `pfc.mjs` | Main SDK | ✅ Yes |
+| `pfc.wasm` | WebAssembly binary | ✅ Yes |
+| `image.worker.js` | Image processing | ✅ Yes |
+| `inference.worker.js` | AI inference | ✅ Yes |
+| `models/*.pnn` | AI models | ✅ For local inference |
+| `*.preset` | Scene presets | ✅ For scene detection |
+
+## Verify Installation
+
+Create a simple test page:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Browser SDK Test</title>
+</head>
+<body>
+  <canvas id="test-canvas"></canvas>
+  <script type="module">
+    import { Pfc } from './pfc/pfc.mjs';
+    
+    const pfc = new Pfc();
+    console.log('SDK loaded successfully!', pfc);
+  </script>
+</body>
+</html>
+```
+
+## Next Steps
+
+- [Quick Start Guide](/docs/browser-sdk/getting-started/quickstart) - Get your first image corrected
+- [Licensing](/docs/browser-sdk/getting-started/licensing) - Set up your API key
+- [Deployment](/docs/browser-sdk/getting-started/deployment) - Deploy to production

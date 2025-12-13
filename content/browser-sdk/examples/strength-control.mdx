@@ -1,0 +1,319 @@
+---
+title: Strength Control
+description: Implementing overall strength and parameter sliders
+---
+
+# Strength Control Example
+
+This example shows how to implement an overall strength slider and individual parameter controls for fine-tuning corrections.
+
+## Overview
+
+- Overall "master" strength control
+- Individual parameter sliders
+- Real-time preview updates
+- Reset to original/default
+
+## Implementation
+
+```javascript
+import { 
+  Pfc, 
+  PFCFEATURE, 
+  PFCPRESETID, 
+  InferenceOption 
+} from './dist/pfc.mjs';
+
+class StrengthControlApp {
+  constructor() {
+    this.pfc = null;
+    this.pfcImage = null;
+    this.baseParam = null;      // Original scene preset params
+    this.workingParam = null;   // Modified params
+    this.canvas = document.getElementById('canvas');
+    this.originalCanvas = document.getElementById('original');
+  }
+
+  async init() {
+    this.pfc = new Pfc();
+    
+    await this.pfc.init({
+      distDir: './dist',
+      clientAPIKey: 'YOUR_API_KEY',
+      urlGetCertificate: 'https://cert.perfectlyclear.photos/wasm_certificate/',
+      inference: InferenceOption.local,
+    });
+
+    const preset = await fetch('./presets/sd.preset').then(r => r.text());
+    await this.pfc.loadScenePresets(preset);
+  }
+
+  async loadImage(file) {
+    const url = URL.createObjectURL(file);
+    
+    await new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => {
+        // Set both canvases
+        this.canvas.width = this.originalCanvas.width = img.width;
+        this.canvas.height = this.originalCanvas.height = img.height;
+        this.canvas.getContext('2d').drawImage(img, 0, 0);
+        this.originalCanvas.getContext('2d').drawImage(img, 0, 0);
+        resolve();
+      };
+      img.src = url;
+    });
+
+    // Create PFC objects
+    this.pfcImage = this.pfc.createImage(this.canvas);
+    this.baseParam = this.pfc.createParam();
+    this.workingParam = this.pfc.createParam();
+
+    // Calculate AI features
+    const features = PFCFEATURE.CALC_ALL | PFCFEATURE.CALC_NOTINTCALC;
+    const aiFeatures = PFCFEATURE.CALC_SCENE_DETECTION | 
+                       PFCFEATURE.CALC_SKINTONE | 
+                       PFCFEATURE.CALC_AICOLOR;
+
+    await this.pfc.createProfile(this.pfcImage, features, aiFeatures);
+
+    // Apply scene preset to base params
+    this.pfc.readScenePreset(this.baseParam, this.pfcImage.sceneId);
+
+    // Copy to working params
+    this.pfc.copyParam(this.workingParam, this.baseParam);
+
+    // Apply initial corrections
+    await this.applyCorrections();
+  }
+
+  async applyCorrections() {
+    await this.pfc.apply(this.pfcImage, this.workingParam);
+    this.pfcImage.drawToCanvas(this.canvas);
+  }
+
+  // Overall strength control (0-100)
+  async setOverallStrength(strength) {
+    // Copy base params
+    this.pfc.copyParam(this.workingParam, this.baseParam);
+    
+    // Apply strength scaling
+    this.pfc.applyStrengthToParam(this.workingParam, strength);
+    
+    // Re-apply corrections
+    await this.applyCorrections();
+  }
+
+  // Individual parameter controls
+  async setExposure(value) {
+    this.workingParam.core.bUseAutomaticStrengthSelection = 0;
+    this.workingParam.core.iStrength = value;
+    await this.applyCorrections();
+  }
+
+  async setContrast(value) {
+    this.workingParam.core.bContrast = value > 0 ? 1 : 0;
+    this.workingParam.core.iContrast = value;
+    await this.applyCorrections();
+  }
+
+  async setVibrancy(value) {
+    this.workingParam.core.bVibrancy = value > 0 ? 1 : 0;
+    this.workingParam.core.iVibrancy = value;
+    await this.applyCorrections();
+  }
+
+  async setLocalContrast(value) {
+    this.workingParam.core.bLocalContrast = value > 0 ? 1 : 0;
+    this.workingParam.core.iLocalContrast = value;
+    await this.applyCorrections();
+  }
+
+  async setSkinSmoothing(value) {
+    this.workingParam.fb.bEnabled = 1;
+    this.workingParam.fb.bSmooth = value > 0 ? 1 : 0;
+    this.workingParam.fb.iSmoothLevel = value;
+    await this.applyCorrections();
+  }
+
+  async setEyeEnhancement(value) {
+    this.workingParam.fb.bEnabled = 1;
+    this.workingParam.fb.bEnhance = value > 0 ? 1 : 0;
+    this.workingParam.fb.iEnhanceLevel = value;
+    await this.applyCorrections();
+  }
+
+  // Reset to scene default
+  async resetToDefault() {
+    this.pfc.copyParam(this.workingParam, this.baseParam);
+    await this.applyCorrections();
+    this.resetSliders();
+  }
+
+  // Show original
+  showOriginal() {
+    this.canvas.style.display = 'none';
+    this.originalCanvas.style.display = 'block';
+  }
+
+  // Show corrected
+  showCorrected() {
+    this.canvas.style.display = 'block';
+    this.originalCanvas.style.display = 'none';
+  }
+
+  resetSliders() {
+    document.getElementById('strength').value = 100;
+    document.getElementById('exposure').value = this.baseParam.core.iStrength;
+    document.getElementById('contrast').value = this.baseParam.core.iContrast;
+    document.getElementById('vibrancy').value = this.baseParam.core.iVibrancy;
+  }
+}
+
+// Initialize and bind UI
+const app = new StrengthControlApp();
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await app.init();
+
+  // File upload
+  document.getElementById('file-input').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      document.getElementById('controls').classList.remove('hidden');
+      await app.loadImage(file);
+    }
+  });
+
+  // Overall strength slider
+  document.getElementById('strength').addEventListener('input', async (e) => {
+    await app.setOverallStrength(parseInt(e.target.value));
+  });
+
+  // Individual sliders
+  document.getElementById('exposure').addEventListener('input', async (e) => {
+    await app.setExposure(parseInt(e.target.value));
+  });
+
+  document.getElementById('contrast').addEventListener('input', async (e) => {
+    await app.setContrast(parseInt(e.target.value));
+  });
+
+  document.getElementById('vibrancy').addEventListener('input', async (e) => {
+    await app.setVibrancy(parseInt(e.target.value));
+  });
+
+  document.getElementById('smoothing').addEventListener('input', async (e) => {
+    await app.setSkinSmoothing(parseInt(e.target.value));
+  });
+
+  // Reset button
+  document.getElementById('reset-btn').addEventListener('click', async () => {
+    await app.resetToDefault();
+  });
+
+  // Compare button
+  const compareBtn = document.getElementById('compare-btn');
+  compareBtn.addEventListener('mousedown', () => app.showOriginal());
+  compareBtn.addEventListener('mouseup', () => app.showCorrected());
+  compareBtn.addEventListener('mouseleave', () => app.showCorrected());
+});
+```
+
+## HTML Interface
+
+```html
+<div class="app">
+  <input type="file" id="file-input" accept="image/*" />
+  
+  <div class="canvas-container">
+    <canvas id="canvas"></canvas>
+    <canvas id="original" style="display: none;"></canvas>
+  </div>
+  
+  <div class="controls hidden" id="controls">
+    <div class="control-group">
+      <label>Overall Strength</label>
+      <input type="range" id="strength" min="0" max="100" value="100" />
+      <span class="value">100%</span>
+    </div>
+    
+    <hr />
+    
+    <div class="control-group">
+      <label>Exposure</label>
+      <input type="range" id="exposure" min="0" max="100" value="50" />
+    </div>
+    
+    <div class="control-group">
+      <label>Contrast</label>
+      <input type="range" id="contrast" min="0" max="100" value="50" />
+    </div>
+    
+    <div class="control-group">
+      <label>Vibrancy</label>
+      <input type="range" id="vibrancy" min="0" max="100" value="30" />
+    </div>
+    
+    <div class="control-group">
+      <label>Skin Smoothing</label>
+      <input type="range" id="smoothing" min="0" max="100" value="50" />
+    </div>
+    
+    <div class="buttons">
+      <button id="compare-btn">Hold to Compare</button>
+      <button id="reset-btn">Reset</button>
+    </div>
+  </div>
+</div>
+```
+
+## Key Concepts
+
+### Overall Strength
+
+The `applyStrengthToParam()` method scales all correction values:
+
+```javascript
+// 100% = full corrections (default)
+// 50% = half strength on all corrections
+// 0% = no corrections (original image)
+pfc.applyStrengthToParam(param, 50);
+```
+
+### Preserving Base Parameters
+
+Always keep a copy of the original parameters:
+
+```javascript
+// Save original scene preset
+this.pfc.copyParam(this.baseParam, sceneParam);
+
+// Work on a copy
+this.pfc.copyParam(this.workingParam, this.baseParam);
+
+// Modify working copy
+this.workingParam.core.iStrength = newValue;
+```
+
+### Real-time Updates
+
+For smooth slider interactions:
+
+```javascript
+// Debounce for performance
+let timeout;
+slider.addEventListener('input', (e) => {
+  clearTimeout(timeout);
+  timeout = setTimeout(async () => {
+    await app.setExposure(e.target.value);
+  }, 50);
+});
+```
+
+## Performance Tips
+
+1. **Debounce slider updates** - Avoid too many apply() calls
+2. **Cache original image** - Don't recalculate profile on each change
+3. **Use lower resolution previews** - Scale up for final output
+4. **Show loading state** - Apply can take 100-500ms

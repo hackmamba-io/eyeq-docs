@@ -1,0 +1,46 @@
+---
+title: C/C++ API
+description: C/C++ API reference
+---
+
+# C/C++ API Reference
+
+{/* TODO: Generate from PerfectlyClearPro.h */}
+
+## Functions
+
+### PFC_SetProtectionPath
+
+```c
+int PFC_SetProtectionPath(const char* path);
+```
+
+Sets the path to the license files.
+
+### PFC_CreateEngine
+
+```c
+int PFC_CreateEngine(
+    PFCENGINE* engine,
+    const char* modelPath,
+    int features
+);
+```
+
+Creates an AI engine instance.
+
+### PFC_AutoCorrect
+
+```c
+PFCAPPLYSTATUS PFC_AutoCorrect(
+    PFCIMAGE* pImage,
+    PFCIMAGE* pReducedImage,
+    PFCPARAM* pParam,
+    PFCENGINE* pEngine,
+    PFCIMAGEPROFILE* pProfile,
+    int iRejectOption,
+    int iFAEOption
+);
+```
+
+Applies all corrections in one call.

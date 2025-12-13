@@ -1,0 +1,153 @@
+---
+title: Presets
+description: Manage and use correction presets
+---
+
+# Presets
+
+Use presets to apply consistent corrections across images.
+
+## List Available Presets
+
+### Endpoint
+
+```
+GET https://api.perfectlyclear.io/v1/presets
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "presets": [
+    {
+      "id": "auto",
+      "name": "Automatic",
+      "description": "AI-powered scene detection with optimal settings",
+      "type": "system"
+    },
+    {
+      "id": "portrait",
+      "name": "Portrait",
+      "description": "Optimized for people and faces",
+      "type": "system"
+    },
+    {
+      "id": "landscape",
+      "name": "Landscape",
+      "description": "Vibrant colors for outdoor scenery",
+      "type": "system"
+    },
+    {
+      "id": "night",
+      "name": "Night",
+      "description": "Low-light optimization",
+      "type": "system"
+    },
+    {
+      "id": "food",
+      "name": "Food",
+      "description": "Enhanced colors for food photography",
+      "type": "system"
+    },
+    {
+      "id": "custom_abc123",
+      "name": "My Brand Preset",
+      "description": "Custom preset for brand consistency",
+      "type": "custom"
+    }
+  ]
+}
+```
+
+## Get Preset Details
+
+### Endpoint
+
+```
+GET https://api.perfectlyclear.io/v1/presets/{preset_id}
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "preset": {
+    "id": "portrait",
+    "name": "Portrait",
+    "description": "Optimized for people and faces",
+    "type": "system",
+    "settings": {
+      "strength": 75,
+      "face_beautification": true,
+      "skin_smoothing": 40,
+      "eye_enhancement": 30,
+      "vibrancy": 20
+    }
+  }
+}
+```
+
+## Using Presets
+
+### In Single Image Correction
+
+```bash
+curl -X POST https://api.perfectlyclear.io/v1/correct \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -F "image=@photo.jpg" \
+  -F "preset=portrait" \
+  -o corrected.jpg
+```
+
+### In Batch Processing
+
+```json
+{
+  "images": [...],
+  "settings": {
+    "preset": "landscape"
+  }
+}
+```
+
+## Custom Presets
+
+Enterprise customers can create custom presets. Contact sales for more information.
+
+### Create Custom Preset
+
+```
+POST https://api.perfectlyclear.io/v1/presets
+```
+
+```json
+{
+  "name": "My Brand Preset",
+  "description": "Custom settings for brand consistency",
+  "settings": {
+    "strength": 70,
+    "vibrancy": 30,
+    "contrast": 20,
+    "warmth": 10
+  }
+}
+```
+
+## System Presets
+
+| Preset | Best For | Key Features |
+|--------|----------|--------------|
+| `auto` | General use | AI scene detection |
+| `portrait` | People/faces | Skin smoothing, eye enhancement |
+| `landscape` | Outdoor/nature | Vivid colors, sky enhancement |
+| `night` | Low light | Noise reduction, brightening |
+| `food` | Food photos | Color boost, warmth |
+| `document` | Text/documents | High contrast, clarity |
+
+## See Also
+
+- [Correct Image](/docs/web-api/endpoints/correct)
+- [Examples](/docs/web-api/examples)

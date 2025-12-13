@@ -1,0 +1,218 @@
+---
+title: Docker Container
+description: Using the Perfectly Clear Docker container solution
+---
+
+# Docker Container
+
+The Docker container is a ready-for-production "private" version of our WebAPI correction system. This container can be deployed in seconds, providing a self-hosted HTTP API to correct your photos.
+
+## Quick Start
+
+```bash
+# Pull the image
+docker pull eyeq/perfectlyclear:latest
+
+# Run the container
+docker run -d -p 8080:8080 \
+  -v /path/to/license:/license \
+  -e PFC_LICENSE_PATH=/license \
+  eyeq/perfectlyclear:latest
+```
+
+## Container Images
+
+| Image | Description |
+|-------|-------------|
+| `eyeq/perfectlyclear:latest` | Latest stable version |
+| `eyeq/perfectlyclear:10.7.2` | Specific version |
+
+## Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `PFC_LICENSE_PATH` | Path to license folder | `/license` |
+| `PFC_PORT` | HTTP server port | `8080` |
+| `PFC_WORKERS` | Number of worker threads | Auto (CPU cores) |
+| `PFC_CACHE_TIME` | Cache time for images (seconds) | `3600` |
+| `PFC_OUTPUT_PROFILE` | Output color profile | (preserve input) |
+
+## Volume Mounts
+
+| Container Path | Purpose |
+|----------------|---------|
+| `/license` | License files |
+| `/input` | Input images (optional) |
+| `/output` | Output images (optional) |
+| `/presets` | Custom presets (optional) |
+
+## Docker Compose
+
+```yaml
+version: '3.8'
+services:
+  perfectlyclear:
+    image: eyeq/perfectlyclear:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./license:/license:ro
+      - ./presets:/presets:ro
+    environment:
+      - PFC_LICENSE_PATH=/license
+      - PFC_WORKERS=4
+    restart: unless-stopped
+```
+
+## API Endpoints
+
+### Health Check
+
+```bash
+GET /health
+```
+
+Returns `200 OK` if the service is healthy.
+
+### Correct Image
+
+```bash
+POST /correct
+Content-Type: multipart/form-data
+
+# Form fields:
+# - image: The image file
+# - preset: (optional) Preset name or path
+# - quality: (optional) Output quality 1-100
+```
+
+**Example with curl:**
+```bash
+curl -X POST http://localhost:8080/correct \
+  -F "image=@photo.jpg" \
+  -F "preset=auto" \
+  -F "quality=92" \
+  -o corrected.jpg
+```
+
+### List Presets
+
+```bash
+GET /presets
+```
+
+Returns available presets.
+
+## AI Preset Selection
+
+Enable AI Preset Selection by using the `auto` preset:
+
+```bash
+curl -X POST http://localhost:8080/correct \
+  -F "image=@photo.jpg" \
+  -F "preset=auto" \
+  -o corrected.jpg
+```
+
+## Auto Crop
+
+Use Auto Crop parameters exported from Workbench:
+
+```bash
+curl -X POST http://localhost:8080/correct \
+  -F "image=@photo.jpg" \
+  -F "crop_x=0.1" \
+  -F "crop_y=0.1" \
+  -F "crop_width=0.8" \
+  -F "crop_height=0.8" \
+  -o cropped.jpg
+```
+
+## Color Profile Conversion
+
+Convert output to sRGB or another profile:
+
+```bash
+curl -X POST http://localhost:8080/correct \
+  -F "image=@photo.jpg" \
+  -F "output_profile=srgb" \
+  -o corrected.jpg
+```
+
+## Scaling and Load Balancing
+
+### Kubernetes Deployment
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: perfectlyclear
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: perfectlyclear
+  template:
+    metadata:
+      labels:
+        app: perfectlyclear
+    spec:
+      containers:
+      - name: pfc
+        image: eyeq/perfectlyclear:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: PFC_LICENSE_PATH
+          value: /license
+        volumeMounts:
+        - name: license
+          mountPath: /license
+          readOnly: true
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1"
+          limits:
+            memory: "4Gi"
+            cpu: "4"
+      volumes:
+      - name: license
+        secret:
+          secretName: pfc-license
+```
+
+### HTTPS Support
+
+The container supports HTTPS via the `pfcaiserver`. This allows running behind standard load balancers to improve deployment and scaling options.
+
+## Monitoring
+
+### Health Check Endpoint
+
+```bash
+curl http://localhost:8080/health
+```
+
+### Metrics
+
+The container exposes metrics at `/metrics` for Prometheus scraping.
+
+## Performance Tuning
+
+- **Workers:** Set `PFC_WORKERS` based on available CPU cores
+- **Memory:** Allocate ~1GB RAM per worker for best performance
+- **Caching:** Adjust `PFC_CACHE_TIME` based on your workflow
+
+## Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| License error | Verify license files are mounted correctly |
+| Out of memory | Increase container memory limits |
+| Slow processing | Increase worker count or scale horizontally |
+
+---
+
+*Copyright © 2025 EyeQ Imaging Inc*

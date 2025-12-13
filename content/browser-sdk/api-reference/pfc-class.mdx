@@ -1,0 +1,306 @@
+---
+title: Pfc Class
+description: Main SDK class for image correction operations
+---
+
+# Pfc Class
+
+The `Pfc` class is the main entry point for the Browser SDK, providing all methods for initialization, image processing, and correction.
+
+## Constructor
+
+```typescript
+const pfc = new Pfc();
+```
+
+Creates a new Pfc instance. Must call `init()` before using other methods.
+
+## Methods
+
+### init(options)
+
+Initialize the SDK with configuration options.
+
+```typescript
+async init(options: PfcOptions): Promise<string | null | undefined>
+```
+
+**Parameters:**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `options` | `PfcOptions` | Configuration options |
+
+**Returns:** Certificate string if successful, null/undefined on failure
+
+**Example:**
+```javascript
+const certificate = await pfc.init({
+  distDir: './dist',
+  modelsDir: './dist/models',
+  clientAPIKey: 'YOUR_API_KEY',
+  urlGetCertificate: 'https://cert.perfectlyclear.photos/wasm_certificate/',
+  pfcWasmCertificate: null,
+  inference: InferenceOption.local,
+});
+```
+
+---
+
+### createImage(input)
+
+Create a PfcImage object from canvas or ImageData.
+
+```typescript
+createImage(input: ImageData | HTMLCanvasElement): PfcImage | null
+```
+
+**Parameters:**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `input` | `ImageData \| HTMLCanvasElement` | Source image data |
+
+**Returns:** PfcImage object or null on failure
+
+**Example:**
+```javascript
+const canvas = document.getElementById('myCanvas');
+const pfcImage = pfc.createImage(canvas);
+```
+
+---
+
+### deleteImage(im)
+
+Release memory for a PfcImage object.
+
+```typescript
+async deleteImage(im: PfcImage): Promise<void>
+```
+
+**Parameters:**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `im` | `PfcImage` | Image to delete |
+
+---
+
+### createParam()
+
+Create a new parameter object.
+
+```typescript
+createParam(param_?: PFCPARAM | null): PFCPARAM | null
+```
+
+**Returns:** PFCPARAM object or null on failure
+
+**Example:**
+```javascript
+const param = pfc.createParam();
+```
+
+---
+
+### setParam(param, presetID)
+
+Set parameters to a built-in preset.
+
+```typescript
+setParam(param: PFCPARAM, presetID: PFCPRESETID): void
+```
+
+**Parameters:**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `param` | `PFCPARAM` | Parameter object |
+| `presetID` | `PFCPRESETID` | Preset identifier |
+
+**Example:**
+```javascript
+pfc.setParam(param, PFCPRESETID.PRESET_IAUTO_PEOPLE);
+```
+
+---
+
+### copyParam(dst, src)
+
+Copy parameters from source to destination.
+
+```typescript
+copyParam(paramDst: PFCPARAM, paramSrc: PFCPARAM): void
+```
+
+---
+
+### applyStrengthToParam(param, strength)
+
+Scale all parameter values by a strength factor.
+
+```typescript
+applyStrengthToParam(param: PFCPARAM, uberStrength: number): void
+```
+
+**Parameters:**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `param` | `PFCPARAM` | Parameter object |
+| `uberStrength` | `number` | Strength 0-100 |
+
+**Example:**
+```javascript
+pfc.applyStrengthToParam(param, 75); // 75% strength
+```
+
+---
+
+### loadScenePresets(preset)
+
+Load scene detection presets.
+
+```typescript
+async loadScenePresets(preset: string): Promise<void>
+```
+
+**Parameters:**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `preset` | `string` | Preset file contents |
+
+**Example:**
+```javascript
+const presetText = await fetch('./presets/sd.preset').then(r => r.text());
+await pfc.loadScenePresets(presetText);
+```
+
+---
+
+### readScenePreset(param, sceneID)
+
+Apply scene-specific preset to parameters.
+
+```typescript
+readScenePreset(param: PFCPARAM, sceneID: number): number | undefined
+```
+
+**Parameters:**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `param` | `PFCPARAM` | Parameter object |
+| `sceneID` | `number` | Scene ID from detection |
+
+**Returns:** Status code
+
+---
+
+### createProfile(im, features, aiFeatures)
+
+Calculate image profile including AI features.
+
+```typescript
+async createProfile(
+  im: PfcImage, 
+  features: number, 
+  aiFeatures: number
+): Promise<number | null>
+```
+
+**Parameters:**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `im` | `PfcImage` | Image object |
+| `features` | `number` | PFCFEATURE flags |
+| `aiFeatures` | `number` | AI feature flags |
+
+**Example:**
+```javascript
+const features = PFCFEATURE.CALC_ALL;
+const aiFeatures = PFCFEATURE.CALC_SCENE_DETECTION | 
+                   PFCFEATURE.CALC_SKINTONE;
+await pfc.createProfile(pfcImage, features, aiFeatures);
+console.log('Scene:', pfcImage.sceneId);
+```
+
+---
+
+### calcAIFeatures(im, features, jpegBlob?)
+
+Calculate AI features for an image.
+
+```typescript
+async calcAIFeatures(
+  im: PfcImage, 
+  features: number, 
+  jpegBlob?: Blob | null
+): Promise<unknown>
+```
+
+---
+
+### apply(pfcImage, param)
+
+Apply corrections to an image.
+
+```typescript
+async apply(pfcImage: PfcImage, param: PFCPARAM): Promise<PFCAPPLYSTATUS | undefined>
+```
+
+**Parameters:**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `pfcImage` | `PfcImage` | Image to correct |
+| `param` | `PFCPARAM` | Correction parameters |
+
+**Returns:** Apply status code
+
+**Example:**
+```javascript
+const status = await pfc.apply(pfcImage, param);
+if (status === PFCAPPLYSTATUS.APPLY_SUCCESS) {
+  pfcImage.drawToCanvas(canvas);
+}
+```
+
+---
+
+### createJpegBlob(pfcImage)
+
+Create a JPEG blob from the image.
+
+```typescript
+async createJpegBlob(pfcImage: PfcImage): Promise<Blob>
+```
+
+---
+
+## PfcOptions Type
+
+```typescript
+type PfcOptions = {
+  distDir: string;              // Path to SDK files
+  modelsDir?: string;           // Path to AI models (defaults to distDir)
+  clientAPIKey: string;         // Your EyeQ API key
+  urlGetCertificate: string;    // Certificate URL
+  pfcWasmCertificate: string | null;  // Cached certificate
+  pfcAiServerUrl?: string;      // Remote AI server URL
+  inference: InferenceOption;   // Inference mode
+  looks?: string;               // LOOKs data
+  numWorkers?: number;          // Worker thread count
+};
+```
+
+## Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `cert` | `PFCCertificate \| null` | Certificate manager |
+| `inference` | `InferenceOption \| null` | Current inference mode |
+| `preset` | `string \| null` | Loaded preset data |

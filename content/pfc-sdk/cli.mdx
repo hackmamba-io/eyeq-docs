@@ -1,0 +1,155 @@
+---
+title: Command Line Application
+description: Using the Perfectly Clear command line application
+---
+
+# Command Line Application
+
+The Perfectly Clear CLI is a ready-for-production application for Linux, Windows and macOS. It supports several workflow styles and a wide array of processing controls.
+
+<Callout type="info">
+This is usually the fastest way to start using Perfectly Clear in server-side production environments.
+</Callout>
+
+## Installation
+
+The CLI binary is included in the SDK package. Copy the appropriate binary for your platform to a location in your PATH.
+
+| Platform | Binary |
+|----------|--------|
+| Linux | `pfccli` |
+| Windows | `pfccli.exe` |
+| macOS | `pfccli` |
+
+## Basic Usage
+
+```bash
+# Basic auto-correction
+pfccli -i input.jpg -o output.jpg
+
+# With preset
+pfccli -i input.jpg -o output.jpg -p /path/to/preset.preset
+
+# Batch processing
+pfccli -i "input/*.jpg" -o "output/"
+```
+
+## Command Line Options
+
+### Input/Output Options
+
+| Option | Description |
+|--------|-------------|
+| `-i, --input` | Input file path or glob pattern |
+| `-o, --output` | Output file path or directory |
+| `-f, --format` | Output format (jpeg, png, webp) |
+| `-q, --quality` | Output quality (1-100) |
+
+### Processing Options
+
+| Option | Description |
+|--------|-------------|
+| `-p, --preset` | Path to preset file |
+| `--auto` | Use AI Preset Selection |
+| `--strength` | Correction strength (0-100) |
+| `--skip` | Skip mode (none, edited, all) |
+
+### License Options
+
+| Option | Description |
+|--------|-------------|
+| `--license` | Path to license folder |
+| `--token` | Authorization token |
+
+### Other Options
+
+| Option | Description |
+|--------|-------------|
+| `-v, --verbose` | Enable verbose output |
+| `-h, --help` | Show help message |
+| `--version` | Show version number |
+
+## AI Preset Selection
+
+Enable AI Preset Selection with the `--auto` flag:
+
+```bash
+pfccli -i input.jpg -o output.jpg --auto
+```
+
+This requires the AI model files to be present in the appropriate location.
+
+## Batch Processing
+
+Process multiple images using glob patterns:
+
+```bash
+# All JPEGs in a folder
+pfccli -i "photos/*.jpg" -o "output/"
+
+# Recursive processing
+pfccli -i "photos/**/*.jpg" -o "output/" --preserve-structure
+```
+
+## Skip Mode
+
+Control which images are processed:
+
+| Mode | Description |
+|------|-------------|
+| `none` | Process all images |
+| `edited` | Skip images edited in Photoshop or other applications |
+| `clipart` | Skip clipart and non-photographic images |
+
+```bash
+pfccli -i input.jpg -o output.jpg --skip edited
+```
+
+## Red Eye Correction
+
+Red Eye correction is only applied if EXIF data indicates the flash was fired:
+
+```bash
+# Enable red-eye correction (automatic based on EXIF)
+pfccli -i input.jpg -o output.jpg --redeye auto
+```
+
+## Color Profile Conversion
+
+Convert all images to sRGB or another color profile:
+
+```bash
+pfccli -i input.jpg -o output.jpg --output-profile srgb
+```
+
+## Exit Codes
+
+| Code | Meaning |
+|------|---------|
+| 0 | Success |
+| 1 | General error |
+| 2 | Invalid arguments |
+| 3 | License error |
+| 4 | File not found |
+| 5 | Processing error |
+
+## Examples
+
+**Basic correction with custom preset:**
+```bash
+pfccli -i photo.jpg -o corrected.jpg -p portrait.preset -q 95
+```
+
+**Batch processing with AI:**
+```bash
+pfccli -i "photos/*.jpg" -o "output/" --auto -v
+```
+
+**High quality output:**
+```bash
+pfccli -i photo.jpg -o output.jpg --quality 98 --format png
+```
+
+---
+
+*Copyright © 2025 EyeQ Imaging Inc*

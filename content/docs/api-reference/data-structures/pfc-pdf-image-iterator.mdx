@@ -1,0 +1,295 @@
+---
+title: PFCPDFImageIterator Class
+description: Class for iterating over images in PDF documents
+---
+
+# PFCPDFImageIterator Class
+
+The `PFCPDFImageIterator` class allows you to iterate over PFC-compatible images in a PDF file, correct them, and save the modified PDF with corrected images embedded.
+
+## Class Definition
+
+```cpp
+class PFCPDFImageIterator {
+public:
+    PFCPDFImageIterator();
+    PFCPDFImageIterator(PoDoFo::PdfMemDocument* document);
+    ~PFCPDFImageIterator();
+    
+    // File operations
+    LoadStatus load(const char* path);
+    SaveStatus save(const char* path);
+    
+    // Iteration
+    PFCPDFImage* nextImage();
+    
+    // Document access
+    PoDoFo::PdfMemDocument* document();
+    PoDoFo::PdfMemDocument* takeDocument();
+    
+    // Configuration
+    void setExpandImageData(bool expand);
+    bool expandImageData();
+    
+    // Status enums
+    enum class LoadStatus { Ok, FileNotFound, InvalidPassword, DocumentError };
+    enum class SaveStatus { Ok, InvalidPath, DocumentError };
+};
+```
+
+## Load Status
+
+| Status | Description |
+|--------|-------------|
+| `LoadStatus::Ok` | File opened successfully |
+| `LoadStatus::FileNotFound` | Could not find or open file |
+| `LoadStatus::InvalidPassword` | PDF is password protected |
+| `LoadStatus::DocumentError` | Other error preventing access |
+
+## Save Status
+
+| Status | Description |
+|--------|-------------|
+| `SaveStatus::Ok` | File saved successfully |
+| `SaveStatus::InvalidPath` | Could not create output path |
+| `SaveStatus::DocumentError` | Error writing file |
+
+## Basic Usage
+
+```cpp
+#include "PFCPDFImageIterator.h"
+#include "PFCPDFImage.h"
+#include "PFCImageFile.h"
+#include "PerfectlyClearPro.h"
+
+int main() {
+    // Create iterator and load PDF
+    PFCPDFImageIterator iterator;
+    
+    auto loadStatus = iterator.load("/path/to/document.pdf");
+    if (loadStatus != PFCPDFImageIterator::LoadStatus::Ok) {
+        printf("Failed to load PDF\n");
+        return -1;
+    }
+    
+    // Setup correction parameters
+    PFCPARAM param;
+    PFC_SetParam(&param, PRESET_IAUTO_PEOPLE);
+    
+    // Iterate over all images
+    PFCPDFImage* pdfImage;
+    int count = 0;
+    
+    while ((pdfImage = iterator.nextImage()) != nullptr) {
+        PFCImageFile* imageFile = pdfImage->imageFile;
+        
+        // Create PFCIMAGE
+        PFCIMAGE im;
+        im.width = imageFile->width;
+        im.height = imageFile->height;
+        im.stride = imageFile->stride;
+        im.format = PFC_PixelFormat24bppBGR;
+        im.data = imageFile->raw_image;
+        
+        // Apply corrections
+        PFC_AutoCorrect(&im, NULL, &param, NULL, NULL, 
+                        PFC_REJECT_CLIPART, 0);
+        count++;
+    }
+    
+    // Save modified PDF
+    auto saveStatus = iterator.save("/path/to/output.pdf");
+    if (saveStatus == PFCPDFImageIterator::SaveStatus::Ok) {
+        printf("Corrected %d images\n", count);
+    }
+    
+    return 0;
+}
+```
+
+## Methods
+
+### load()
+
+```cpp
+LoadStatus load(const char* path);
+```
+
+Opens a PDF file for processing.
+
+**Parameters:**
+- `path` - Path to the PDF file
+
+**Returns:** `LoadStatus` indicating success or failure reason
+
+### save()
+
+```cpp
+SaveStatus save(const char* path);
+```
+
+Saves the modified PDF with all corrected images embedded.
+
+**Parameters:**
+- `path` - Output file path
+
+**Returns:** `SaveStatus` indicating success or failure reason
+
+### nextImage()
+
+```cpp
+PFCPDFImage* nextImage();
+```
+
+Returns the next image in the PDF, or `nullptr` when no more images remain.
+
+**Returns:** Pointer to `PFCPDFImage` or `nullptr`
+
+<Callout type="warn">
+The returned `PFCPDFImage` is owned by the iterator and becomes invalid after the next call to `nextImage()`. Process each image before advancing.
+</Callout>
+
+### setExpandImageData()
+
+```cpp
+void setExpandImageData(bool expand);
+```
+
+Controls whether image data is automatically expanded.
+
+**Parameters:**
+- `expand` - If true (default), images are decompressed to `PFCImageFile`. If false, only raw compressed data is available.
+
+## Advanced: Direct Document Access
+
+For advanced PDF manipulation using the PoDoFo library:
+
+### document()
+
+```cpp
+PoDoFo::PdfMemDocument* document();
+```
+
+Returns a pointer to the underlying PDF document. The iterator retains ownership.
+
+### takeDocument()
+
+```cpp
+PoDoFo::PdfMemDocument* takeDocument();
+```
+
+Releases ownership of the PDF document to the caller. After calling this, the iterator will no longer manage the document.
+
+## Working with Password-Protected PDFs
+
+For password-protected PDFs, open the document with PoDoFo first:
+
+```cpp
+#include <podofo/podofo.h>
+
+// Open with password using PoDoFo
+PoDoFo::PdfMemDocument* doc = new PoDoFo::PdfMemDocument();
+doc->Load("/path/to/protected.pdf");
+doc->SetPassword("secretpassword");
+
+// Create iterator from open document
+PFCPDFImageIterator iterator(doc);
+
+// Process images...
+PFCPDFImage* pdfImage;
+while ((pdfImage = iterator.nextImage()) != nullptr) {
+    // Process image
+}
+
+// Save
+iterator.save("/path/to/output.pdf");
+```
+
+## Complete Example with AI
+
+```cpp
+#include "PFCPDFImageIterator.h"
+#include "PFCPDFImage.h"
+#include "PFCImageFile.h"
+#include "PerfectlyClearPro.h"
+
+int correctPDF(const char* input, const char* output,
+               const char* modelPath, const char* presetPath) {
+    
+    // Setup license
+    PFC_SetProtectionPath("/path/to/license");
+    
+    // Create AI engine
+    PFCENGINE engine;
+    PFC_LoadAIEngine(&engine, modelPath,
+        AI_SCENE_DETECTION | AI_CORRECTIONS | AI_SKINTONE);
+    PFC_LoadScenePresets(&engine, presetPath);
+    
+    // Load PDF
+    PFCPDFImageIterator iterator;
+    if (iterator.load(input) != PFCPDFImageIterator::LoadStatus::Ok) {
+        PFC_ReleaseEngine(&engine);
+        return -1;
+    }
+    
+    // Process all images
+    PFCPARAM param;
+    int corrected = 0;
+    int skipped = 0;
+    
+    PFCPDFImage* pdfImage;
+    while ((pdfImage = iterator.nextImage()) != nullptr) {
+        PFCImageFile* imageFile = pdfImage->imageFile;
+        
+        PFCIMAGE im;
+        im.width = imageFile->width;
+        im.height = imageFile->height;
+        im.stride = imageFile->stride;
+        im.format = PFC_PixelFormat24bppBGR;
+        im.data = imageFile->raw_image;
+        
+        PFCIMAGEPROFILE profile;
+        PFCAPPLYSTATUS status = PFC_AutoCorrect(
+            &im, NULL, &param, &engine, &profile,
+            PFC_REJECT_CLIPART, 0);
+        
+        if (status == APPLY_SUCCESS) {
+            printf("Image %u: Scene=%s\n", 
+                   pdfImage->pdfObjectNumber,
+                   PFC_GetSceneLabel(&engine));
+            corrected++;
+        } else if (profile.coreStatus == PFC_CORE_CLIPARTIMAGE) {
+            printf("Image %u: Skipped (clipart)\n",
+                   pdfImage->pdfObjectNumber);
+            skipped++;
+        }
+    }
+    
+    // Save result
+    if (iterator.save(output) != PFCPDFImageIterator::SaveStatus::Ok) {
+        PFC_ReleaseEngine(&engine);
+        return -1;
+    }
+    
+    printf("Complete: %d corrected, %d skipped\n", corrected, skipped);
+    
+    PFC_ReleaseEngine(&engine);
+    return 0;
+}
+```
+
+## Notes
+
+<Callout type="info">
+Only embedded JPEG images are supported. "Flattened" PDFs where images have been rasterized into the page are not supported.
+</Callout>
+
+<Callout type="info">
+Clipart and non-photographic images are automatically detected and can be skipped using the `PFC_REJECT_CLIPART` option.
+</Callout>
+
+## See Also
+
+- [PFCPDFImage](/docs/api-reference/data-structures/pfc-pdf-image)
+- [PDF Usage Example](/docs/examples/pdf)
+- [PFCImageFile](/docs/api-reference/data-structures/pfc-image-file)

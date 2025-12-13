@@ -1,0 +1,68 @@
+---
+title: Changelog
+description: Version history for the EyeQ Browser SDK
+---
+
+# Changelog
+
+## Version 2.0.3 (October 15, 2025)
+
+### Changes
+- Change 'Apply All' logic in Option F example
+- UX improvements in several samples
+- Add helper script to implement Perfectly Clear WebAPI corrections (background removal, glasses glare removal)
+- Add support to manipulate Selective Color parameters
+- Improve support for iOS Safari
+- Speed up local AI detection
+- Improve preview image quality on Firefox
+
+## Version 2.0.2 (October 15, 2025)
+
+Internal release with bug fixes.
+
+## Version 2.0.1 (July 28, 2025)
+
+### Changes
+- Refactor samples to simplify deployment process
+- Improve WebWorkers implementation
+
+## Version 2.0.0 (June 6, 2025)
+
+### Major Release
+
+Initial "v2" release with significant changes:
+
+### New Features
+- **Built-in AI Inference**: AI processing now happens in the browser, no external server required
+- **Local Mode**: Set `inference: InferenceOption.local` to process entirely client-side
+- **Model Caching**: AI models are cached in browser storage after first download
+- **TypeScript Support**: Full TypeScript definitions included (`.d.mts`)
+
+### Breaking Changes
+- New initialization options structure
+- AI inference is now part of SDK (previously required separate server)
+- Import syntax changed to ES modules
+
+### Migration from v1.x
+
+```javascript
+// Old (v1.x)
+import PfC from 'pfc-browser';
+const pfc = new PfC({ apiKey: 'key' });
+
+// New (v2.x)
+import { Pfc, InferenceOption } from './dist/pfc.mjs';
+const pfc = new Pfc();
+await pfc.init({
+  distDir: './dist',
+  clientAPIKey: 'key',
+  urlGetCertificate: 'https://cert.perfectlyclear.photos/wasm_certificate/',
+  inference: InferenceOption.local,
+});
+```
+
+---
+
+## Earlier Versions
+
+For changelog of versions prior to 2.0.0, please contact EyeQ support.

@@ -1,0 +1,132 @@
+---
+title: Troubleshooting Licensing
+description: Common licensing issues and solutions
+---
+
+# Troubleshooting Licensing Issues
+
+Common licensing problems and how to resolve them.
+
+## Error Codes
+
+| Code | Meaning | Solution |
+|------|---------|----------|
+| `PFC_LICENSE_INVALID` | Key format incorrect | Check for typos, ensure complete key |
+| `PFC_LICENSE_EXPIRED` | License has expired | Renew license |
+| `PFC_LICENSE_NETWORK_ERROR` | Can't reach server | Check internet, firewall |
+| `PFC_LICENSE_MACHINE_MISMATCH` | Wrong machine | Transfer license or get new one |
+| `PFC_LICENSE_VOLUME_EXCEEDED` | Usage limit reached | Upgrade license or wait for reset |
+
+## Common Issues
+
+### "Invalid License Key"
+
+**Causes:**
+- Typo in license key
+- Incomplete key (truncated)
+- Wrong key for this product
+
+**Solutions:**
+1. Copy key directly from email/portal
+2. Ensure no extra spaces or line breaks
+3. Verify key is for PFC SDK (not Web API, etc.)
+
+```cpp
+// Correct - no spaces or newlines
+PFC_SetLicense(engine, "XXXX-XXXX-XXXX-XXXX");
+
+// Wrong - has newline
+PFC_SetLicense(engine, "XXXX-XXXX-XXXX-XXXX\n");
+```
+
+### "Network Error"
+
+**Causes:**
+- No internet connection
+- Firewall blocking license server
+- Proxy not configured
+
+**Solutions:**
+
+1. Check internet connectivity
+2. Whitelist license server:
+   ```
+   license.eyeq.com:443
+   ```
+3. Configure proxy if required:
+   ```cpp
+   PFC_SetProxy(engine, "http://proxy.company.com:8080");
+   ```
+
+### "License Expired"
+
+**Solutions:**
+1. Check expiration date in portal
+2. Renew license
+3. Contact sales for extension
+
+```cpp
+PFCLICENSEINFO info;
+PFC_GetLicenseInfo(engine, &info);
+printf("Expires: %s\n", info.expirationDate);
+```
+
+### "Machine Mismatch"
+
+**Causes:**
+- Hardware changed
+- VM migrated
+- License used on wrong machine
+
+**Solutions:**
+1. Request license transfer
+2. Generate new machine ID and update license
+
+### Watermark on Output
+
+**Cause:** Using development license in production
+
+**Solution:** Upgrade to production license
+
+## Diagnostic Commands
+
+### Check License Status
+
+```cpp
+PFCLICENSEINFO info;
+int status = PFC_GetLicenseInfo(engine, &info);
+
+printf("Status: %d\n", status);
+printf("Type: %s\n", info.type);
+printf("Expires: %s\n", info.expirationDate);
+printf("Machine ID: %s\n", info.machineId);
+```
+
+### CLI Diagnostics
+
+```bash
+# Check license status
+pfccli --license-info
+
+# Verbose license check
+pfccli --license-check -v
+```
+
+## Getting Help
+
+If issues persist:
+
+1. **Gather information:**
+   - License key (first 8 characters only)
+   - Error code/message
+   - Machine ID
+   - OS and SDK version
+
+2. **Contact support:**
+   - Email: [support@eyeq.com](mailto:support@eyeq.com)
+   - Include diagnostic information
+
+## Next Steps
+
+- [License Types](/docs/pfc-sdk/licensing/license-types) - Understanding options
+- [FAQ](/docs/pfc-sdk/faq) - More common questions

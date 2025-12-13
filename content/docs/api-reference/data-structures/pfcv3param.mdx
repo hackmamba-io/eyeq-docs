@@ -1,0 +1,155 @@
+---
+title: PFCV3PARAM
+description: Structure for V3 LOOKs and finishing tool parameters
+---
+
+# PFCV3PARAM Structure
+
+The `PFCV3PARAM` structure contains parameters for V3 LOOKs support, finishing tools, and creative filters introduced in Version 3 of Perfectly Clear products.
+
+## Definition
+
+```c
+typedef struct {
+    BOOL bDynamic;              // AI Dynamic corrections enabled
+    int iDynamic;               // AI Dynamic strength (0-100)
+    int iDynamicWB;             // AI White Balance strength (0-100)
+    BOOL bPreprocessEV;         // Pre-process exposure enabled
+    int iPreprocessEV;          // Pre-process exposure value
+    int iNeutralDensity;        // Neutral density filter
+    int iColorVibrancy;         // Color vibrancy adjustment
+    PFC3DLUTINFO lutInputCorrective;    // Input corrective LUT
+    PFC3DLUTINFO lutInputSky;           // Sky enhancement LUT
+    PFC3DLUTINFO lutInputFoliageGreen;  // Green foliage LUT
+    PFC3DLUTINFO lutInputFoliageBrown;  // Brown foliage LUT
+    PFC3DLUTINFO lutOutput;             // Output creative LUT
+    int iFinishPositiveContrast;  // Finishing contrast
+    int iDeltaR;                  // RGB adjustment - Red
+    int iDeltaG;                  // RGB adjustment - Green
+    int iDeltaB;                  // RGB adjustment - Blue
+    int iOutLUTcontrast;          // Output LUT contrast
+    int iOutLUTsaturation;        // Output LUT saturation
+} PFCV3PARAM;
+```
+
+## Members
+
+### AI Dynamic Corrections
+
+| Parameter | Type | Range | Description |
+|-----------|------|-------|-------------|
+| `bDynamic` | BOOL | - | Enable AI dynamic corrections |
+| `iDynamic` | int | 0-100 | AI correction strength |
+| `iDynamicWB` | int | 0-100 | AI White Balance strength |
+
+### Pre-Processing
+
+| Parameter | Type | Range | Description |
+|-----------|------|-------|-------------|
+| `bPreprocessEV` | BOOL | - | Enable pre-process exposure |
+| `iPreprocessEV` | int | - | Exposure value adjustment |
+
+### Enhancement Filters
+
+| Parameter | Type | Range | Description |
+|-----------|------|-------|-------------|
+| `iNeutralDensity` | int | 0-100 | Neutral density filter strength |
+| `iColorVibrancy` | int | 0-100 | Color vibrancy enhancement |
+
+### LOOKs (3D LUTs)
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `lutInputCorrective` | PFC3DLUTINFO | Input color correction LUT |
+| `lutInputSky` | PFC3DLUTINFO | Sky enhancement LUT |
+| `lutInputFoliageGreen` | PFC3DLUTINFO | Green foliage enhancement |
+| `lutInputFoliageBrown` | PFC3DLUTINFO | Brown foliage enhancement |
+| `lutOutput` | PFC3DLUTINFO | Output creative LUT |
+
+### Finishing Adjustments
+
+| Parameter | Type | Range | Description |
+|-----------|------|-------|-------------|
+| `iFinishPositiveContrast` | int | -100 to 100 | Finishing contrast |
+| `iDeltaR` | int | -100 to 100 | Red channel adjustment |
+| `iDeltaG` | int | -100 to 100 | Green channel adjustment |
+| `iDeltaB` | int | -100 to 100 | Blue channel adjustment |
+| `iOutLUTcontrast` | int | -100 to 100 | Output LUT contrast |
+| `iOutLUTsaturation` | int | -100 to 100 | Output LUT saturation |
+
+## PFC3DLUTINFO Structure
+
+```c
+typedef struct {
+    char guid[33];    // GUID identifying the LOOK
+    int strength;     // Application strength (0-100)
+} PFC3DLUTINFO;
+```
+
+## Setting LOOKs
+
+LOOKs are identified by GUID strings. To determine the correct GUID:
+
+1. Open Perfectly Clear Workbench
+2. Select the desired LOOK
+3. Use "Export to API" to get the GUID
+
+```c
+// Apply a warm film look at 50% strength
+strcpy(param.v3.lutOutput.guid, "abc123def456...");
+param.v3.lutOutput.strength = 50;
+```
+
+To disable a LOOK, set the GUID to all zeros:
+
+```c
+strcpy(param.v3.lutOutput.guid, "00000000000000000000000000000000");
+param.v3.lutOutput.strength = 0;
+```
+
+## Usage Example
+
+```c
+PFCPARAM param;
+
+// Enable AI dynamic corrections
+param.v3.bDynamic = true;
+param.v3.iDynamic = 100;
+param.v3.iDynamicWB = 100;
+
+// Disable pre-processing
+param.v3.bPreprocessEV = false;
+param.v3.iPreprocessEV = 0;
+
+// No neutral density or color vibrancy
+param.v3.iNeutralDensity = 0;
+param.v3.iColorVibrancy = 0;
+
+// No LOOKs applied
+strcpy(param.v3.lutInputCorrective.guid, "00000000000000000000000000000000");
+param.v3.lutInputCorrective.strength = 0;
+strcpy(param.v3.lutOutput.guid, "00000000000000000000000000000000");
+param.v3.lutOutput.strength = 0;
+
+// No finishing adjustments
+param.v3.iFinishPositiveContrast = 0;
+param.v3.iDeltaR = 0;
+param.v3.iDeltaG = 0;
+param.v3.iDeltaB = 0;
+```
+
+## Notes
+
+<Callout type="info">
+V3 LOOKs require the `v3.looks` file to be deployed with your application. This file is included in the SDK package if licensed.
+</Callout>
+
+<Callout type="warn">
+If a LOOK is specified but the `v3.looks` file is not found, `PFC_Apply` will return `APPLY_LOOKS_MISSING`.
+</Callout>
+
+## See Also
+
+- [PFCPARAM](/docs/api-reference/data-structures/pfcparam)
+- [LOOKs Reference](/docs/guides/looks)
+- [Correction Parameters Guide](/docs/guides/parameters)

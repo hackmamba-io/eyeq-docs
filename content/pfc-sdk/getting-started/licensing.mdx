@@ -1,0 +1,32 @@
+---
+title: License Setup
+description: How to configure SDK license protection
+---
+
+# License Setup
+
+## Required Files
+
+| File | Purpose |
+|------|---------|
+| `license.key` | Valid license key |
+| `registration_email.txt` | Registration email |
+| `ShaferFilechck.*` | License handling library |
+| `PFCAppTrack.*` | App tracking library |
+
+## Setup Steps
+
+1. Create a writable folder accessible to the SDK
+2. Copy license files to that folder
+3. Call `PFC_SetProtectionPath()` with the folder path
+
+```cpp
+int ret = PFC_SetProtectionPath("/path/to/sdk_license");
+if (ret != 0) {
+    printf("License setup failed: %d\n", ret);
+}
+```
+
+<Callout type="info">
+The SDK validates the license every 12 hours via network connection to my.nalpeiron.com (184.106.60.185).
+</Callout>

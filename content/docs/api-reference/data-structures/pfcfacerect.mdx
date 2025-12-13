@@ -1,0 +1,197 @@
+---
+title: PFCFaceRect
+description: Structure containing detailed face detection attributes
+---
+
+# PFCFaceRect Structure
+
+The `PFCFaceRect` structure contains detailed face detection attributes including position, eye locations, expression detection, and confidence values.
+
+## Definition
+
+```c
+typedef struct PFCFaceRect {
+    PFCRECT rect;       // Bounding rectangle of face
+    PFCRECT rcEyeL;     // Bounding rectangle of left eye
+    PFCRECT rcEyeR;     // Bounding rectangle of right eye
+    PFCRECT rcMouth;    // Bounding rectangle of mouth
+    PFCPOINT ptEyeL;    // Left eye coordinates (fixed-point)
+    PFCPOINT ptEyeR;    // Right eye coordinates (fixed-point)
+    int angle;          // Roll angle (-179 to 180 degrees)
+    int blinkLevel;     // Overall blink detection level
+    int blinkLevelL;    // Left eye blink level
+    int blinkLevelR;    // Right eye blink level
+    int childLevel;     // Reserved
+    int confidence;     // Detection confidence
+    int smileLevel;     // Smile detection level
+    int yawAngle;       // Yaw/profile angle (-90 to 90)
+    int FAE[3];         // Internal FAE data
+    int widthImage;     // Source image width
+    int heightImage;    // Source image height
+    struct PFCFaceRect *pNext;  // Next face in linked list
+} PFCFACERECT;
+```
+
+## Members
+
+### Position Data
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `rect` | PFCRECT | Bounding rectangle of the detected face |
+| `rcEyeL` | PFCRECT | Bounding rectangle of left eye |
+| `rcEyeR` | PFCRECT | Bounding rectangle of right eye |
+| `rcMouth` | PFCRECT | Bounding rectangle of mouth |
+| `ptEyeL` | PFCPOINT | Left eye center (10-bit fixed-point) |
+| `ptEyeR` | PFCPOINT | Right eye center (10-bit fixed-point) |
+
+### Rotation
+
+| Member | Type | Range | Description |
+|--------|------|-------|-------------|
+| `angle` | int | -179 to 180 | Roll angle (0 = upright, +90 = eyes on right) |
+| `yawAngle` | int | -90 to 90 | Profile angle (-90 = left profile, +90 = right profile) |
+
+### Expression Detection
+
+| Member | Type | Range | Description |
+|--------|------|-------|-------------|
+| `blinkLevel` | int | -1 to 100 | Overall blink presence |
+| `blinkLevelL` | int | -1 to 100 | Left eye blink level |
+| `blinkLevelR` | int | -1 to 100 | Right eye blink level |
+| `smileLevel` | int | -1 to 100 | Smile presence |
+| `confidence` | int | 0 to 100 | Detection confidence |
+
+### Detection Level Values
+
+- **-1**: Not detected
+- **0**: Unable to detect
+- **1-100**: Attribute detected (higher = higher confidence)
+- **50**: Good threshold for detection vs false-positive
+
+### Image Context
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `widthImage` | int | Width of source image |
+| `heightImage` | int | Height of source image |
+| `pNext` | PFCFaceRect* | Pointer to next face (linked list) |
+
+## Usage Example
+
+### Getting Face Data
+
+```c
+PFCIMAGEPROFILE profile;
+PFC_Calc(&image, NULL, CALC_ALL, &engine, &profile);
+
+// Get first face
+PFCFACERECT* face = PFC_GetFaceRect(&profile, 0);
+
+if (face != NULL) {
+    printf("Face bounds: (%d, %d) %dx%d\n",
+           face->rect.left, face->rect.top,
+           face->rect.width, face->rect.height);
+    
+    printf("Left eye: (%d, %d)\n", 
+           face->ptEyeL.x >> 10, face->ptEyeL.y >> 10);  // Fixed-point conversion
+    
+    printf("Right eye: (%d, %d)\n",
+           face->ptEyeR.x >> 10, face->ptEyeR.y >> 10);
+    
+    printf("Roll: %d°, Yaw: %d°\n", face->angle, face->yawAngle);
+    printf("Confidence: %d%%\n", face->confidence);
+    
+    // Check for blink
+    if (face->blinkLevel > 50) {
+        printf("Blink detected!\n");
+    }
+    
+    // Check for smile
+    if (face->smileLevel > 50) {
+        printf("Smile detected!\n");
+    }
+}
+```
+
+### Iterating All Faces
+
+```c
+int faceCount = PFC_GetFaceCount(&profile);
+printf("Found %d faces\n", faceCount);
+
+for (int i = 0; i < faceCount; i++) {
+    PFCFACERECT* face = PFC_GetFaceRect(&profile, i);
+    if (face) {
+        printf("Face %d: confidence=%d, smile=%d, blink=%d\n",
+               i, face->confidence, face->smileLevel, face->blinkLevel);
+    }
+}
+```
+
+### Using Linked List
+
+```c
+PFCFACERECT* face = PFC_GetFaceRect(&profile, 0);
+
+while (face != NULL) {
+    // Process face
+    printf("Face at (%d, %d)\n", face->rect.left, face->rect.top);
+    
+    // Move to next face
+    face = face->pNext;
+}
+```
+
+## Fixed-Point Coordinates
+
+Eye coordinates use 10-bit fixed-point arithmetic for sub-pixel precision:
+
+```c
+// Convert fixed-point to integer
+int eyeX = face->ptEyeL.x >> 10;
+int eyeY = face->ptEyeL.y >> 10;
+
+// Get fractional part (0-1023)
+int fracX = face->ptEyeL.x & 0x3FF;
+int fracY = face->ptEyeL.y & 0x3FF;
+
+// Convert to float
+float preciseX = (float)face->ptEyeL.x / 1024.0f;
+float preciseY = (float)face->ptEyeL.y / 1024.0f;
+```
+
+## C# Version
+
+```csharp
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
+public class PFCFACERECT
+{
+    public PFCRECT rect;
+    public PFCRECT rcEyeL;
+    public PFCRECT rcEyeR;
+    public PFCRECT rcMouth;
+    public PFCPOINT ptEyeL;
+    public PFCPOINT ptEyeR;
+    public int angle;
+    public int blinkLevel;
+    public int blinkLevelL;
+    public int blinkLevelR;
+    public int childLevel;
+    public int confidence;
+    public int smileLevel;
+    public int yawAngle;
+    public int FAE1;
+    public int FAE2;
+    public int FAE3;
+    public int widthImage;
+    public int heightImage;
+    public IntPtr pWrapped;
+}
+```
+
+## See Also
+
+- [Face Detection Guide](/docs/guides/face-detection)
+- [PFCFBPARAM](/docs/api-reference/data-structures/pfcfbparam)
+- [PFCIMAGEPROFILE](/docs/api-reference/data-structures/pfcimageprofile)

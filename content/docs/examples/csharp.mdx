@@ -1,0 +1,29 @@
+---
+title: C# Examples
+description: Sample code for .NET development
+---
+
+# C# Examples
+
+{/* TODO: Migrate content from examples_csharp.md */}
+
+## Basic Usage
+
+```csharp
+using PerfectlyClearAdapter;
+
+// Initialize
+var pfc = new PerfectlyClear(licensePath);
+
+// Load image
+var imageFile = new PFCImageFile();
+imageFile.LoadImage(inputPath);
+
+// Apply corrections
+var param = new PFCPARAM();
+pfc.ReadPresets(ref param, presetPath);
+pfc.AutoCorrect(imageFile.PFCImageGet(), param);
+
+// Save
+imageFile.SaveImage(outputPath, 95);
+```

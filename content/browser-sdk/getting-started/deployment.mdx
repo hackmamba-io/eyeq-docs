@@ -1,0 +1,262 @@
+---
+title: Deployment
+description: Deploy the Browser SDK to production environments
+---
+
+# Deployment
+
+This guide covers deploying the Browser SDK to various hosting environments.
+
+## File Hosting Requirements
+
+The SDK requires specific MIME types to be served correctly:
+
+| Extension | MIME Type | Required |
+|-----------|-----------|----------|
+| `.wasm` | `application/wasm` | ✅ Critical |
+| `.mjs` | `text/javascript` | ✅ Critical |
+| `.pnn` | `application/octet-stream` | Recommended |
+
+## AWS S3 Deployment
+
+### 1. Upload Files
+
+```bash
+# Upload SDK files to S3
+aws s3 cp ./dist s3://your-bucket/pfc/ --recursive
+```
+
+### 2. Set WASM MIME Type
+
+S3 doesn't automatically set the correct MIME type for `.wasm` files:
+
+```bash
+aws s3 cp \
+  s3://your-bucket/pfc/ \
+  s3://your-bucket/pfc/ \
+  --content-type application/wasm \
+  --metadata-directive REPLACE \
+  --exclude "*" \
+  --include "*.wasm" \
+  --recursive
+```
+
+### 3. Configure CORS (if needed)
+
+```json
+{
+  "CORSRules": [
+    {
+      "AllowedOrigins": ["https://yoursite.com"],
+      "AllowedMethods": ["GET"],
+      "AllowedHeaders": ["*"],
+      "MaxAgeSeconds": 3600
+    }
+  ]
+}
+```
+
+## Apache Configuration
+
+Add to your `.htaccess` file:
+
+```apache
+# MIME types for Browser SDK
+AddType text/javascript .mjs
+AddType application/wasm .wasm
+
+# Enable CORS if serving from CDN
+<IfModule mod_headers.c>
+  <FilesMatch "\.(wasm|mjs|pnn)$">
+    Header set Access-Control-Allow-Origin "*"
+  </FilesMatch>
+</IfModule>
+
+# Caching for static assets
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType application/wasm "access plus 1 year"
+  ExpiresByType text/javascript "access plus 1 year"
+</IfModule>
+```
+
+## Nginx Configuration
+
+```nginx
+server {
+    # MIME types
+    types {
+        application/wasm wasm;
+        text/javascript mjs;
+    }
+
+    # SDK files location
+    location /pfc/ {
+        # CORS headers
+        add_header Access-Control-Allow-Origin *;
+        
+        # Caching
+        location ~* \.(wasm|pnn)$ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+        }
+    }
+}
+```
+
+## Vercel / Next.js
+
+Add to `next.config.js`:
+
+```javascript
+module.exports = {
+  async headers() {
+    return [
+      {
+        source: '/pfc/:path*',
+        headers: [
+          {
+            key: 'Cross-Origin-Embedder-Policy',
+            value: 'require-corp',
+          },
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin',
+          },
+        ],
+      },
+    ];
+  },
+};
+```
+
+## Cloudflare Pages
+
+Create a `_headers` file in your output directory:
+
+```
+/pfc/*
+  Access-Control-Allow-Origin: *
+  Cross-Origin-Embedder-Policy: require-corp
+  Cross-Origin-Opener-Policy: same-origin
+```
+
+## CDN Considerations
+
+When using a CDN:
+
+1. **Cache the SDK files** - They don't change often
+2. **Set proper CORS** - If serving from different domain
+3. **Enable compression** - Gzip for `.mjs`, skip for `.wasm`
+4. **Use versioned paths** - For cache busting
+
+```javascript
+// Versioned SDK path
+const options = {
+  distDir: '/pfc/v2.0.3',
+  modelsDir: '/pfc/v2.0.3/models',
+  // ...
+};
+```
+
+## SharedArrayBuffer Requirements
+
+Some browsers require specific headers for SharedArrayBuffer (used by WebWorkers):
+
+```
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+```
+
+Without these headers, you may see reduced performance.
+
+## Model Files
+
+AI model files (`.pnn`) are downloaded on first use:
+
+| File | Size | Purpose |
+|------|------|---------|
+| `pro_and_universal_*.pnn` | ~5MB | Scene detection |
+| `skintone_*.pnn` | ~2MB | Skin tone detection |
+| `dynamic.pnn` | ~3MB | AI corrections |
+| `aicolor.pnn` | ~2MB | AI white balance |
+
+### Preloading Models
+
+For faster first-use experience:
+
+```javascript
+// Preload models in background
+async function preloadModels() {
+  const models = [
+    '/pfc/models/pro_and_universal_20211221.pnn',
+    '/pfc/models/skintone_20211221.pnn',
+    '/pfc/models/dynamic.pnn',
+    '/pfc/models/aicolor.pnn',
+  ];
+  
+  await Promise.all(models.map(url => fetch(url)));
+}
+
+// Call after page load
+window.addEventListener('load', preloadModels);
+```
+
+## Bundle Size
+
+Total SDK size breakdown:
+
+| Component | Size (gzipped) |
+|-----------|----------------|
+| `pfc.mjs` | ~150KB |
+| `pfc.wasm` | ~800KB |
+| Workers | ~50KB |
+| Models | ~12MB |
+| **Total** | ~13MB |
+
+## Production Checklist
+
+- [ ] WASM MIME type is `application/wasm`
+- [ ] MJS MIME type is `text/javascript`
+- [ ] CORS headers configured (if needed)
+- [ ] SharedArrayBuffer headers set
+- [ ] API key domain registered
+- [ ] SSL/HTTPS enabled
+- [ ] Caching configured
+- [ ] Models accessible
+- [ ] Presets accessible
+
+## Monitoring
+
+Track SDK performance in production:
+
+```javascript
+// Log timing information
+const startTime = performance.now();
+
+await pfc.init(options);
+console.log(`SDK init: ${performance.now() - startTime}ms`);
+
+await pfc.createProfile(pfcImage, features, aiFeatures);
+console.log(`AI analysis: ${performance.now() - startTime}ms`);
+
+await pfc.apply(pfcImage, param);
+console.log(`Apply: ${performance.now() - startTime}ms`);
+```
+
+## Troubleshooting
+
+### WASM fails to load
+- Check MIME type is `application/wasm`
+- Verify file path is correct
+- Check browser console for errors
+
+### Workers fail to initialize
+- Ensure worker files are accessible
+- Check for CORS issues
+- Verify SharedArrayBuffer headers
+
+### Models not loading
+- Check network tab for 404s
+- Verify model paths in options
+- Ensure files are uploaded
