@@ -3,8 +3,154 @@ title: Platform Support Matrix
 description: Supported platforms and APIs for Perfectly Clear SDK
 ---
 
-# Platform Support Matrix
 
-<Callout type="info">
-**Coming Soon** — This page is under development. Content will be added in the coming weeks.
-</Callout>
+The Perfectly Clear SDK supports multiple integration methods and platforms. You can 
+choose the option that's most suitable for your development needs and deployment requirements.
+
+## Supported platforms
+The Perfectly Clear SDK supports the listed platforms and languages:
+
+|Platform | Language | Operating System | Use Case | 
+| --------|----------|------------------| ---------|
+| C API | C, C++ | Windows, Linux, macOS | Native application development, server-side processing |
+| .NET/C# | C#, .NET languages | Windows | Windows desktop application development, .NET server applications |
+| CLI | Command line | Windows, Linux | Scripting, server-side batch processing, automation |
+| Docker | HTTP API | Linux containers | Cloud deployment, microservices, self-hosted API |
+| Mobile | Kotlin, Swift | iOS, Android | Mobile app integration |
+
+### C API
+The Perfectly Clear core engine is built on the C API providing a native library that allows
+for high performance and flexibility. 
+
+It supports the following platforms:
+| Operating system | Architecture | Library |
+| ----------------- | ------------ | --------- |
+| Windows | x64 | `PerfectlyClearPro.dll` |
+| Linux | x64 | `libPerfectlyClearPro.so` |
+| macOS | x64, ARM64 | `libPerfectlyClearPro.dylib` |
+
+Some use cases: 
+* Building native C/C++ applications
+* Direct memory management and control
+* Maximum performance requirements
+* Integration with existing C/C++ codebases
+
+Key features include:
+* Support for JPEG, PNG, and WebP formats
+* Direct image buffer processing 
+* Preset file loading (`.preset` from Workbench)
+* Full access to all correction parameters
+* PDF embedded image processing
+
+### .NET/C#
+This is a Perfectly Clear wrapper for .NET  which provides functionality 
+for .NET development with a C# interface.
+
+It supports the following platforms:
+| Framework | Operating system |
+| ----------| -----------------| 
+| .NET framework 4.x | Windows |
+| .NET Core/.NET 5+ | Windows |
+
+Some use cases:
+* Windows desktop application development
+* ASP.NET server-side applications
+* Integration with existing .NET codebases
+
+Key features include:
+* API patterns similar to the C interface
+* Correction parameter structures adapted for .NET
+* Wrapper for the native C library
+* Support for preset file loading
+
+### CLI (Command line interface)
+This is a ready-to-use executable application for batch image processing 
+without written code by the user.
+
+It supports the following platforms:
+| Operating system | Architecture |
+| ---------------- | -------------| 
+| Windows | x64 |
+| Linux | x64 |
+| macOS | x64 |
+
+
+Some use cases:
+* Batch image processing workflows
+* Server-side production environments
+* Quick integration without writing code
+* Testing purposes
+* Automation using shell scripts
+
+Key features include: 
+* No code requirement to start
+* Preset correction parameters
+* Support for multiple workflow styles
+* Supports input/output for JPEG, WebP, and PNG
+* Wide variety of processing controls
+
+### Docker containers
+The Docker container application provides a self-hosted HTTP API solution for image correction. 
+It runs on its own environment while offering the same functionality as the cloud web API. 
+
+
+It supports the following platforms:
+| Container runtime | Base image |
+| ------------------| -----------|
+| Docker | Linux |
+| Kubernetes | Linux |
+| Docker Compose | Linux |
+
+Some use cases:
+* Microservices Architecture
+* Self-hosted option
+* cloud-native deployments
+* Strict data privacy 
+
+Key features includes:
+* Quick deployment in sceconds
+* Easy upgrades
+* HTTP API interface 
+* Full security control and access
+* Docker application runs on your infrastructure 
+
+
+### Mobile SDKs
+Perfectly Clear supports native mobile libraries for iOS and Android for mobile integration.
+
+#### iOS
+See language, version and distribution for iOS: 
+| Item | Details |
+|------|---------|
+| Language | Swift |
+| Min iOS Version | TBD |
+| Distribution | Framework |
+
+Some use cases:
+* Photo editing apps
+* Camera app with real-time enhancement
+* Social media applications
+* Dating apps
+
+#### Android
+See language, version and distribution for android: 
+| Item | Details |
+|------|---------|
+| Language | Kotlin |
+| Min Android Version | TBD |
+| Distribution | AAR library |
+
+Some use cases:
+* Photo editing apps
+* Camera pipeline integration
+* Social media platforms
+* Dating apps
+
+#### Mobile SDK features
+Mobile SDK include these features: 
+* Small library size (minimal app size impact)
+* Optimized for mobile performance
+* Same correction quality as desktop/server SDKs
+* Preset support
+
+
