@@ -8,7 +8,6 @@ interface Product {
   name: string;
   slug: string;
   description: string;
-  icon?: string;
 }
 
 interface ProductSwitcherProps {
@@ -50,14 +49,7 @@ export function ProductSwitcher({ currentProduct, products }: ProductSwitcherPro
         onClick={() => setIsOpen(!isOpen)}
         className="product-switcher-trigger"
       >
-        <div className="product-switcher-content">
-          <div className="product-switcher-icon">
-            <span>{current?.icon || current?.name.charAt(0)}</span>
-          </div>
-          <div className="product-switcher-text">
-            <span className="product-switcher-name">{current?.name}</span>
-          </div>
-        </div>
+        <span className="product-switcher-name">{current?.name}</span>
         <svg
           className={`product-switcher-chevron ${isOpen ? 'rotate' : ''}`}
           fill="none"
@@ -77,9 +69,6 @@ export function ProductSwitcher({ currentProduct, products }: ProductSwitcherPro
               onClick={() => handleProductChange(product.slug)}
               className={`product-switcher-item ${product.slug === currentProduct ? 'active' : ''}`}
             >
-              <div className="product-switcher-icon">
-                <span>{product.icon || product.name.charAt(0)}</span>
-              </div>
               <div className="product-switcher-item-text">
                 <span className="product-switcher-item-name">{product.name}</span>
                 <span className="product-switcher-item-desc">{product.description}</span>
@@ -115,7 +104,7 @@ export function ProductSwitcher({ currentProduct, products }: ProductSwitcherPro
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 0.75rem;
+          padding: 0.625rem 0.75rem;
           border-radius: 0.5rem;
           border: 1px solid var(--border, #e2e8f0);
           background-color: var(--background, #ffffff);
@@ -136,36 +125,10 @@ export function ProductSwitcher({ currentProduct, products }: ProductSwitcherPro
           background-color: var(--border, #334155);
         }
 
-        .product-switcher-content {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          overflow: hidden;
-          min-width: 0;
-        }
-
-        .product-switcher-icon {
-          width: 2rem;
-          height: 2rem;
-          border-radius: 0.375rem;
-          background-color: rgba(139, 92, 246, 0.1);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-          font-size: 0.875rem;
-        }
-
-        .product-switcher-text {
-          overflow: hidden;
-          text-align: left;
-        }
-
         .product-switcher-name {
           font-weight: 500;
           font-size: 0.875rem;
           color: var(--foreground, #0f172a);
-          display: block;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -214,6 +177,7 @@ export function ProductSwitcher({ currentProduct, products }: ProductSwitcherPro
           width: 100%;
           display: flex;
           align-items: center;
+          justify-content: space-between;
           gap: 0.75rem;
           padding: 0.625rem;
           border-radius: 0.375rem;
