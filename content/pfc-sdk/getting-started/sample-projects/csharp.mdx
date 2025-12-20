@@ -1,0 +1,305 @@
+---
+title: C# Samples
+description: .NET and C# sample projects for Windows
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+Complete C# sample projects for .NET Framework and .NET Core. These samples are located in the `Win/` directory of your SDK package.
+
+## Available samples
+
+| Sample | Framework | Description |
+|--------|-----------|-------------|
+| CSharp_SimpleAiSample | .NET Framework | Basic AI Scene Detection |
+| CSharp_PresetSample | .NET Framework | Custom preset application |
+| CSharp_DetailedAiSample | .NET Framework | Advanced AI with scene info |
+| DotNetCore_PFCImageFile | .NET Core | Color management with ICC profiles |
+| DotNetCore_MemoryStream | .NET Core | Stream-based processing |
+| DotNetCore_PresetSample | .NET Core | Preset handling in .NET Core |
+
+## Project setup
+
+### Add references
+
+```xml
+<Reference Include="PerfectlyClearAdapter">
+  <HintPath>$(SDK_PATH)\Win\bin\PerfectlyClearAdapter.dll</HintPath>
+</Reference>
+```
+
+### Copy native DLLs
+
+```xml
+<ItemGroup>
+  <None Include="$(SDK_PATH)\Win\bin\*.dll">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  </None>
+  <None Include="$(SDK_PATH)\Win\bin\*.pnn">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  </None>
+</ItemGroup>
+```
+
+## CSharp_SimpleAiSample
+
+The simplest way to use Perfectly Clear in C#.
+
+### Usage
+
+```bash
+PerfectlyClear.exe input.jpg [output.jpg] [preset.preset] [-v]
+```
+
+### Key code excerpts
+
+**Setting addon path:**
+
+```csharp
+string addonPath = ".";
+PerfectlyClear.SetAddonPath(addonPath);
+```
+
+**Creating instance with license:**
+
+```csharp
+PerfectlyClear pfc = new PerfectlyClear(@"C:\path\to\sdk_license");
+```
+
+**Loading AI engine:**
+
+```csharp
+string execPath = AppDomain.CurrentDomain.BaseDirectory;
+int aiStatus = pfc.LoadAiEngine(
+    PFCAIFEATURE.AI_SCENE_DETECTION | 
+    PFCAIFEATURE.AI_CORRECTIONS | 
+    PFCAIFEATURE.AI_COLOR | 
+    PFCAIFEATURE.AI_FACEMESH,
+    execPath
+);
+
+if ((aiStatus & (int)PFCAIFEATURE.AI_SCENE_DETECTION) == 0)
+{
+    Console.WriteLine("Failed to load AI Scene Detection");
+    return;
+}
+```
+
+**Loading custom presets:**
+
+```csharp
+if (!string.IsNullOrEmpty(presetFile))
+{
+    int presetStatus = pfc.LoadScenePresets(presetFile);
+    if (presetStatus != 0)
+    {
+        Console.WriteLine($"Failed to load presets: {presetStatus}");
+    }
+}
+```
+
+**Loading and correcting image:**
+
+```csharp
+Bitmap bm = new Bitmap(inputPath);
+int result = pfc.AutoCorrect(ref bm);
+
+if (result == (int)PFCAPPLYSTATUS.APPLY_SUCCESS)
+{
+    Console.WriteLine("Image processed successfully");
+}
+else if (result > 0)
+{
+    // Partial success - check individual components
+    Console.WriteLine($"NR: {pfc.LastStatus.NR_Status}");
+    Console.WriteLine($"Core: {pfc.LastStatus.CORE_Status}");
+    Console.WriteLine($"FB: {pfc.LastStatus.FB_Status}");
+    Console.WriteLine($"RE: {pfc.LastStatus.RE_Status}");
+}
+```
+
+**Saving output:**
+
+```csharp
+bm.Save(outputPath);
+```
+
+## CSharp_DetailedAiSample
+
+Extended AI sample with scene information retrieval.
+
+### Getting scene details
+
+```csharp
+int sceneId = pfc.LastSceneId;
+int confidence = pfc.LastSceneConfidence;
+Console.WriteLine($"Detected scene: {sceneId} (confidence: {confidence}%)");
+```
+
+## DotNetCore_PFCImageFile
+
+Use `PFCImageFile` for better color management.
+
+### Advantages over Bitmap
+
+- Proper ICC profile handling
+- sRGB conversion
+- Metadata preservation
+- WebP support
+
+### Key code excerpts
+
+```csharp
+PFCImageFile imageFile = new PFCImageFile();
+bool convertToSRGB = true;
+
+int loadStatus = imageFile.LoadImageFile(inputPath, convertToSRGB, null);
+
+// Create PerfectlyClear instance
+PerfectlyClear pfc = new PerfectlyClear(@"C:\path\to\sdk_license");
+pfc.LoadAiEngine(PFCAIFEATURE.AI_SCENE_DETECTION | PFCAIFEATURE.AI_CORRECTIONS, ".");
+
+int result = pfc.AutoCorrect(imageFile);
+
+// Save with original color space
+imageFile.SaveImageFile(outputPath, 90, true, true);
+```
+
+## DotNetCore_MemoryStream
+
+Process images from memory streams—useful for web applications.
+
+### Key code excerpts
+
+```csharp
+public byte[] ProcessImage(byte[] inputBytes)
+{
+    PFCImageFile imageFile = new PFCImageFile();
+    imageFile.LoadFromMemory(inputBytes, inputBytes.Length, 
+        PFCImageFile.FileType.JPEG, true, null);
+
+    PerfectlyClear pfc = new PerfectlyClear(@"C:\path\to\sdk_license");
+    pfc.LoadAiEngine(PFCAIFEATURE.AI_SCENE_DETECTION | PFCAIFEATURE.AI_CORRECTIONS, ".");
+    pfc.AutoCorrect(imageFile);
+
+    return imageFile.SaveToMemory(
+        PFCImageFile.FileType.JPEG, 
+        90, true, true
+    );
+}
+```
+
+### ASP.NET Core integration
+
+```csharp
+[HttpPost("correct")]
+public async Task<IActionResult> CorrectImage(IFormFile file)
+{
+    using var inputStream = new MemoryStream();
+    await file.CopyToAsync(inputStream);
+    
+    byte[] corrected = ProcessImage(inputStream.ToArray());
+    
+    return File(corrected, "image/jpeg", "corrected.jpg");
+}
+```
+
+## Threading considerations
+
+<Callout type="warn">
+Each thread should have its own `PerfectlyClear` instance. The AI engine can be shared but requires proper synchronization.
+</Callout>
+
+### Single-threaded
+
+```csharp
+using (var pfc = new PerfectlyClear(@"C:\sdk_license"))
+{
+    pfc.LoadAiEngine(PFCAIFEATURE.AI_SCENE_DETECTION, ".");
+    // Process images...
+}
+```
+
+### Multi-threaded
+
+```csharp
+public class ImageProcessor
+{
+    private static PerfectlyClear _sharedEngine;
+
+    public static void Initialize(string licensePath, string modelPath)
+    {
+        _sharedEngine = new PerfectlyClear(licensePath);
+        _sharedEngine.LoadAiEngine(
+            PFCAIFEATURE.AI_SCENE_DETECTION | PFCAIFEATURE.AI_CORRECTIONS,
+            modelPath
+        );
+    }
+
+    public byte[] ProcessImage(byte[] input)
+    {
+        using var pfc = new PerfectlyClear(_sharedEngine);
+        
+        var imageFile = new PFCImageFile();
+        imageFile.LoadFromMemory(input, input.Length, 
+            PFCImageFile.FileType.JPEG, true, null);
+        
+        pfc.AutoCorrect(imageFile);
+        
+        return imageFile.SaveToMemory(PFCImageFile.FileType.JPEG, 90, true, true);
+    }
+}
+```
+
+## AI feature flags
+
+```csharp
+public enum PFCAIFEATURE
+{
+    AI_SCENE_DETECTION = 0x01,
+    AI_CORRECTIONS = 0x02,
+    AI_COLOR = 0x04,
+    AI_FACEMESH = 0x08
+}
+
+// Check which features loaded
+bool hasSceneDetection = (status & (int)PFCAIFEATURE.AI_SCENE_DETECTION) != 0;
+```
+
+## Required files
+
+### NuGet packages
+
+```xml
+<PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+```
+
+### Native dependencies
+
+Copy to output directory:
+
+```
+PerfectlyClearAdapter.dll
+PerfectlyClearPro.dll
+PFCImageFile.dll
+libPFCAIEngine.dll
+onnxruntime.dll
+lcms2.dll
+libexiv2.dll
+pro_and_universal_20211221.pnn
+dynamic.pnn
+aicolor.pnn
+skintone_20211221.pnn
+facemesh.pnn
+faceshape.pnn
+fdback.pnn
+fdfront.pnn
+v3.looks
+```
+
+## Next steps
+
+- [C/C++ Samples](/docs/pfc-sdk/getting-started/sample-projects/c-cpp)
+- [Windows Samples](/docs/pfc-sdk/getting-started/sample-projects/windows)
+- [Notes on Structure](/docs/pfc-sdk/getting-started/sample-projects/notes)

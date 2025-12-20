@@ -1,0 +1,10 @@
+{
+  "title": "Sample Projects",
+  "pages": [
+    "index",
+    "c-cpp",
+    "csharp",
+    "windows",
+    "notes"
+  ]
+}

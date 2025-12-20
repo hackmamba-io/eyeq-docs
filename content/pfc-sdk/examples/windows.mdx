@@ -5,15 +5,9 @@ description: Sample code for Windows platforms
 
 # Windows Examples
 
-Sample source code for Windows desktop applications using the Perfectly Clear SDK.
+Sample source code for applications ready to build on Windows systems. These examples show different usage models and provide a starting point for production applications.
 
-## Prerequisites
-
-- Visual Studio 2019 or later
-- `vcruntime140.dll` in system PATH
-- ONNX runtime DLL in PATH (for AI features)
-
-## Simple AI Sample
+## Simple AI Sample - Using Scene Detection
 
 The simplest way to use Perfectly Clear AI on Windows.
 
@@ -28,7 +22,7 @@ PFC_SetProtectionPath("C:\\path\\to\\sdk_license");
 
 ```cpp
 PFCImageFile imageFile;
-imageFile.LoadImage(L"C:\\path\\to\\input.jpg");
+imageFile.LoadImage("C:\\path\\to\\input.jpg");
 PFCIMAGE image = imageFile.GetPFCImage();
 ```
 
@@ -51,74 +45,48 @@ PFC_AutoCorrect(engine, &image, NULL, &param, CALC_ALL, false, NULL);
 ### 5. Save the Corrected Image
 
 ```cpp
-imageFile.SaveImage(L"C:\\path\\to\\output.jpg", 92);
+imageFile.SaveImage("C:\\path\\to\\output.jpg", 92);
 ```
 
-## Visual Studio Project Setup
+## Building with Visual Studio
 
-### Include Directories
+### Project Setup
 
-Add to your project's include paths:
-```
-$(SDK_PATH)\include
-```
+1. Open Visual Studio
+2. Create a new C++ Console Application
+3. Add include directories: `Project > Properties > C/C++ > Additional Include Directories`
+4. Add library directories: `Project > Properties > Linker > Additional Library Directories`
+5. Add dependencies: `PerfectlyClearPro.lib`
 
-### Library Directories
-
-Add to your project's library paths:
-```
-$(SDK_PATH)\lib\x64
-```
-
-### Link Libraries
-
-```
-PerfectlyClearPro.lib
-PFCImageFile.lib
-```
-
-### DLL Deployment
+### Required DLLs
 
 Copy these DLLs to your output directory:
+
 - `PerfectlyClearPro.dll`
 - `PFCImageFile.dll`
-- `onnxruntime.dll` (for AI features)
-- License protection DLLs
+- AI model files (`.pnn`)
 
-## AVX Optimization
+## Detailed AI Sample - Custom Presets
 
-For better performance on modern CPUs, use the AVX-optimized libraries:
-
-```
-PerfectlyClearProAVX.dll
-PerfectlyClearProAVX.lib
-```
-
-<Callout type="warning">
-AVX is required for AI Preset Detection and AI Correction models. AVX2 is required for license-protected SDKs.
-</Callout>
-
-## UTF-8 Path Support
-
-The SDK supports UTF-8 characters in file paths on Windows:
+To extend the simple example, you can load custom AI Presets:
 
 ```cpp
-// Use wide string functions
-imageFile.LoadImage(L"C:\\фотографии\\изображение.jpg");
+// Load custom Scene Detection presets
+PFC_LoadScenePresets(engine, "C:\\path\\to\\custom_scenes.preset");
 ```
 
-## Building the Samples
+## Image Resizing
 
-1. Open the solution file in Visual Studio
-2. Set the build configuration (Debug/Release, x64)
-3. Update include and library paths to match your SDK location
-4. Build the solution
+Load, correct, and resize images:
 
-## Running the Samples
+```cpp
+// After loading and correcting the image
+int newWidth = 1920;
+int newHeight = 1080;
 
-```cmd
-cd samples\Win\SimpleAiSample\x64\Release
-SimpleAiSample.exe input.jpg output.jpg
+PFCImageFile resizedFile;
+resizedFile.CreateResized(imageFile, newWidth, newHeight);
+resizedFile.SaveImage("C:\\path\\to\\resized_output.jpg", 92);
 ```
 
 ---

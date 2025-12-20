@@ -1,0 +1,118 @@
+---
+title: Sample Projects Overview
+description: Overview of SDK sample projects and common patterns
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The Perfectly Clear SDK includes ready-to-build sample projects demonstrating various use cases. This section explains each sample's purpose, structure, and the common patterns they share.
+
+<Callout type="info">
+The quickstart guides show you how to get running fast. This section goes deeper into the sample projects to help you understand production-ready implementation patterns.
+</Callout>
+
+## Available samples
+
+<Cards>
+  <Card title="C/C++ Samples" href="/docs/pfc-sdk/getting-started/sample-projects/c-cpp">
+    Linux and macOS samples including SimpleAiSample, PresetSample, Standard-IO, PDFSample, and CLI.
+  </Card>
+  <Card title="C# Samples" href="/docs/pfc-sdk/getting-started/sample-projects/csharp">
+    .NET Framework and .NET Core samples using PerfectlyClearAdapter.
+  </Card>
+  <Card title="Windows Samples" href="/docs/pfc-sdk/getting-started/sample-projects/windows">
+    Windows C++ samples with Visual Studio projects and Container samples.
+  </Card>
+  <Card title="Notes on Structure" href="/docs/pfc-sdk/getting-started/sample-projects/notes">
+    Common patterns, engine lifecycle, and error handling across all samples.
+  </Card>
+</Cards>
+
+## Sample project matrix
+
+| Sample | C/C++ (Linux/macOS) | C/C++ (Windows) | C# (.NET) | Description |
+|--------|:-------------------:|:---------------:|:---------:|-------------|
+| SimpleAiSample | ✅ | ✅ | ✅ | Basic AI Scene Detection |
+| DetailedAiSample | ✅ | ✅ | ✅ | Advanced AI with scene info |
+| PresetSample | ✅ | ✅ | ✅ | Custom preset application |
+| ResizeSample | ✅ | ✅ | — | Image resizing |
+| Standard-IO | ✅ | — | — | Pipe-based processing |
+| PDFSample | ✅ | ✅ | — | PDF image processing |
+| DotNetCore samples | — | — | ✅ | .NET Core specific |
+
+## Additional tools
+
+| Tool | Platforms | Description |
+|------|-----------|-------------|
+| CLI (`pfccmd`) | Linux, macOS, Windows | Pre-built command-line tool |
+| Container | Docker | HTTP API for image processing |
+
+## Directory structure
+
+Each platform's samples follow a consistent layout:
+
+```
+SDK/
+├── Linux/                    # or OSX/, Win/
+│   ├── bin/                  # Libraries and AI models
+│   │   ├── libPerfectlyClearPro.a
+│   │   ├── pro_and_universal_20211221.pnn
+│   │   └── ...
+│   ├── header/               # C/C++ headers
+│   ├── presets/              # Sample presets
+│   ├── SimpleAiSample/
+│   ├── PresetSample/
+│   └── ...
+├── CLI/                      # Pre-built CLI tool
+│   ├── Linux/
+│   ├── Win/
+│   └── OSX/
+├── sdk_license/              # License files
+└── presets/                  # Global presets
+```
+
+## Quick start
+
+### Build a C/C++ sample (Linux/macOS)
+
+```bash
+cd Linux/SimpleAiSample
+make -f makefile.linux
+./PerfectlyClear input.jpg output.jpg -v
+```
+
+### Build a C# sample (Windows)
+
+```bash
+cd Win/CSharp_SimpleAiSample
+dotnet build
+dotnet run -- input.jpg output.jpg -v
+```
+
+### Use the CLI tool
+
+```bash
+export PFC_SDK_LICENSE=/path/to/sdk_license
+./pfccmd input.jpg -o output.jpg
+```
+
+### Use the Container
+
+```bash
+docker load --input pfc_container_image.tar
+docker run -d -v "$(pwd)/sdk_license":/sdk_license -p 80:80 pfc_container
+
+# Upload and correct
+imageKey=$(curl -H "Content-Type: image/jpeg" -X PUT "http://localhost:80/pfc" --upload-file input.jpg | jq -r '.imageKey')
+curl "http://localhost:80/pfc/${imageKey}" | jq -r '.corrected_url'
+```
+
+## Next steps
+
+Choose a platform to explore detailed sample code:
+
+- [C/C++ Samples](/docs/pfc-sdk/getting-started/sample-projects/c-cpp) — Linux, macOS, and CLI
+- [C# Samples](/docs/pfc-sdk/getting-started/sample-projects/csharp) — .NET implementations  
+- [Windows Samples](/docs/pfc-sdk/getting-started/sample-projects/windows) — Windows C++ and Container
+- [Notes on Structure](/docs/pfc-sdk/getting-started/sample-projects/notes) — Common patterns

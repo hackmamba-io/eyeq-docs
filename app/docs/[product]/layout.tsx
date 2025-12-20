@@ -24,7 +24,7 @@ export default async function ProductLayout({ children, params }: LayoutProps) {
       tree={source.pageTree}
       {...baseOptions()}
       sidebar={{
-        defaultOpenLevel: 2,
+        defaultOpenLevel: 0,
         collapsible: true,
         banner: (
           <ProductSwitcher 

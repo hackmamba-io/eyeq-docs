@@ -354,4 +354,3 @@ archive.on('error', (err) => {
 archive.pipe(output);
 archive.directory(outDir, false);
 archive.finalize();
-
