@@ -1,0 +1,30 @@
+---
+title: Configuration
+description: Configure the SDK for your use case
+---
+
+# Configuration
+
+## Loading AI Models
+
+AI models are distributed as `.pnn` files and must be loaded before use:
+
+```cpp
+PFCENGINE engine;
+int ret = PFC_CreateEngine(&engine, 
+    pathToModels,
+    PFCFEATURE_ALL
+);
+```
+
+## Setting Parameters
+
+Parameters can be set in two ways:
+
+1. **Load from preset file**:
+```cpp
+PFCPARAM param;
+PFC_ReadPresets(param, "/path/to/preset.preset");
+```
+
+2. **Set programmatically** (see [Parameters guide](/docs/pfc-sdk/guides/parameters))
