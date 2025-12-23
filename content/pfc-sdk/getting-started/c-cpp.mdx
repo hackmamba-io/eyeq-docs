@@ -1,0 +1,262 @@
+---
+title: C/C++ Quickstart
+description: Getting started with Perfectly Clear SDK in C/C++
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+
+Get started with the Perfectly Clear SDK using the native C/C++ API. 
+This guide walks you through setup, licensing, and applying your first automatic image correction.
+
+## Prerequisites
+To complete this section you should have met the following requirements: 
+- Perfectly Clear SDK package (provided by EyeQ)
+- SDK license files (`sdk_license` folder)
+- C/C++ compiler (GCC, Clang, or MSVC)
+- Supported OS: Windows, Linux, or macOS
+
+## SDK directory structure ontents
+
+Your SDK package includes:
+
+```
+PerfectlyClearSDK/
+├── bin/
+│   ├── x64/
+│   │   ├── PerfectlyClearPro.dll      # Windows
+│   │   ├── libPerfectlyClearPro.so    # Linux
+│   │   └── libPerfectlyClearPro.dylib # macOS
+│   └── ...
+├── include/
+│   ├── PerfectlyClearPro.h            # Main header
+│   └── PFCImageFile.h                 # Image file helper
+├── samples/
+│   ├── SimpleAiSample/
+│   ├── PresetSample/
+│   └── ...
+├── sdk_license/                        # Your license files
+└── eff_1.pnn                          # AI model file
+```
+
+
+<Steps className='fd-steps [&_h2]:fd-step'>
+<Step>
+## Set up license protection
+
+Before applying any corrections, configure the SDK license path. The SDK validates your license online once every 12-24 hours.
+
+```cpp
+#include "PerfectlyClearPro.h"
+
+int main() {
+    // Set the path to your sdk_license folder
+    int licenseStatus = PFC_SetProtectionPath("/path/to/sdk_license");
+    
+    if (licenseStatus != 0) {
+        printf("License activation failed with code: %d\n", licenseStatus);
+        return 1;
+    }
+    
+    printf("License activated successfully\n");
+    // Continue with image processing...
+}
+```
+
+You can also set the license path using the `PFC_SDK_LICENSE` environment variable:
+
+```bash
+export PFC_SDK_LICENSE=/path/to/sdk_license
+```
+</Step>
+
+<Step>
+## Include paths and linking
+
+### Linux / macOS
+
+Compile with:
+
+```bash
+g++ -I/path/to/sdk/include \
+    -L/path/to/sdk/bin/x64 \
+    -lPerfectlyClearPro \
+    -o myapp myapp.cpp
+```
+
+Set library path at runtime:
+
+```bash
+export LD_LIBRARY_PATH=/path/to/sdk/bin/x64:$LD_LIBRARY_PATH  # Linux
+export DYLD_LIBRARY_PATH=/path/to/sdk/bin/x64:$DYLD_LIBRARY_PATH  # macOS
+```
+
+### Windows (Visual Studio)
+
+1. Add include directory: `Project > Properties > C/C++ > Additional Include Directories`
+2. Add library directory: `Project > Properties > Linker > Additional Library Directories`
+3. Add library: `PerfectlyClearPro.lib` to `Linker > Input > Additional Dependencies`
+4. Copy DLLs to your executable directory
+
+</Step>
+
+<Step>
+## Load an image
+
+The SDK provides the `PFCImageFile` helper class for loading JPEG, PNG, and WebP images:
+
+```cpp
+#include "PFCImageFile.h"
+
+// Load image with automatic sRGB conversion (recommended)
+PFCImageFile imageFile;
+bool convertToSRGB = true;
+
+PFC_FILE_LOAD_STATUS status = imageFile.LoadImageFile(
+    "input.jpg",
+    convertToSRGB,
+    NULL  // Path to ICC profiles folder (optional)
+);
+
+if (status != LOAD_OK) {
+    printf("Failed to load image\n");
+    return 1;
+}
+
+// Prepare PFCIMAGE struct for processing
+PFCIMAGE image;
+image.width = imageFile.width;
+image.height = imageFile.height;
+image.stride = imageFile.stride;
+image.format = PFCPIXELFORMAT_BGR;  // Adjust based on your image format
+image.data = imageFile.raw_image;
+```
+</Step>
+
+<Step>
+## Apply auto-correction with AI
+
+The simplest approach uses AI Scene Detection to automatically determine optimal corrections:
+
+```cpp
+// Create and initialize the AI engine
+PFCENGINE* pAiEngine = PFC_CreateEngine();
+
+// Load AI models (Scene Detection + AI Corrections)
+// binPath should contain eff_1.pnn and dynamic.pnn model files
+const char* binPath = "/path/to/sdk/bin";
+int aiStatus = PFC_LoadAIEngine(
+    pAiEngine,
+    AI_SCENE_DETECTION | AI_CORRECTIONS,
+    binPath
+);
+
+if ((aiStatus & AI_SCENE_DETECTION) == 0) {
+    printf("Failed to load Scene Detection model\n");
+    return 1;
+}
+
+// Apply automatic correction
+PFCPARAM ignoredParam;  // Not used when AI engine is provided
+int result = PFC_AutoCorrect(
+    &image,      // Image to correct
+    NULL,        // Downsampled image (optional)
+    ignoredParam,
+    -1,          // ISO (auto-detect from EXIF)
+    NULL,        // Camera model (auto-detect)
+    false,       // Use high-quality face detection
+    NULL,        // Progress callback
+    pAiEngine    // AI engine
+);
+
+if (result == APPLY_SUCCESS) {
+    printf("Image corrected successfully\n");
+}
+
+// Clean up
+PFC_DeleteEngine(pAiEngine);
+```
+</Step>
+
+<Step>
+## Save the output
+
+```cpp
+// Save with original color space and metadata preserved
+bool convertToOriginalColorSpace = convertToSRGB;
+bool preserveMetadata = true;
+int quality = 90;
+
+imageFile.SaveImageFile(
+    "output.jpg",
+    quality,
+    convertToOriginalColorSpace,
+    preserveMetadata
+);
+```
+</Step>
+</Steps>
+
+## Complete example
+
+Here's a minimal complete program:
+
+```cpp
+#include <stdio.h>
+#include "PerfectlyClearPro.h"
+#include "PFCImageFile.h"
+
+int main(int argc, char* argv[]) {
+    if (argc < 3) {
+        printf("Usage: %s <input.jpg> <output.jpg>\n", argv[0]);
+        return 1;
+    }
+
+    // 1. Set up license
+    int licenseStatus = PFC_SetProtectionPath("./sdk_license");
+    if (licenseStatus != 0) {
+        printf("License error: %d\n", licenseStatus);
+        return 1;
+    }
+
+    // 2. Load image
+    PFCImageFile imageFile;
+    if (imageFile.LoadImageFile(argv[1], true, NULL) != LOAD_OK) {
+        printf("Failed to load image\n");
+        return 1;
+    }
+
+    PFCIMAGE image;
+    image.width = imageFile.width;
+    image.height = imageFile.height;
+    image.stride = imageFile.stride;
+    image.format = (PFCPIXELFORMAT)imageFile.pfcImageFormat();
+    image.data = imageFile.raw_image;
+
+    // 3. Initialize AI engine
+    PFCENGINE* pEngine = PFC_CreateEngine();
+    int aiStatus = PFC_LoadAIEngine(pEngine, AI_SCENE_DETECTION | AI_CORRECTIONS, ".");
+    
+    if ((aiStatus & AI_SCENE_DETECTION) == 0) {
+        printf("Failed to load AI models\n");
+        return 1;
+    }
+
+    // 4. Apply correction
+    PFCPARAM param;
+    int result = PFC_AutoCorrect(&image, NULL, param, -1, NULL, false, NULL, pEngine);
+    
+    if (result == APPLY_SUCCESS) {
+        printf("Correction applied successfully\n");
+    }
+
+    // 5. Save output
+    imageFile.SaveImageFile(argv[2], 90, true, true);
+    printf("Saved to %s\n", argv[2]);
+
+    // 6. Clean up
+    PFC_DeleteEngine(pEngine);
+
+    return 0;
+}
+```
