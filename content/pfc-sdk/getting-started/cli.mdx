@@ -1,0 +1,132 @@
+---
+title: CLI Quickstart
+description: Getting started with Perfectly Clear CLI
+---
+
+The Perfectly Clear `pfccmd` command line application provides the quickest way to integrate Perfectly Clear 
+image processing capabilities into your workflow. There is no coding required, you just run the executable with your images.
+
+
+## Prerequisites
+Ensure you have the prerequisites before you begin:
+- `pfccmd` executable (provided by EyeQ)
+- SDK license files (`sdk_license` folder)
+- Supported OS: Windows, Linux, or macOS
+
+
+## Package contents
+
+```
+PerfectlyClearCLI/
+├── pfccmd                    # Executable (pfccmd.exe on Windows)
+├── sdk_license/              # Your license files
+├── eff_1.pnn                 # AI Scene Detection model
+├── dynamic.pnn               # AI Corrections model
+└── presets/                  # Optional preset files
+    └── my_corrections.preset
+```
+
+## Setting up the license
+
+The CLI requires a valid license. Set the license path using either method:
+
+### Option 1: Command line argument
+
+```bash
+pfccmd --sdk-license /path/to/sdk_license input.jpg
+```
+
+### Option 2: Environment variable (recommended)
+
+```bash
+# Linux/macOS
+export PFC_SDK_LICENSE=/path/to/sdk_license
+
+# Windows
+set PFC_SDK_LICENSE=C:\path\to\sdk_license
+```
+
+Once set, you can omit the `--sdk-license` flag from commands.
+
+
+## Basic usage
+
+### Correct a single image
+
+```bash
+# With AI Scene Detection (default)
+pfccmd input.jpg
+
+# Output: input_perfectlyclear.jpg
+```
+
+### Specify output file
+
+```bash
+pfccmd input.jpg -o output.jpg
+```
+
+### Specify output directory
+
+```bash
+pfccmd input.jpg -o /path/to/output/
+```
+
+## Applying presets
+
+### Use a Custom Preset
+
+```bash
+pfccmd input.jpg -o output.jpg -p /path/to/my_preset.preset
+```
+
+### Use built-in presets
+
+```bash
+# AI Scene Detection (default)
+pfccmd --preset scene input.jpg
+
+# Legacy iAuto '21 preset
+pfccmd --preset auto input.jpg
+
+# No corrections (useful for resize-only operations)
+pfccmd --preset none input.jpg -m long -v 1000
+```
+
+### Use Custom Scene Detection Presets
+
+Export AI presets from Workbench, then apply them:
+
+```bash
+pfccmd input.jpg -p /path/to/AI_Scene_Presets.preset
+```
+
+## Batch processing
+Process images from a specific directory or list file:
+### Process all images in a directory
+
+```bash
+pfccmd /input/folder -o /output/folder
+```
+
+All supported images (JPEG, PNG, WebP) in the input folder will be processed.
+
+### Process with a list file
+
+Create a text file with one image per line, optionally with per-image presets:
+
+```
+# list.txt
+/images/img_001.jpg /presets/portrait.preset
+/images/img_002.jpg /presets/landscape.preset
+/images/img_003.jpg /presets/default.preset
+"C:\My Photos\vacation.jpg" "C:\My Presets\travel.preset"
+```
+
+Run:
+
+```bash
+pfccmd --image-list-file list.txt
+```
+
+Images in the list file are **overwritten** with corrected versions.
