@@ -1,0 +1,332 @@
+---
+title: .NET/C# Quickstart
+description: Getting started with Perfectly Clear SDK in .NET/C#
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Get started with the Perfectly Clear SDK in .NET applications using C#. 
+This guide covers setup, licensing, and applying automatic image corrections.
+
+
+
+## Prerequisites
+To complete this section you should have met the following requirements: 
+- Perfectly Clear SDK package (provided by EyeQ)
+- SDK license files (`sdk_license` folder)
+- Visual Studio 2019+ or .NET CLI
+- .NET Framework 4.x or .NET Core/.NET 5+
+- Windows OS
+
+## SDK contents
+
+Your SDK package includes:
+
+```
+PerfectlyClearSDK/
+├── bin/
+│   └── x64/
+│       ├── PerfectlyClearPro.dll      # Native library
+│       ├── PerfectlyClearAdapter.dll  # .NET wrapper
+│       ├── PFCImageFile.dll           # Image file helper
+│       └── exiv2.dll                  # Metadata handling
+├── samples/
+│   ├── DotNetCore_SimpleAiSample/
+│   ├── DotNetCore_PresetSample/
+│   └── ...
+├── sdk_license/                        # Your license files
+└── eff_1.pnn                          # AI model file
+```
+
+<Steps className='fd-steps [&_h2]:fd-step'>
+<Step>
+## Add SDK references
+There are two options to follow:
+### Option A: Direct DLL reference
+
+1. Copy the SDK DLLs to your project directory
+2. Add reference to `PerfectlyClearAdapter.dll`
+3. Ensure native DLLs are copied to output directory
+
+In your `.csproj`:
+
+```xml
+<ItemGroup>
+  <Reference Include="PerfectlyClearAdapter">
+    <HintPath>lib\PerfectlyClearAdapter.dll</HintPath>
+  </Reference>
+</ItemGroup>
+
+<ItemGroup>
+  <None Update="lib\PerfectlyClearPro.dll">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  </None>
+  <None Update="lib\PFCImageFile.dll">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  </None>
+  <None Update="lib\exiv2.dll">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  </None>
+  <None Update="lib\eff_1.pnn">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  </None>
+</ItemGroup>
+```
+
+### Option B: Pre-build event (from samples)
+
+```xml
+<PropertyGroup>
+  <PreBuildEvent>
+    xcopy /C /E /Y /R $(SolutionDir)bin\x64\PerfectlyClearPro.dll $(OutDir)
+    xcopy /C /E /Y /R $(SolutionDir)bin\x64\PerfectlyClearAdapter.dll $(OutDir)
+    xcopy /C /E /Y /R $(SolutionDir)bin\x64\PFCImageFile.dll $(OutDir)
+    xcopy /C /E /Y /R $(SolutionDir)bin\x64\exiv2.dll $(OutDir)
+  </PreBuildEvent>
+</PropertyGroup>
+```
+</Step>
+
+<Step>
+## Set up license protection
+
+The SDK requires license activation before processing images.
+
+### Single-Threaded Applications
+
+Pass the license path to the constructor:
+
+```csharp
+using PerfectlyClearAdapter;
+
+// Initialize with license path
+PerfectlyClear pfc = new PerfectlyClear(@"C:\path\to\sdk_license");
+
+// Process images...
+
+// Dispose when done (or use 'using' statement)
+pfc.Dispose();
+```
+
+### Multi-threaded applications
+
+For concurrent processing, set up protection globally:
+
+```csharp
+using PerfectlyClearAdapter;
+
+// Set up license once at application startup
+PerfectlyClear.SetProtectionPath(@"C:\path\to\sdk_license");
+
+// In each thread:
+Parallel.ForEach(imageFiles, (imagePath) =>
+{
+    // Create instance per thread (no license path needed)
+    using (PerfectlyClear pfc = new PerfectlyClear())
+    {
+        // Process image...
+    }
+});
+
+// Release at application shutdown
+PerfectlyClear.ReleaseProtectionPath();
+```
+</Step>
+
+<Step>
+## Load an image
+Use either the `System.Drawing.Bitmap` or the `PFCImageFile`: 
+### Using System.Drawing.Bitmap
+
+```csharp
+using System.Drawing;
+
+Bitmap bitmap = new Bitmap("input.jpg");
+
+if (bitmap == null)
+{
+    Console.WriteLine("Failed to load image");
+    return;
+}
+```
+
+### Using PFCImageFile (Recommended)
+
+The `PFCImageFile` class provides better color management and metadata handling:
+
+```csharp
+using PerfectlyClearAdapter;
+
+PFCImageFile imageFile = new PFCImageFile();
+
+var status = imageFile.LoadImage(
+    "input.jpg",
+    bConvertToSRGB: true,   // Convert to sRGB working space
+    iccFolderPath: null     // Path to ICC profiles (optional)
+);
+
+if (status != PFCImageFile.PFC_FILE_LOAD_STATUS.LOAD_OK)
+{
+    Console.WriteLine("Failed to load image");
+    return;
+}
+```
+</Step>
+
+<Step>
+## Apply auto-correction with AI
+
+The simplest approach uses AI Scene Detection:
+
+```csharp
+using PerfectlyClearAdapter;
+
+// Initialize with license
+using (PerfectlyClear pfc = new PerfectlyClear(@".\sdk_license"))
+{
+    // Load image
+    Bitmap bitmap = new Bitmap("input.jpg");
+    
+    // Load AI engine (Scene Detection + AI Corrections)
+    string exePath = AppDomain.CurrentDomain.BaseDirectory;
+    int aiStatus = pfc.LoadAiEngine(
+        PFCAIFEATURE.AI_SCENE_DETECTION | PFCAIFEATURE.AI_CORRECTIONS,
+        exePath
+    );
+    
+    if ((aiStatus & (int)PFCAIFEATURE.AI_SCENE_DETECTION) == 0)
+    {
+        Console.WriteLine("Failed to load AI Scene Detection");
+        return;
+    }
+    
+    // Apply automatic correction
+    int result = pfc.AutoCorrect(ref bitmap);
+    
+    if (result == (int)PFCAPPLYSTATUS.APPLY_SUCCESS)
+    {
+        Console.WriteLine("Image corrected successfully");
+    }
+    
+    // Save result
+    bitmap.Save("output.jpg");
+}
+```
+</Step>
+
+<Step>
+## Save the output
+
+### With Bitmap
+
+```csharp
+bitmap.Save("output.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
+```
+
+### With PFCImageFile
+
+For better quality control and metadata preservation:
+
+```csharp
+// After processing with PFCImageFile
+imageFile.SaveImage(
+    "output.jpg",
+    quality: 90,
+    bConvertToOriginalColorSpace: true,
+    bEmbedOriginalMetadata: true
+);
+```
+</Step>
+</Steps>
+
+## Complete example
+
+```csharp
+using System;
+using System.Drawing;
+using PerfectlyClearAdapter;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        if (args.Length < 2)
+        {
+            Console.WriteLine("Usage: program <input.jpg> <output.jpg>");
+            return;
+        }
+
+        string inputPath = args[0];
+        string outputPath = args[1];
+
+        // Initialize SDK with license
+        using (PerfectlyClear pfc = new PerfectlyClear(@".\sdk_license"))
+        {
+            // Load image
+            Bitmap bitmap = new Bitmap(inputPath);
+            if (bitmap == null)
+            {
+                Console.WriteLine("Failed to load image");
+                return;
+            }
+
+            // Load AI engine
+            string binPath = AppDomain.CurrentDomain.BaseDirectory;
+            int aiStatus = pfc.LoadAiEngine(
+                PFCAIFEATURE.AI_SCENE_DETECTION | PFCAIFEATURE.AI_CORRECTIONS,
+                binPath
+            );
+
+            if (((PFCAIFEATURE)aiStatus & PFCAIFEATURE.AI_SCENE_DETECTION) 
+                != PFCAIFEATURE.AI_SCENE_DETECTION)
+            {
+                Console.WriteLine("Failed to load AI models");
+                Console.WriteLine("Ensure eff_1.pnn and PFCAI libraries are in: " + binPath);
+                return;
+            }
+
+            // Apply correction
+            int result = pfc.AutoCorrect(ref bitmap);
+
+            if (result == (int)PFCAPPLYSTATUS.APPLY_SUCCESS)
+            {
+                Console.WriteLine("Correction applied successfully");
+            }
+            else if (result > 0)
+            {
+                // Partial success - check individual status
+                Console.WriteLine($"NR: {pfc.LastStatus.NR_Status}");
+                Console.WriteLine($"Core: {pfc.LastStatus.CORE_Status}");
+                Console.WriteLine($"FB: {pfc.LastStatus.FB_Status}");
+                Console.WriteLine($"RE: {pfc.LastStatus.RE_Status}");
+            }
+            else
+            {
+                Console.WriteLine($"Processing failed: {result}");
+            }
+
+            // Save result
+            bitmap.Save(outputPath);
+            Console.WriteLine($"Saved to: {outputPath}");
+        }
+    }
+}
+```
+## Recommended project structure
+Here is a recommended project structure for .NET/C#
+```text
+MyApp/
+├── MyApp.csproj
+├── Program.cs
+├── lib/
+│   ├── PerfectlyClearAdapter.dll
+│   ├── PerfectlyClearPro.dll
+│   ├── PFCImageFile.dll
+│   └── exiv2.dll
+├── models/
+│   ├── eff_1.pnn           # Scene detection model
+│   └── dynamic.pnn         # AI corrections model
+├── presets/
+│   └── my_preset.preset    # Custom presets
+└── sdk_license/
+    └── [license files]
+```
