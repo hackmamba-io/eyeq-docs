@@ -1,0 +1,309 @@
+---
+title: C/C++ Samples
+description: C/C++ sample projects for Linux and macOS
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+Complete C/C++ sample projects for Linux and macOS. These samples are located in the `Linux/` or `OSX/` directories of your SDK package.
+
+## Building samples
+
+### Prerequisites
+
+<Tabs items={['Ubuntu/Debian', 'Red Hat/CentOS', 'macOS']}>
+<Tab value="Ubuntu/Debian">
+```bash
+sudo apt-get install build-essential
+```
+</Tab>
+<Tab value="Red Hat/CentOS">
+```bash
+sudo yum install gcc gcc-c++ make
+```
+</Tab>
+<Tab value="macOS">
+```bash
+xcode-select --install
+```
+</Tab>
+</Tabs>
+
+### Build commands
+
+```bash
+cd Linux/SimpleAiSample
+make -f makefile.linux    # Linux
+make -f makefile.osx      # macOS (Intel)
+make -f makefile.osx.arm64  # macOS (Apple Silicon)
+```
+
+### Runtime library path
+
+<Tabs items={['Linux', 'macOS']}>
+<Tab value="Linux">
+```bash
+export LD_LIBRARY_PATH=../bin:$LD_LIBRARY_PATH
+```
+</Tab>
+<Tab value="macOS">
+```bash
+export DYLD_LIBRARY_PATH=../bin:$DYLD_LIBRARY_PATH
+```
+</Tab>
+</Tabs>
+
+## SimpleAiSample
+
+The simplest way to use Perfectly Clear with AI Scene Detection.
+
+### Usage
+
+```bash
+./PerfectlyClear input.jpg [output.jpg] [preset.preset] [quality] [-v]
+```
+
+### Key code excerpts
+
+**License setup:**
+
+```cpp
+int code = PFC_SetProtectionPath("/path/to/sdk_license");
+```
+
+**Loading images:**
+
+```cpp
+PFCImageFile originalImageFile;
+bool bConvertToSRGB = true;
+PFC_FILE_LOAD_STATUS st = originalImageFile.LoadImageFile(inname, bConvertToSRGB, NULL);
+
+PFCIMAGE im;
+im.width  = originalImageFile.width;
+im.height = originalImageFile.height;
+im.stride = originalImageFile.stride;
+im.format = (PFCPIXELFORMAT)originalImageFile.pfcImageFormat();
+im.data   = originalImageFile.raw_image;
+```
+
+**Creating AI engine:**
+
+```cpp
+PFCENGINE *pAiEngine = PFC_CreateEngine();
+
+std::string binPath = exePath.substr(0, exePath.find_last_of('/'));
+int aistatus = PFC_LoadAIEngine(pAiEngine, 
+    AI_SCENE_DETECTION | AI_CORRECTIONS | AI_COLOR | AI_FACEMESH, 
+    binPath.c_str());
+```
+
+**Applying corrections:**
+
+```cpp
+PFCPARAM ignoredParam;
+int status = PFC_AutoCorrect(&im, NULL, ignoredParam, -1, NULL, 
+    false, NULL, pAiEngine, true);
+```
+
+**Getting scene information:**
+
+```cpp
+int lastSceneLabel = 0;
+int lastSceneConfidence = 0;
+PFC_GetLastSceneProperties(pAiEngine, &lastSceneLabel, &lastSceneConfidence);
+```
+
+**Saving output:**
+
+```cpp
+originalImageFile.SaveImageFile(oname, quality, true, true);
+```
+
+**Cleanup:**
+
+```cpp
+PFC_DestroyEngine(pAiEngine);
+PFC_ReleaseProtectionPath();
+```
+
+## PresetSample
+
+Apply specific correction parameters from a `.preset` file.
+
+### Key differences
+
+**Loading presets:**
+
+```cpp
+PFCPARAM param;
+int ret = PFC_ReadPresets(param, profilename);
+
+if (ret == 0) {
+    // Standard preset loaded
+} else if (ret == -9) {
+    // Scene Detection preset - use PFC_LoadScenePresets instead
+    PFC_LoadScenePresets(pAiEngine, profilename);
+}
+```
+
+**Setting addon path for Looks/LUTs:**
+
+```cpp
+PFC_SetAddonPath(".");
+```
+
+## Standard-IO
+
+Process images via stdin/stdout pipes.
+
+### Usage
+
+```bash
+./PerfectlyClear < input.jpg > output.jpg
+./PerfectlyClear -i jpeg -o png < input.jpg > output.png
+```
+
+### Key code excerpts
+
+**Reading from stdin:**
+
+```cpp
+fseek(stdin, 0, SEEK_END);
+const long inSize = ftell(stdin);
+fseek(stdin, 0, SEEK_SET);
+
+char* inBuffer = (char *)malloc(inSize);
+fread(inBuffer, inSize, 1, stdin);
+```
+
+**Decompressing buffer:**
+
+```cpp
+PFCImageFile originalImageFile;
+originalImageFile.ExpandImageBuffer(inBuffer, inSize, inType, bConvertToSRGB, NULL);
+free(inBuffer);
+```
+
+**Compressing to stdout:**
+
+```cpp
+unsigned char* outBuffer = NULL;
+unsigned long outSize = originalImageFile.CompressImageBuffer(&outBuffer, 
+    outType, 90, true, true);
+fwrite(outBuffer, outSize, 1, stdout);
+free(outBuffer);
+```
+
+## PDFSample
+
+Correct images embedded in PDF documents.
+
+### Usage
+
+```bash
+./PerfectlyClear input.pdf [output.pdf]
+```
+
+<Callout type="info">
+PDF processing requires `libPFCPDF` and `libpodofo` dependencies.
+</Callout>
+
+## ResizeSample
+
+Apply corrections and resize in a single operation.
+
+### Usage
+
+```bash
+./PerfectlyClear input.jpg output.jpg [width] [height] [-v]
+```
+
+## CLI tool (pfccmd)
+
+Pre-built command-line tool—no compilation required.
+
+### Package contents
+
+```
+CLI/Linux/
+├── pfccmd              # Main executable
+├── pfcaiserver         # AI server for batch processing
+├── *.pnn               # AI model files
+└── *.so                # Shared libraries
+```
+
+### Basic usage
+
+```bash
+export PFC_SDK_LICENSE=/path/to/sdk_license
+
+# Correct single image
+./pfccmd input.jpg -o output.jpg
+
+# Apply preset
+./pfccmd input.jpg -o output.jpg -p preset.preset
+
+# Batch process folder
+./pfccmd /input/folder -o /output/folder
+
+# Resize
+./pfccmd input.jpg -o output.jpg -m width -v 800
+
+# Pipe mode
+./pfccmd --stdio < input.jpg > output.jpg
+```
+
+### AI Server for batch processing
+
+When processing many images individually, use `pfcaiserver` to avoid repeatedly loading AI models:
+
+```bash
+# Terminal 1: Start server
+./pfcaiserver --sdk-license /path/to/sdk_license
+
+# Terminal 2: Process images
+./pfccmd --scene-detection-server tcp://127.0.0.1:29170 input.jpg
+```
+
+### JSON output
+
+```bash
+./pfccmd input.jpg -o output.jpg -j
+```
+
+### Key options
+
+| Option | Description |
+|--------|-------------|
+| `-p, --preset` | Preset file or "scene"/"none" |
+| `-o, --output-path` | Output file/directory |
+| `-q, --output-quality` | JPEG quality (40-100) |
+| `-m, --scale-mode` | Resize mode (width/height/long/short/scale) |
+| `-v, --scale-value` | Resize value |
+| `-j, --json` | JSON output report |
+| `--stdio` | Pipe mode |
+| `--autocrop` | Enable auto cropping |
+
+## Common issues
+
+### "Cannot load AI Scene Detection"
+
+Ensure `.pnn` files are in the executable directory:
+- `pro_and_universal_20211221.pnn`
+- `dynamic.pnn`
+- `aicolor.pnn`
+- `facemesh.pnn`, `faceshape.pnn`, `fdback.pnn`, `fdfront.pnn`
+
+### Library not found
+
+```bash
+export LD_LIBRARY_PATH=/path/to/SDK/Linux/bin:$LD_LIBRARY_PATH
+```
+
+### zlib version mismatch
+
+```bash
+cd Linux/bin
+mv libz.so.1 libz.so.1.bak
+```
