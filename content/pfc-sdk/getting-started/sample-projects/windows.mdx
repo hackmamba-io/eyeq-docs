@@ -1,0 +1,273 @@
+---
+title: Windows Samples
+description: Windows C++ sample projects and Container samples
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+Windows C++ sample projects and Docker Container samples. The C++ samples are located in `Win/` and Container samples in the separate Container package.
+
+## Windows C++ samples
+
+### Directory structure
+
+```
+Win/
+├── bin/                      # DLLs and AI models
+│   ├── PerfectlyClearPro.dll
+│   ├── PFCImageFile.dll
+│   └── *.pnn
+├── lib/                      # Import libraries
+│   └── PerfectlyClearPro.lib
+├── header/                   # Header files
+├── SimpleAiSample/
+├── DetailedAiSample/
+├── PresetSample/
+├── PDFSample/
+├── Sample-PFCImageFile/
+└── Sample-Resize/
+```
+
+### Building with Visual Studio
+
+**1. Configure include directories:**
+```
+Project > Properties > C/C++ > Additional Include Directories
+Add: $(SDK_PATH)\Win\header
+```
+
+**2. Configure library directories:**
+```
+Project > Properties > Linker > Additional Library Directories
+Add: $(SDK_PATH)\Win\lib
+```
+
+**3. Add library dependencies:**
+```
+Project > Properties > Linker > Input > Additional Dependencies
+Add: PerfectlyClearPro.lib
+```
+
+**4. Copy DLLs to output directory**
+
+### SimpleAiSample
+
+Functionally identical to Linux/macOS version. Key differences:
+
+**Path handling:**
+
+```cpp
+// Both work
+PFC_SetProtectionPath("C:/path/to/sdk_license");
+PFC_SetProtectionPath("C:\\path\\to\\sdk_license");
+```
+
+**Usage:**
+
+```batch
+PerfectlyClear.exe input.jpg output.jpg -v
+```
+
+### Sample-PFCImageFile
+
+Windows-specific sample demonstrating `PFCImageFile` helper library.
+
+```cpp
+#include "PFCImageFile.h"
+
+PFCImageFile imageFile;
+PFC_FILE_LOAD_STATUS status = imageFile.LoadImageFile(
+    "input.jpg",
+    true,   // Convert to sRGB
+    NULL    // ICC profile path
+);
+
+// Access pixel data
+unsigned char* pixels = imageFile.raw_image;
+int width = imageFile.width;
+int height = imageFile.height;
+
+// Save with metadata preservation
+imageFile.SaveImageFile("output.jpg", 90, true, true);
+```
+
+### Sample-Resize
+
+Image resizing during correction.
+
+```cpp
+PFCImageFile resizedFile;
+resizedFile.CreateResized(originalFile, 1920, 0);  // Width, auto height
+resizedFile.SaveImageFile("resized.jpg", 90, true, true);
+```
+
+### DLL deployment
+
+**Required DLLs:**
+
+```
+PerfectlyClearPro.dll
+PFCImageFile.dll
+libPFCAIEngine.dll
+onnxruntime.dll
+lcms2.dll
+libexiv2.dll
+```
+
+**Required AI models:**
+
+```
+pro_and_universal_20211221.pnn
+dynamic.pnn
+aicolor.pnn
+skintone_20211221.pnn
+facemesh.pnn
+faceshape.pnn
+fdback.pnn
+fdfront.pnn
+v3.looks
+```
+
+## Container samples
+
+The Docker Container provides an HTTP API for image processing.
+
+### Package contents
+
+```
+PfC-Container/
+├── pfc_container_image.tar   # Docker image
+├── correct_image.sh          # Correction script
+├── convert_image.sh          # Format conversion
+├── scale_image.sh            # Resize script
+├── presets/                  # Preset files
+├── sdk_license/              # License files
+└── sample.jpg                # Test image
+```
+
+### Quick start
+
+**Load and run:**
+
+```bash
+docker load --input pfc_container_image.tar
+
+docker run -d \
+  -v "$(pwd)/presets":/presets \
+  -v "$(pwd)/sdk_license":/sdk_license \
+  -p 80:80 \
+  pfc_container
+```
+
+### HTTP API workflow
+
+**1. Upload image:**
+
+```bash
+imageKey=$(curl -H "Content-Type: image/jpeg" \
+  -X PUT "http://localhost:80/pfc" \
+  --upload-file input.jpg | jq -r '.imageKey')
+```
+
+**2. Apply correction:**
+
+```bash
+response=$(curl -X GET "http://localhost:80/pfc/${imageKey}")
+corrected_url=$(echo $response | jq -r '.corrected_url')
+```
+
+**3. Download result:**
+
+```bash
+curl "${corrected_url}" -o corrected.jpg
+```
+
+### Sample scripts
+
+**correct_image.sh:**
+
+```bash
+#!/bin/bash
+INPUT=${1}
+imageKey=$(curl -H "Content-Type: image/jpeg" -X PUT \
+  "http://localhost:80/pfc" --upload-file ${INPUT} | jq -r '.imageKey')
+
+status=$(curl -X GET "http://localhost:80/pfc/${imageKey}")
+corrected_url=$(echo ${status} | jq -r '.corrected_url')
+
+curl "${corrected_url}" -o corrected.jpg
+```
+
+**Usage:**
+
+```bash
+./correct_image.sh input.jpg
+./correct_image.sh input.jpg "preset=universal&outputQuality=95"
+```
+
+### API parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `preset` | Preset name or "scene" for AI detection |
+| `outputType` | "JPEG" or "PNG" |
+| `outputQuality` | 40-100 (JPEG only) |
+| `width`, `height` | Resize dimensions |
+| `long`, `short` | Resize by edge |
+| `scale` | Resize percentage |
+| `autocrop` | Enable auto cropping |
+
+### Environment variables
+
+| Variable | Description |
+|----------|-------------|
+| `PFC_SITE_URL` | URL for clients (default: `http://localhost`) |
+| `PFC_LOG_LEVEL` | `debug`, `info`, `warning`, `error` |
+| `PFC_IMG_CACHE_TTL` | Image cache time in minutes (default: 60) |
+| `PFC_AVX` | `on`, `off`, `auto` |
+
+### Docker Compose example
+
+```yaml
+version: '3.8'
+services:
+  pfc:
+    image: pfc_container
+    ports:
+      - "80:80"
+    volumes:
+      - ./presets:/presets
+      - ./sdk_license:/sdk_license
+    environment:
+      - PFC_LOG_LEVEL=info
+      - PFC_IMG_CACHE_TTL=120
+```
+
+### Version endpoint
+
+```bash
+curl http://localhost:80/version
+```
+
+## Common issues
+
+### Windows C++
+
+**DLL not found:**
+Ensure all DLLs are in the same directory as your executable or in PATH.
+
+**Entry point not found:**
+Version mismatch between DLL and lib file.
+
+### Container
+
+**Corrected image unchanged:**
+License validation failed. Check `sdk_license` folder.
+
+**"Couldn't write image":**
+Docker disk space issue. Clear old containers/images.
+
+**Small images rejected:**
+Minimum size is 32px on shortest edge.
+
